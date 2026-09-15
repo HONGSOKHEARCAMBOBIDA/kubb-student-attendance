@@ -1,0 +1,81 @@
+import api from './index'
+
+// Auth
+export const login = (data) => api.post('/login', data)
+export const loginByQr = (data) => api.post('/loginbyqr', data)
+export const refreshToken = (data) => api.post('/refresh',{}, { withCredentials: true })
+
+// Company
+export const getCompany = (params) => api.get('/view.company', { params })
+export const createCompany = (data) => api.post('/add.company', data)
+export const updateCompany = (id, data) => api.put(`/edit.company/${id}`, data)
+export const updateTelegram = (id,data) => api.put(`/edit.telegram/${id}`,data)
+export const viewmanagecompany = () => api.get(`/view.manage.company`)
+export const viewcompanycolor = () => api.get(`/view.company.color`)
+export const viewcompanyscan = () => api.get(`/view.company.scan`)
+
+// User
+export const getUsers = (params) => api.get('/view.user', { params })
+export const createUser = (data) => api.post('/add.user', data)
+export const updateUser = (id, data) => api.put(`/edit.user/${id}`, data)
+export const toggleUserStatus = (id) => api.put(`/toggle.status.user/${id}`)
+export const deleteuser = (id) => api.delete(`/delete.user/${id}`)
+export const changePassword = (data) => api.put('/change.password', data)
+export const countuser = () => api.get('/count.user')
+export const getrole = () => api.get('/view.role')
+export const getuserdata = () => api.get(`/view.user.data`)
+export const getuserapprove = () => api.get(`/view.user.approve`)
+export const verifyuser = (id) => api.put(`verify.user/${id}`)
+export const logoutUser = () => api.post('/logout')
+
+// Shift
+export const createShift = (data) => api.post('/add.shift', data)
+export const updateShift = (data) => api.put('/edit.shift', data)
+
+// Attendance
+export const createAttendance = (data) => api.post('/add.attendance', data)
+export const getAttendance = (params) => api.get('/view.attendance', { params })
+export const getAttendanceDraft = (params) => api.get('/view.attendance.draft')
+export const exportAttendancePDF = (params) => api.get('/generate.attendance.pdf', {
+  params,
+})
+export const deleteattendance = (id) => api.delete(`/delete.attendance/${id}`)
+
+// Payroll
+export const getPayrollDraft = (params) => api.get('/view.payroll.draft', { params })
+export const createPayroll = (data) => api.post('/add.payroll', data)
+export const getPayroll = (params) => api.get('/view.payroll',{params})
+export const deletePayroll = (data) =>
+  api.post('/delete.payroll',data)
+
+// Backup
+export const triggerBackup = () => api.post('add.backup')
+export const listBackups = () => api.get('view.backup')
+export const downloadBackup = (filename) => api.get('view.download.backup', { 
+  params: { file: filename },
+  responseType: 'blob' 
+})
+export const deleteBackup = (filename) => api.delete('delete.backup',{
+  params: {file: filename},
+})
+
+// LeaveDeductType
+export const getleavedeductype = () => api.get('view.leave.deduct.type')
+
+// LeaveType
+export const getleavetype = () => api.get('view.leave.type')
+export const createleavetype = (data) => api.post('/add.leave.type',data)
+export const updateleavetype = (id, data) => api.put(`/edit.leave.type/${id}`, data)
+
+// LeaveRequest
+export const getleaverequest = (params) => api.get('/view.leave.request',{params})
+export const addleaverequest = (data) => api.post('/add.leave.request',data)
+export const editleaverequest = (id,data) => api.put(`/edit.leave.request/${id}`,data)
+export const editstatusleaverequest = (id,data) => api.put(`/edit.status.leave.request/${id}`,data)
+export const deleteleaverequest = (id) => api.delete(`/delete.leave.request/${id}`)
+
+// RoleHasPermission
+export const getrolehaspermission = (id) => api.get(`/view.role.has.permission/${id}`)
+export const addrolehaspermission = (data) => api.post('/add.role.has.permission',data)
+export const deleterolehaspermission = (data) => api.delete('/delete.role.has.permission',{data})
+export const editrole = (id,data) => api.put(`/edit.role/${id}`,data)
