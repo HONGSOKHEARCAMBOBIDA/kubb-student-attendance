@@ -188,7 +188,7 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 		record = model.AttendanceRecord{
 			AttendanceID: attendance.ID,
 			UserID:       user.ID,
-			ClassID:      userclass.ID,
+			ClassID:      input.CompanyID,
 			ShiftID:      shift.ID,
 			CheckTime:    currentTime,
 			Type:         current.recordType,
@@ -397,7 +397,7 @@ func (s *attendanceservice) GetAttendanceReport(ctx context.Context, id int, fil
 	}
 	sessionOrder := []string{
 		model.AttendanceSession1, model.AttendanceSession2, model.AttendanceSession3,
-		model.AttendanceSession4, model.AttendanceSession5, model.AttendanceSession6,
+		model.AttendanceSession4, model.AttendanceSession5,
 	}
 
 	colSet := map[colKey]bool{}

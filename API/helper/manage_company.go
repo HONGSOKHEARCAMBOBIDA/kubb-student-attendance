@@ -13,9 +13,10 @@ func ManageClassFilter(query *gorm.DB, db *gorm.DB, user model.User) *gorm.DB {
 
 	var classIDs []int64
 
-	if err := db.Table("user_class AS uc").
-		Where("uc.user_id = ?", user.ID).
-		Joins("LEFT JOIN class c ON c.id = uc.class_id AND c.is_active = 1").
+	if err := db.
+		Table("user_class uc").
+		Joins("INNER JOIN class c ON c.id = uc.class_id").
+		Where("uc.user_id = ? AND uc.is_active = 1 AND c.is_active = 1", user.ID).
 		Pluck("uc.class_id", &classIDs).Error; err != nil {
 		return query.Where("1 = 0")
 	}

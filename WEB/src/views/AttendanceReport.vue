@@ -2,7 +2,7 @@
   <div>
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 8 },
+        { slot: 'name', span: 5 },
         { slot: 'dateFrom', span: 5 },
         { slot: 'dateTo', span: 5 },
         { slot: 'class', span: 5 },

@@ -66,6 +66,7 @@ type AttendanceReportRow struct {
 	Cells        []AttendanceReportCell `json:"cells"` // same order/length as Columns
 	AbsentCount  int                    `json:"absent_count"`
 	PresentCount int                    `json:"present_count"`
+	Permission   int                    `json:"permission_count"`
 }
 
 type AttendanceReportResponse struct {
