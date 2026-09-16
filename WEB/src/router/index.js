@@ -29,9 +29,9 @@ const routes = [
         name: "Company",
         component: () => import("../views/Company.vue"),
         meta: {
-          title: "ក្រុមហ៑ុន",
+          title: "ថ្នាក់រៀន",
           icon: "OfficeBuilding",
-          short: "ក្រុមហ៑ុន",
+          short: "ថ្នាក់រៀន",
           showInNav: true,
         },
       },
@@ -43,7 +43,7 @@ const routes = [
           title: "បុគ្គលិក",
           icon: "User",
           short: "បុគ្គលិក",
-          showInNav: true,
+          showInNav: false,
         },
       },
       {
@@ -88,7 +88,18 @@ const routes = [
           title: "វត្តមាន",
           icon: "Clock",
           short: "វត្តមាន",
-          showInNav: true,
+          showInNav: false,
+        },
+      },
+      {
+        path: "AttendanceReport",
+        name: "AttendanceReport",
+        component: () => import("../views/AttendanceReport.vue"),
+        meta: {
+          title: "របាយការណ៍វត្តមាន",
+          icon: "Clock",
+          short: "របាយការណ៍វត្តមាន",
+          showInNav: false,
         },
       },
       {
@@ -100,7 +111,7 @@ const routes = [
           icon: "Money",
           short: "បេីកប្រាក់ខែ",
           permission: "add.payroll",
-          showInNav: true,
+          showInNav: false,
         },
       },
       {
@@ -111,7 +122,7 @@ const routes = [
           title: "របាយការណ៍បើកប្រាក់ខែ",
           icon: "Money",
           short: "របាយការណ៍បើកប្រាក់ខែ",
-          showInNav: true,
+          showInNav: false,
         },
       },
       {
@@ -128,7 +139,7 @@ const routes = [
           title: "ប្រវត្តរូប",
           icon: "Setting",
           short: "ប្រវត្ត",
-          showInNav: true,
+          showInNav: false,
         },
       },
       {
@@ -140,7 +151,7 @@ const routes = [
           icon: "Download",
           short: "Backup",
           permission: "view.backup",
-          showInNav: true,
+          showInNav: false,
         },
       },
       {

@@ -7,7 +7,7 @@ export const useUserDataStore = defineStore('userdata', {
   }),
 
   getters: {
-    companyid: (state) => state.userdata?.company_id || '',
+    classid: (state) => state.userdata?.class_id || '',
     name: (state) => state.userdata?.name || '',
     permissions: (state) => state.userdata?.permissions || [],
   },
@@ -16,6 +16,7 @@ export const useUserDataStore = defineStore('userdata', {
     async getuserdata() {
       const res = await getuserdata()
       this.userdata = res.data.data || ""
+      
     },
 
     clear() {

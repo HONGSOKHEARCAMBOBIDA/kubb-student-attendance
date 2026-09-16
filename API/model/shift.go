@@ -6,14 +6,12 @@ import (
 
 type Shift struct {
 	base.ModelBase
-	UserID    int     `json:"user_id" gorm:"column:user_id"`
-	CheckIn1  *string `json:"check_in1" gorm:"column:check_in1"`
-	CheckOut1 *string `json:"check_out1" gorm:"column:check_out1"`
-	CheckIn2  *string `json:"check_in2" gorm:"column:check_in2"`
-	CheckOut2 *string `json:"check_out2" gorm:"column:check_out2"`
-	ShiftType int     `json:"shift_type" gorm:"column:shift_type"` // 1=Full, 2=Morning only, 3=Evening only
-	Day       int     `json:"day" gorm:"column:day"`
-	IsDayoff  bool    `json:"is_dayoff" gorm:"column:is_dayoff"`
+	Name     string `gorm:"column:name;size:255;not null" json:"name"`
+	Session1 string `gorm:"column:session1;not null;default:false" json:"session1"`
+	Session2 string `gorm:"column:session2;not null;default:false" json:"session2"`
+	Session3 string `gorm:"column:session3;not null;default:false" json:"session3"`
+	Session4 string `gorm:"column:session4;not null;default:false" json:"session4"`
+	Session5 string `gorm:"column:session5;not null;default:false" json:"session5"`
 }
 
 func (Shift) TableName() string {

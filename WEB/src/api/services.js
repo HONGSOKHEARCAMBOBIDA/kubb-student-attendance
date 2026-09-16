@@ -6,17 +6,26 @@ export const loginByQr = (data) => api.post('/loginbyqr', data)
 export const refreshToken = (data) => api.post('/refresh',{}, { withCredentials: true })
 
 // Company
-export const getCompany = (params) => api.get('/view.company', { params })
-export const createCompany = (data) => api.post('/add.company', data)
-export const updateCompany = (id, data) => api.put(`/edit.company/${id}`, data)
-export const updateTelegram = (id,data) => api.put(`/edit.telegram/${id}`,data)
+export const getMajor = () => api.get('/view.Major')
+export const getShift = () => api.get('/view.Shift')
+export const getGeneration = () => api.get('/view.Generation')
+export const getProgramme = () => api.get('/view.Programme')
+export const getClass = (params) => api.get('/view.company', { params })
+export const createClass = (data) => api.post('/add.company', data)
+export const updateClass = (id, data) => api.put(`/edit.company/${id}`, data)
+export const changeStatusClass = (id) => api.put(`/toggle.status.class/${id}`)
+export const updateClassTelegram = (id,data) => api.put(`/edit.telegram/${id}`,data)
 export const viewmanagecompany = () => api.get(`/view.manage.company`)
 export const viewcompanycolor = () => api.get(`/view.company.color`)
 export const viewcompanyscan = () => api.get(`/view.company.scan`)
 
 // User
 export const getUsers = (params) => api.get('/view.user', { params })
-export const createUser = (data) => api.post('/add.user', data)
+export const registerUsers = (data) => api.post('/add.user', data)
+export const registerUsersExcel = (formData) =>
+  api.post("add.user.excell", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 export const updateUser = (id, data) => api.put(`/edit.user/${id}`, data)
 export const toggleUserStatus = (id) => api.put(`/toggle.status.user/${id}`)
 export const deleteuser = (id) => api.delete(`/delete.user/${id}`)
@@ -27,6 +36,7 @@ export const getuserdata = () => api.get(`/view.user.data`)
 export const getuserapprove = () => api.get(`/view.user.approve`)
 export const verifyuser = (id) => api.put(`verify.user/${id}`)
 export const logoutUser = () => api.post('/logout')
+export const adduserclass = (data) => api.post('/add.user.class',data)
 
 // Shift
 export const createShift = (data) => api.post('/add.shift', data)
@@ -35,8 +45,9 @@ export const updateShift = (data) => api.put('/edit.shift', data)
 // Attendance
 export const createAttendance = (data) => api.post('/add.attendance', data)
 export const getAttendance = (params) => api.get('/view.attendance', { params })
+export const getAttendanceReport  = (params) => api.get('/view.attendance.report', { params })
 export const getAttendanceDraft = (params) => api.get('/view.attendance.draft')
-export const exportAttendancePDF = (params) => api.get('/generate.attendance.pdf', {
+export const exportAttendancePDF = (params) => api.get('/view.attendance', {
   params,
 })
 export const deleteattendance = (id) => api.delete(`/delete.attendance/${id}`)

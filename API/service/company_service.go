@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"mysql/config"
+	"mysql/constant/apperror"
 	"mysql/helper"
 	"mysql/model"
 	"mysql/request"
@@ -15,14 +16,18 @@ import (
 )
 
 type CompanyService interface {
-	GetCompanyColor(userID int) (response.CompanyColor, error)
-	GetCompany(id int, ctx context.Context, pf request.Pagination) ([]response.CompanyResponse, *model.PaginationMetadata, error)
-	GetCompanyScan(ctx context.Context, id int) ([]response.CompanyScanResponse, error)
-	CreateCompany(ctx context.Context, input request.CompanyRequestCreate) error
-	UpdateCompany(ctx context.Context, id int, input request.CompanyRequesUpdate) error
-	ChangeStatusCompany(ctx context.Context, id int) error
+	//GetCompanyColor(userID int) (response.CompanyColor, error)
+	GetClass(id int, ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.ClassResponse, *model.PaginationMetadata, error)
+	GetClassScan(ctx context.Context, id int) ([]response.ClassScanResponse, error)
+	CreateClass(ctx context.Context, input request.ClassRequestCreate) error
+	UpdateClass(ctx context.Context, id int, input request.ClassRequestUpdate) error
+	ChangeStatusClass(ctx context.Context, id int) error
 	UpdateTelegram(ctx context.Context, id int, input request.CompanyRequestUpdateTelegram) error
 	ShowManageCompany(ctx context.Context, id int) ([]helper.ManageCompany, error)
+	GetMajor(ctx context.Context) ([]model.Major, error)
+	GetShift(ctx context.Context) ([]model.Shift, error)
+	GetGeneration(ctx context.Context) ([]model.Generation, error)
+	GetProgramme(ctx context.Context) ([]model.Programme, error)
 }
 
 type companyservice struct {
@@ -35,32 +40,116 @@ func NewCompanyService() CompanyService {
 	}
 }
 
-func (s *companyservice) GetCompanyColor(userID int) (response.CompanyColor, error) {
-	var color response.CompanyColor
+func (s *companyservice) GetMajor(ctx context.Context) ([]model.Major, error) {
+	var data []model.Major
 
-	err := s.db.Table("company AS c").
-		Select(`c.color AS color`).
-		Joins("LEFT JOIN user u ON u.company_id = c.id").
-		Where("u.id = ?", userID).
-		Scan(&color).Error
-
-	if err != nil {
-		return color, err
+	if err := s.db.WithContext(ctx).
+		Where("is_active = ?", 1).
+		Order("id ASC").
+		Find(&data).Error; err != nil {
+		return nil, err
 	}
 
-	return color, nil
+	return data, nil
 }
 
-func (s *companyservice) GetCompany(id int, ctx context.Context, pf request.Pagination) ([]response.CompanyResponse, *model.PaginationMetadata, error) {
-	var Company []response.CompanyResponse
+func (s *companyservice) GetShift(ctx context.Context) ([]model.Shift, error) {
+	var data []model.Shift
+
+	if err := s.db.WithContext(ctx).
+		Order("id ASC").
+		Find(&data).Error; err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func (s *companyservice) GetGeneration(ctx context.Context) ([]model.Generation, error) {
+	var data []model.Generation
+
+	if err := s.db.WithContext(ctx).
+		Where("is_active = ?", 1).
+		Order("id ASC").
+		Find(&data).Error; err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func (s *companyservice) GetProgramme(ctx context.Context) ([]model.Programme, error) {
+	var data []model.Programme
+
+	if err := s.db.WithContext(ctx).
+		Order("id ASC").
+		Find(&data).Error; err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+// func (s *companyservice) GetCompanyColor(userID int) (response.CompanyColor, error) {
+// 	var color response.CompanyColor
+
+// 	err := s.db.Table("company AS c").
+// 		Select(`c.color AS color`).
+// 		Joins("LEFT JOIN user u ON u.company_id = c.id").
+// 		Where("u.id = ?", userID).
+// 		Scan(&color).Error
+
+// 	if err != nil {
+// 		return color, err
+// 	}
+
+// 	return color, nil
+// }
+
+func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.ClassResponse, *model.PaginationMetadata, error) {
+	helper.NormalizePagination(&pf)
+	var data []response.ClassResponse
+	var total int64
 	var user model.User
-	if err := s.db.Preload("Role").First(&user, id).Error; err != nil {
+	if err := s.db.WithContext(ctx).Preload("Role").First(&user, id).Error; err != nil {
 		return nil, nil, err
 	}
-	var totalCount int64
+	base := func() *gorm.DB {
+		return s.db.WithContext(ctx).
+			Table("class c").
+			Joins("LEFT JOIN major AS m ON m.id = c.major_id").
+			Joins("LEFT JOIN shift AS sh ON sh.id = c.shift_id").
+			Joins("LEFT JOIN generation AS g ON g.id = c.generation_id").
+			Joins("LEFT JOIN programmes AS p ON p.id = c.programme_id")
+	}
+	applyFilters := func(tx *gorm.DB) *gorm.DB {
+		if v, ok := filter["name"]; ok && v != "" {
+			tx = tx.Where("c.name LIKE ?", "%"+v+"%")
+		}
+		if v, ok := filter["major_id"]; ok && v != "" {
+			tx = tx.Where("c.major_id = ?", v)
+		}
+		if v, ok := filter["shift_id"]; ok && v != "" {
+			tx = tx.Where("c.shift_id = ?", v)
+		}
+		if v, ok := filter["generation_id"]; ok && v != "" {
+			tx = tx.Where("c.generation_id = ?", v)
+		}
+		if v, ok := filter["programme_id"]; ok && v != "" {
+			tx = tx.Where("c.programme_id = ?", v)
+		}
+		return tx
+	}
+	if err := applyFilters(base()).Count(&total).Error; err != nil {
+		return nil, nil, fmt.Errorf("count product: %w", err)
+	}
+
+	if total == 0 {
+		return []response.ClassResponse{}, helper.BuildPaginationMeta(pf, total), nil
+	}
+
 	offset := (pf.Page - 1) * pf.PageSize
-	query := s.db.WithContext(ctx).Table("company AS c").
-		Select(`
+	dataQuery := applyFilters(base()).Select(`
 		c.id AS id,
 		c.name AS name,
 		c.is_active AS is_active,
@@ -68,69 +157,61 @@ func (s *companyservice) GetCompany(id int, ctx context.Context, pf request.Pagi
 		c.longitude AS longitude,
 		c.radius AS radius,
 		c.bot_token AS bot_token,
-		c.group_chatID AS group_link,
-		c.currency AS currency,
-		c.late_penalty AS late_penalty,
-		c.left_early_penalty AS left_early_penalty,
+		c.group_chatID AS group_chatID,
 		c.can_scan_outsize AS can_scan_outsize,
-		c.color AS color,
-		c.total_work_day AS total_work_day,
-		COUNT(u.id) AS user_count
-	`).Joins("LEFT JOIN user AS u ON u.company_id = c.id").
-		Group("c.id")
+		c.major_id AS major_id,
+		m.name_kh AS major_name,
+		c.shift_id AS shift_id,
+		sh.name AS shift_name,
+		c.generation_id AS generation_id,
+		g.name_kh AS generation_name,
+		c.year AS year,
+		c.semester AS semester,
+		c.` + "`group`" + ` AS ` + "`group`" + `,
+		c.term AS term,
+		c.programme_id AS programme_id,
+		p.name AS programme_name
+	`)
+	if err := dataQuery.Offset(offset).Limit(pf.PageSize).Order("id DESC").Scan(&data).Error; err != nil {
+		return nil, nil, fmt.Errorf("fetch class: %w", err)
+	}
 
-	// if user.Role.Level < 7 {
-	// 	query = query.Where("c.id = ?", user.CompanyID)
-	// }
+	classIDs := make([]int, len(data))
+	for i, c := range data {
+		classIDs[i] = c.ID
+	}
 
-	query = helper.ManageCompanyFilter(query, s.db, user)
-
-	if err := query.Count(&totalCount).Error; err != nil {
+	var students []response.StudentWithClass
+	if err := s.db.WithContext(ctx).Table("user u").
+		Joins("INNER JOIN user_class uc ON uc.user_id = u.id").
+		Where("uc.class_id IN ?", classIDs).
+		Select(`
+		u.id AS id,
+		u.name_kh AS name_kh,
+		u.name_en AS name_en,
+		u.gender AS gender,
+		u.code AS code,
+		uc.class_id AS class_id
+	`).Scan(&students).Error; err != nil {
 		return nil, nil, err
 	}
 
-	if err := query.Limit(pf.PageSize).Offset(offset).Scan(&Company).Error; err != nil {
-		return nil, nil, err
+	studentByClass := make(map[int][]response.UserResponse, len(data))
+	for _, st := range students {
+		studentByClass[st.ClassID] = append(studentByClass[st.ClassID], st.UserResponse)
 	}
 
-	totalPages := totalCount / int64(pf.PageSize)
-
-	if int(totalCount)%pf.PageSize != 0 {
-		totalPages++
+	for i := range data {
+		data[i].UserResponse = studentByClass[data[i].ID]
 	}
 
-	for i := range Company {
-		if Company[i].BotToken != nil && *Company[i].BotToken != "" {
-			botTokenDecrypt, err := utils.DecryptBotToken(*Company[i].BotToken)
-			if err != nil {
-				return nil, nil, err
-			}
-			Company[i].BotToken = &botTokenDecrypt
-		}
-
-		if Company[i].GroupChatID != nil && *Company[i].GroupChatID != "" {
-			chatIDDecrypt, err := utils.DecryptChatID(*Company[i].GroupChatID)
-			if err != nil {
-				return nil, nil, err
-			}
-			Company[i].GroupChatID = &chatIDDecrypt
-		}
-	}
-
-	metadata := &model.PaginationMetadata{
-		Page:       pf.Page,
-		PageSize:   pf.PageSize,
-		TotalCount: totalCount,
-		TotalPages: int(totalPages),
-	}
-
-	return Company, metadata, nil
+	return data, helper.BuildPaginationMeta(pf, total), nil
 }
 
-func (s *companyservice) GetCompanyScan(ctx context.Context, id int) ([]response.CompanyScanResponse, error) {
+func (s *companyservice) GetClassScan(ctx context.Context, id int) ([]response.ClassScanResponse, error) {
 	var user model.User
 	if err := s.db.WithContext(ctx).
-		Select("id", "role_id", "manage_company").
+		Select("id", "role_id").
 		Preload("Role").
 		First(&user, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -139,125 +220,86 @@ func (s *companyservice) GetCompanyScan(ctx context.Context, id int) ([]response
 		return nil, fmt.Errorf("failed to load user: %w", err)
 	}
 
-	var companies []response.CompanyScanResponse
-	query := s.db.WithContext(ctx).Table("company AS c").
+	var class []response.ClassScanResponse
+	query := s.db.WithContext(ctx).Table("class AS c").
 		Select(`
 			c.id AS id,
 			c.name AS name
 		`)
-	query = helper.ManageCompanyFilter(query, s.db, user)
+	query = helper.ManageClassFilter(query, s.db, user)
 
-	if err := query.Scan(&companies).Error; err != nil {
+	if err := query.Scan(&class).Error; err != nil {
 		return nil, fmt.Errorf("failed to scan company data: %w", err)
 	}
-	return companies, nil
+	return class, nil
 }
 
-func (s *companyservice) CreateCompany(ctx context.Context, input request.CompanyRequestCreate) error {
+func (s *companyservice) CreateClass(ctx context.Context, input request.ClassRequestCreate) error {
 	tx := s.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
-	}
-	chatID, err := utils.ResolveTelegramChatID(input.BotToken, input.GroupLink)
-	if err != nil {
-		tx.Rollback()
-		return fmt.Errorf("could not resolve group link: %w", err)
-	}
-
-	chatIDStr := fmt.Sprintf("%d", chatID)
-
-	encryptedChatID, err := utils.EncryptChatID(chatIDStr)
-	if err != nil {
-		return err
-	}
-	encryptedBottoken, err := utils.EncryptBotToken(input.BotToken)
-	if err != nil {
-		return err
 	}
 	lat, lng, err := utils.ExtractLatLngFromGoogleMapsURL(input.MapLink)
 	if err != nil {
 		return fmt.Errorf("invalid map_link: %w", err)
 	}
-	newCompany := model.Company{
-		Name:             input.Name,
-		Latitude:         lat,
-		Longitude:        lng,
-		Radius:           input.Radius,
-		Isactive:         true,
-		BotToken:         &encryptedBottoken,
-		GroupChatID:      &encryptedChatID,
-		Currency:         input.Currency,
-		LatePenalty:      input.LatePenalty,
-		LeftEarlyPenalty: input.LeftEarlyPenalty,
-		CanScanOutsize:   input.CanScanOutsize,
-		Color:            input.Color,
-		TotalWorkDay:     input.TotalWorkDay,
+	newClass := model.Class{
+		Name:           &input.Name,
+		IsActive:       true,
+		Latitude:       &lat,
+		Longitude:      &lng,
+		Radius:         input.Radius,
+		BotToken:       nil,
+		GroupChatID:    nil,
+		CanScanOutsize: input.CanScanOutsize,
+		MajorID:        input.MajorID,
+		ShiftID:        input.ShiftID,
+		GenerationID:   input.GenerationID,
+		Year:           input.Year,
+		Semester:       input.Semester,
+		Group:          input.Group,
+		Term:           input.Term,
+		ProgrammeID:    input.ProgrammeID,
 	}
 
 	if err := tx.WithContext(ctx).
-		Create(&newCompany).Error; err != nil {
+		Create(&newClass).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 	return tx.Commit().Error
 }
 
-func (s *companyservice) UpdateCompany(ctx context.Context, id int, input request.CompanyRequesUpdate) error {
-	updates := map[string]interface{}{}
-
-	if input.Name != nil {
-		updates["name"] = *input.Name
-	}
-	switch {
-	case input.MapLink != nil && *input.MapLink != "":
-		lat, lng, err := utils.ExtractLatLngFromGoogleMapsURL(*input.MapLink)
-		if err != nil {
-			return fmt.Errorf("invalid map_link: %w", err)
+func (s *companyservice) UpdateClass(ctx context.Context, id int, input request.ClassRequestUpdate) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var data model.Class
+		if err := tx.Where("id = ?", id).First(&data).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return apperror.New(apperror.CodeNotFound, "classcurriculumn not found", nil)
+			}
+			return apperror.New(apperror.CodeInternal, "failed to fetch classcurriculumn", nil)
 		}
-		updates["latitude"] = lat
-		updates["longitude"] = lng
-	default:
-		if input.Latitude != nil {
-			updates["latitude"] = *input.Latitude
+		data.Name = &input.Name
+		data.MajorID = input.MajorID
+		data.ShiftID = input.ShiftID
+		data.GenerationID = input.GenerationID
+		data.Year = input.Year
+		data.Semester = input.Semester
+		data.Group = input.Group
+		data.Term = input.Term
+		data.ProgrammeID = input.ProgrammeID
+		if err := tx.Save(&data).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to update product", nil)
 		}
-		if input.Longitude != nil {
-			updates["longitude"] = *input.Longitude
-		}
-	}
-	if input.Radius != nil {
-		updates["radius"] = *input.Radius
-	}
-
-	if input.Currency != nil {
-		updates["currency"] = *input.Currency
-	}
-	if input.LatePenalty != nil {
-		updates["late_penalty"] = *input.LatePenalty
-	}
-	if input.LeftEarlyPenalty != nil {
-		updates["left_early_penalty"] = *input.LeftEarlyPenalty
-	}
-	if input.CanScanOutsize != nil {
-		updates["can_scan_outsize"] = *input.CanScanOutsize
-	}
-	if input.Color != nil {
-		updates["color"] = *input.Color
-	}
-	if input.TotalWorkDay != nil {
-		updates["total_work_day"] = *input.TotalWorkDay
-	}
-	if len(updates) == 0 {
-		return errors.New(" no field to update")
-	}
-	result := s.db.WithContext(ctx).Model(&model.Company{}).Where("id =?", id).Updates(updates)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
+		return nil
+	})
+	return err
 }
 
-func (s *companyservice) ChangeStatusCompany(ctx context.Context, id int) error {
-	result := s.db.WithContext(ctx).Model(&model.Company{}).Where("id =?", id).Update("is_active", gorm.Expr("NOT is_active"))
+func (s *companyservice) ChangeStatusClass(ctx context.Context, id int) error {
+	result := s.db.WithContext(ctx).Model(&model.Class{}).Where("id =?", id).Update("is_active", gorm.Expr("NOT is_active"))
 	if result.Error != nil {
 		return result.Error
 	}

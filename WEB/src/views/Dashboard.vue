@@ -4,24 +4,30 @@
       <el-card class="dash-card">
         <template #header><span class="card-title">សកម្មភាពរហ័ស</span></template>
         <div class="action-grid">
-          <div class="action-btn" @click="$router.push('/users')">
+          <!-- <div class="action-btn" @click="$router.push('/users')">
             <el-icon size="26" color="#409eff">
               <UserFilled />
             </el-icon>
-            <span>បុគ្គលិក</span>
-          </div>
+            <span>សិស្ស</span>
+          </div> -->
           <div class="action-btn" @click="$router.push('/attendance')">
             <el-icon size="26" color="#67c23a">
               <Clock />
             </el-icon>
             <span>មេីលវត្តមាន</span>
           </div>
-          <div class="action-btn" @click="$router.push('/leavetype')">
+          <div class="action-btn" @click="$router.push('/AttendanceReport')">
+            <el-icon size="26" color="#67c23a">
+              <Clock />
+            </el-icon>
+            <span>របាយការណ៍វត្តមានសរុប</span>
+          </div>
+          <!-- <div class="action-btn" @click="$router.push('/leavetype')">
             <el-icon size="26" color="#8E44AD">
               <List />
             </el-icon>
             <span>ប្រភេទច្បាប់ក្នុងក្រុមហ៑ុន</span>
-          </div>
+          </div> -->
           <div class="action-btn" @click="$router.push('/leaverequest')">
             <el-icon size="26" color="#67C23A">
               <Promotion />
@@ -38,7 +44,7 @@
             <el-icon size="26" color="#f56c6c">
               <OfficeBuilding />
             </el-icon>
-            <span>ក្រុមហ៑ុន</span>
+            <span>ថ្នាក់រៀន</span>
           </div>
         </div>
       </el-card>
@@ -199,7 +205,7 @@ function viewRecords(row) {
 }
 onMounted(async () => {
   // loadAttendance();
-  fetchmanagecompany()
+  // fetchmanagecompany()
 
 });
 </script>

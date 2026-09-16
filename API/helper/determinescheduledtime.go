@@ -7,16 +7,20 @@ import (
 )
 
 // type 1 = CheckIn1, 2 = CheckOut1, 3 = CheckIn2, 4 = CheckOut2
-func DetermineScheduledTime(recordType int, checkIn1, checkOut1, checkIn2, checkOut2 string) string {
+func DetermineScheduledTime(recordType int, session1, session2, session3, session4, session5, session6 string) string {
 	switch recordType {
 	case 1:
-		return checkIn1
+		return session1
 	case 2:
-		return checkOut1
+		return session2
 	case 3:
-		return checkIn2
+		return session3
 	case 4:
-		return checkOut2
+		return session4
+	case 5:
+		return session5
+	case 6:
+		return session6
 	}
 	return ""
 }

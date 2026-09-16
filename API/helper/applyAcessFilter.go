@@ -9,7 +9,7 @@ import (
 
 func ApplyAccessFilter(query, db *gorm.DB, role model.Role, user model.User) *gorm.DB {
 	if role.Level < 7 {
-		return query.Where("u.company_id = ?", user.CompanyID)
+		return query.Where("u.id = ?", user.ID)
 	}
 	return query
 }

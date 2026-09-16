@@ -4,11 +4,10 @@ import "mysql/model/base"
 
 type Attendance struct {
 	base.ModelBase
-	UserID    int    `json:"user_id" gorm:"column:user_id"`
-	CheckDate string `json:"check_date" gorm:"column:check_date"`
-	Status    string `json:"status" gorm:"column:status"`
-	IsPaid    bool   `json:"is_paid" gorm:"column:is_paid"`
-	PayrollID int    `json:"payroll_id" gorm:"column:payroll_id"`
+	UserID    int    `gorm:"column:user_id" json:"user_id"`
+	ClassID   int    `gorm:"column:class_id" json:"class_id"`
+	CheckDate string `gorm:"column:check_date;type:date" json:"check_date"`
+	Status    string `gorm:"column:status;size:50" json:"status"`
 }
 
 func (Attendance) TableName() string {

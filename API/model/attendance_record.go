@@ -1,19 +1,29 @@
 package model
 
-import "mysql/model/base"
+import (
+	"mysql/model/base"
+)
+
+const (
+	AttendanceSession1 = "session1"
+	AttendanceSession2 = "session2"
+	AttendanceSession3 = "session3"
+	AttendanceSession4 = "session4"
+	AttendanceSession5 = "session5"
+	AttendanceSession6 = "session6"
+)
 
 type AttendanceRecord struct {
 	base.ModelBase
-	AttendanceID   int    `json:"attendance_id" gorm:"column:attendance_id"`
-	ShiftID        int    `json:"shift_id" gorm:"column:shift_id"`
-	AttendanceType int    `json:"attendance_type" gorm:"column:attendance_type"`
-	Reason         string `json:"resean" gorm:"column:resean"`
-	CheckTime      string `json:"check_time" gorm:"column:check_time"`
-	Type           int    `json:"type" gorm:"column:type"`
-	Inzone         bool   `json:"inzone" gorm:"column:inzone"`
-	Latitude       string `json:"latitdude" gorm:"column:latitdude"`
-	Longitude      string `json:"longitude" gorm:"column:longitude"`
-	IsPermission   bool   `json:"is_permission" gorm:"column:is_permission"`
+	AttendanceID int    `gorm:"column:attendance_id" json:"attendance_id"`
+	UserID       int    `gorm:"column:user_id" json:"user_id"`
+	ClassID      int    `gorm:"column:class_id" json:"class_id"`
+	ShiftID      int    `gorm:"column:shift_id" json:"shift_id"`
+	CheckTime    string `gorm:"column:check_time;type:time" json:"check_time"`
+	Type         string `gorm:"column:type;type:enum('session1','session2','session3','session4','session5','session6')" json:"type"`
+	Inzone       bool   `gorm:"column:inzone;not null;default:0" json:"inzone"`
+	Latitude     string `gorm:"column:latitude;size:255" json:"latitude"`
+	Longitude    string `gorm:"column:longitude;size:255" json:"longitude"`
 }
 
 func (AttendanceRecord) TableName() string {

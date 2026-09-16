@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"context"
+	"errors"
 	"mysql/constant/share"
 	"mysql/helper"
 	"mysql/request"
@@ -21,56 +23,75 @@ func NewCompanyController() CompanyController {
 	}
 }
 
-func (cr *CompanyController) GetCompanyColor(c *gin.Context) {
-	userID, ok := helper.GetUserID(c)
-	if !ok {
-		share.ResponseError(c, http.StatusUnauthorized, "please login")
-		return
-	}
-	company, err := cr.service.GetCompanyColor(userID)
+func (cr *CompanyController) GetMajor(c *gin.Context) {
+	data, err := cr.service.GetMajor(c)
 	if err != nil {
-		share.ResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	share.RespondDate(c, http.StatusOK, company)
+	share.RespondDate(c, http.StatusOK, data)
 }
 
-func (cr CompanyController) GetCompany(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
-	if page < 1 {
-		page = 1
-	}
-	if pageSize < 1 || pageSize > 100 {
-		pageSize = 10
-	}
-	userID, ok := helper.GetUserID(c)
-	if !ok {
-		share.ResponseError(c, http.StatusUnauthorized, "please login")
+func (cr *CompanyController) GetShift(c *gin.Context) {
+	data, err := cr.service.GetShift(c)
+	if err != nil {
 		return
 	}
-	company, metadata, err := cr.service.GetCompany(userID, c, request.Pagination{
+	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr *CompanyController) GetGeneration(c *gin.Context) {
+	data, err := cr.service.GetGeneration(c)
+	if err != nil {
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr *CompanyController) GetProgramme(c *gin.Context) {
+	data, err := cr.service.GetProgramme(c)
+	if err != nil {
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr CompanyController) GetClass(c *gin.Context) {
+	page, pageSize := helper.GetPagination(c)
+	userID, ok := helper.GetUserID(c)
+	if !ok {
+		return
+	}
+	filter := map[string]string{
+		"name":          c.Query("name"),
+		"major_id":      c.Query("major_id"),
+		"shift_id":      c.Query("shift_id"),
+		"generation_id": c.Query("generation_id"),
+		"programme_id":  c.Query("programme_id"),
+	}
+
+	data, meta, err := cr.service.GetClass(userID, c.Request.Context(), request.Pagination{
 		Page:     page,
 		PageSize: pageSize,
-	})
+	}, filter)
+
 	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			share.ResponseError(c, http.StatusGatewayTimeout, err.Error())
+			return
+		}
 		share.ResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"success":    true,
-		"data":       company,
-		"pagination": metadata,
-	})
+	share.ResponsePagination(c, 200, data, meta)
 }
 
-func (cr *CompanyController) GetCompanyScan(c *gin.Context) {
+func (cr *CompanyController) GetClassScan(c *gin.Context) {
 	userID, ok := helper.GetUserID(c)
 	if !ok {
 		share.ResponseError(c, http.StatusUnauthorized, "please login")
 		return
 	}
-	data, err := cr.service.GetCompanyScan(c, userID)
+	data, err := cr.service.GetClassScan(c, userID)
 	if err != nil {
 		share.ResponseError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -78,46 +99,46 @@ func (cr *CompanyController) GetCompanyScan(c *gin.Context) {
 	share.RespondDate(c, http.StatusOK, data)
 }
 
-func (cr CompanyController) CreateCompany(c *gin.Context) {
-	var input request.CompanyRequestCreate
+func (cr CompanyController) CreateClass(c *gin.Context) {
+	var input request.ClassRequestCreate
 	if err := c.ShouldBindJSON(&input); err != nil {
 		share.ResponseError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := cr.service.CreateCompany(c, input); err != nil {
+	if err := cr.service.CreateClass(c, input); err != nil {
 		share.ResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	share.ResponseSuccess(c, http.StatusOK, "company created")
 }
 
-func (cr CompanyController) UpdateCompany(c *gin.Context) {
+func (cr CompanyController) UpdateClass(c *gin.Context) {
 	idparam := c.Param("id")
 	id, err := strconv.Atoi(idparam)
 	if err != nil {
 		share.ResponseError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	var input request.CompanyRequesUpdate
+	var input request.ClassRequestUpdate
 	if err := c.ShouldBindJSON(&input); err != nil {
 		share.ResponseError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := cr.service.UpdateCompany(c, id, input); err != nil {
+	if err := cr.service.UpdateClass(c, id, input); err != nil {
 		share.ResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	share.ResponseSuccess(c, http.StatusOK, "company Updated")
 }
 
-func (cr CompanyController) ChangeStatusCompany(c *gin.Context) {
+func (cr CompanyController) ChangeStatusClass(c *gin.Context) {
 	idparam := c.Param("id")
 	id, err := strconv.Atoi(idparam)
 	if err != nil {
 		share.ResponseError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := cr.service.ChangeStatusCompany(c, id); err != nil {
+	if err := cr.service.ChangeStatusClass(c, id); err != nil {
 		share.ResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}

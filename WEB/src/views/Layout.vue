@@ -78,7 +78,7 @@ function handleCommand(cmd) {
   cmd === 'logout' ? (auth.logout(), router.push('/login')) : router.push('/profile')
 }
 onMounted(() => {
-  companyStore.fetchColor()
+  // companyStore.fetchColor()
   userdataStore.getuserdata()
 })
 </script>

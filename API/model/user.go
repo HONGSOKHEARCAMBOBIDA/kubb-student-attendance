@@ -4,21 +4,15 @@ import "mysql/model/base"
 
 type User struct {
 	base.ModelBase
-	PhoneHash      string `json:"phone_hash" gorm:"column:phone_hash"`
-	PhoneEncript   string `json:"phone_encrypted" gorm:"column:phone_encrypted"`
-	PasswordHash   string `json:"password_hash" gorm:"column:password_hash"`
-	RoleID         int    `json:"role_id" gorm:"column:role_id"`
-	Role           Role
-	IsActive       bool   `json:"is_active" gorm:"column:is_active"`
-	Name           string `json:"name" gorm:"column:name"`
-	Gender         int    `json:"gender" gorm:"column:gender"`
-	BaseSalary     string `json:"base_salary" gorm:"column:base_salary"`
-	CompanyID      int    `json:"company_id" gorm:"column:company_id"`
-	Company        Company
-	QrToken        string `json:"qr_token" gorm:"column:qr_token"`
-	IsVerify       bool   `json:"is_verify" gorm:"column:is_verify"`
-	QrTokenEncript string `json:"qr_token_encript" gorm:"column:qr_token_encript"`
-	ManageCompany  int    `json:"manage_company" gorm:"column:manage_company"`
+
+	NameKH   string `json:"name_kh" gorm:"column:name_kh"`
+	NameEN   string `json:"name_en" gorm:"column:name_en"`
+	Gender   int    `json:"gender" gorm:"column:gender"`
+	Code     string `json:"code" gorm:"column:code"`
+	RoleID   int    `json:"role_id" gorm:"column:role_id"`
+	Password string `json:"password" gorm:"column:password"`
+
+	Role Role
 }
 
 func (User) TableName() string {
