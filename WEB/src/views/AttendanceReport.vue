@@ -39,15 +39,16 @@
               <th rowspan="3">អត្តលេខ</th>
               <th v-for="g in dateGroups" :key="g.date" :colspan="g.columns.length">
                 {{ formatDate(g.date) }}
+                  <!-- {{ g.date }} -->
               </th>
-              <th colspan="2" rowspan="2">TOTAL</th>
+              <th colspan="2" rowspan="2">សរុ​ប</th>
             </tr>
             <tr>
-              <th v-for="g in dateGroups" :key="g.date + '-l'" :colspan="g.columns.length">ព្រឹក</th>
+              <th v-for="g in dateGroups" :key="g.date + '-l'" :colspan="g.columns.length">ពេលសិក្សា</th>
             </tr>
             <tr>
               <th v-for="col in report.columns" :key="col.column_no">Session {{ col.column_no }}</th>
-              <th>ខានច្បាប់</th>
+              <th>អត់ច្បាប់</th>
               <th>មានច្បាប់</th>
             </tr>
           </thead>
@@ -115,6 +116,7 @@ function genderLabel(gender) {
 function cellClass(status) {
   if (status === "A") return "cell-absent";
   if (status === "PR") return "cell-present";
+  if (status === "P") return "cell-permission";
   return "cell-empty";
 }
 function formatDate(d) {
@@ -164,5 +166,6 @@ onMounted(() => {
 .text-left { text-align: left; }
 .cell-absent { color: #f56c6c; font-weight: 600; }
 .cell-present { color: #67c23a; font-weight: 600; }
+.cell-permission { color: #1e65ff; font-weight: 600; }
 .cell-empty { color: #c0c4cc; }
 </style>

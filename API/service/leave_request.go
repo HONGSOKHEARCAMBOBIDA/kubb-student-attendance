@@ -198,10 +198,14 @@ func (s *leaveRequestService) VerifyLeaveRequest(ctx context.Context, id int, ve
 
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		now := time.Now()
-		leaveforupdte.Status = model.LeaveStatusApprove
-		leaveforupdte.ApproveBy = &verifyBy
-		leaveforupdte.ApprovedAt = &now
-		if err := tx.Save(&leaveforupdte).Error; err != nil {
+		updates := map[string]interface{}{
+			"status":      model.LeaveStatusApprove,
+			"approve_by":  verifyBy,
+			"approved_at": now,
+		}
+		if err := tx.Model(&model.LeaveRequest{}).
+			Where("id = ?", leaveforupdte.ID).
+			Updates(updates).Error; err != nil {
 			return fmt.Errorf("failed to approve leave request: %w", err)
 		}
 

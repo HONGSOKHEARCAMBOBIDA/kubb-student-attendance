@@ -56,17 +56,17 @@ type AttendanceReportColumn struct {
 }
 
 type AttendanceReportRow struct {
-	Index        int                    `json:"index"`
-	UserID       int                    `json:"user_id"`
-	NameKH       string                 `json:"name_kh"`
-	NameEN       string                 `json:"name_en"`
-	Code         string                 `json:"code"`
-	Gender       int                    `json:"gender"`
-	ClassName    string                 `json:"class_name"`
-	Cells        []AttendanceReportCell `json:"cells"` // same order/length as Columns
-	AbsentCount  int                    `json:"absent_count"`
-	PresentCount int                    `json:"present_count"`
-	Permission   int                    `json:"permission_count"`
+	Index           int                    `json:"index"`
+	UserID          int                    `json:"user_id"`
+	NameKH          string                 `json:"name_kh"`
+	NameEN          string                 `json:"name_en"`
+	Code            string                 `json:"code"`
+	Gender          int                    `json:"gender"`
+	ClassName       string                 `json:"class_name"`
+	Cells           []AttendanceReportCell `json:"cells"` // same order/length as Columns
+	AbsentCount     int                    `json:"absent_count"`
+	PermissionCount int                    `json:"present_count"`
+	// Permission   int                    `json:"permission_count"`
 }
 
 type AttendanceReportResponse struct {

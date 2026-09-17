@@ -238,7 +238,7 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 			return fmt.Errorf("failed to load attendance: %w", err)
 		}
 		var existingRecords []model.AttendanceRecord
-		if err := tx.Where("attendance_id = ?", attendance.ID).Order("id ASC").Find(&existingRecords).Error; err != nil {
+		if err := tx.Where("attendance_id = ? AND status = ?", attendance.ID, model.StatusPresent).Order("id ASC").Find(&existingRecords).Error; err != nil {
 			return fmt.Errorf("failed to load attendance :%w", err)
 		}
 
@@ -339,7 +339,7 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
 
 		switch {
 		case err == nil:
-			if err := tx.Where("attendance_id = ?", attendance.ID).Order("id ASC").Find(&existingRecords).Error; err != nil {
+			if err := tx.Where("attendance_id = ? AND status = ?", attendance.ID, model.StatusPresent).Order("id ASC").Find(&existingRecords).Error; err != nil {
 				return fmt.Errorf("failed to load attendance records: %w", err)
 			}
 		case errors.Is(err, gorm.ErrRecordNotFound):
@@ -466,10 +466,11 @@ func (s *attendanceservice) GetAttendanceReport(ctx context.Context, id int, fil
 		AttendanceID int
 		Type         string
 		CheckTime    string
+		Status       string
 	}
 	var records []recordRow
 	if err := s.db.WithContext(ctx).Table("attendance_record ar").
-		Select("ar.attendance_id AS attendance_id, ar.type AS type, ar.check_time AS check_time").
+		Select("ar.attendance_id AS attendance_id, ar.type AS type, ar.check_time AS check_time,ar.status AS status").
 		Where("ar.attendance_id IN ?", attendanceIDs).
 		Scan(&records).Error; err != nil {
 		return nil, err
@@ -546,11 +547,14 @@ func (s *attendanceservice) GetAttendanceReport(ctx context.Context, id int, fil
 				continue
 			}
 			status := "A"
-			if r.CheckTime != "" {
-				status = "PR"
-				agg.row.PresentCount++
-			} else {
+			if r.Status == model.StatusPermission {
+				status = model.StatusPermission
+				agg.row.PermissionCount++
+			} else if r.Status == model.StatusAbsence {
+				status = model.StatusAbsence
 				agg.row.AbsentCount++
+			} else if r.Status == model.StatusPresent {
+				status = model.StatusPresent
 			}
 			agg.row.Cells[idx] = response.AttendanceReportCell{Status: status, CheckTime: r.CheckTime}
 		}
