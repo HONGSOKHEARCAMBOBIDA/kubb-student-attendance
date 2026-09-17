@@ -5,30 +5,38 @@ import AppTable from "../../components/AppTable.vue";
 import AppButton from "../../components/AppButton.vue";
 import AppDialog from "../../components/AppDialog.vue";
 import AppInput from "../../components/AppInput.vue";
+import AppFilterBar from "../../components/AppFilterBar.vue";
 import {
-  getleavetype,
-  getleavedeductype,
-  getuserapprove,
-  getleaverequest,
-  addleaverequest,
-  editleaverequest,
-  editstatusleaverequest,
-  getCompany,
-  deleteleaverequest,
+  getLeaveRequest,
+  addLeaveRequest,
+  editLeaveRequest,
+  deleteLeaveRequest,
+  approveLeaveRequest,
+  getLeaveDeductType,
+  getClass,
+  viewcompanyscan,
 } from "../api/services.js";
 import { useUserDataStore } from "../stores/user_data.js";
-import AppFilterBar from "../../components/AppFilterBar.vue";
+
+// NOTE on assumptions (please rename to match your real services.js / permission list):
+// - service function names: getLeaveRequest, addLeaveRequest, editLeaveRequest,
+//   deleteLeaveRequest, approveLeaveRequest, getLeaveDeductType, getClass
+// - permission names: "create.leave.request", "edit.leave.request",
+//   "approve.leave.request", "delete.leave.request"
+// - approveLeaveRequest(id) hits the VerifyLeaveRequest endpoint; the approver
+//   is taken from the authenticated user on the server, so no approve_by field
+//   is sent from the client.
+
 let searchTimer = null;
 const notify = useNotification();
 const userDataStore = useUserDataStore();
 
-const leaverequest = ref([]);
-const leavetype = ref([]);
-const leavededucttype = ref([]);
-const userapprove = ref([]);
-const companys = ref([]);
+const leaveRequests = ref([]);
+const deductTypes = ref([]);
+const classes = ref([]);
 const loading = ref(false);
 const submitting = ref(false);
+const approvingId = ref(null);
 const formRef = ref();
 
 const dialogVisible = ref(false);
@@ -41,105 +49,81 @@ const pagination = reactive({
   total: 0,
 });
 
+// Matches the only filters the backend actually supports: name, class_id, status
 const filter = reactive({
   name: "",
-  company_id: "",
-  role_id: "",
+  class_id: "",
   status: "",
 });
 
+// Model enum is only PENDING / APPROVE — no REJECTED/CANCELLED on the backend today
 const statusOptions = [
-  { value: 1, label: "PENDING" },
-  { value: 2, label: "APPROVED" },
-  { value: 3, label: "REJECTED" },
-  { value: 4, label: "CANCELLED" },
+  { value: "PENDING", label: "កំពុងរង់ចាំ" },
+  { value: "APPROVE", label: "អនុម័តរួច" },
 ];
 
 const defaultForm = () => ({
-  leave_type_id: null,
+  class_id: null,
   start_date: "",
   end_date: "",
   back_to_work_date: "",
   total_day: null,
   deduct_type_id: null,
   reason: "",
-  approve_by: null,
 });
 const form = reactive(defaultForm());
 
+// Field names/required-ness mirror request.LeaveRequestCreate / LeaveRequestUpdate
 const rules = {
-  leave_type_id: [
-    { required: true, message: "សូមជ្រើសរើសប្រភេទច្បាប់", trigger: "change" },
-  ],
-  start_date: [
-    { required: true, message: "សូមជ្រើសរើសថ្ងៃចាប់ផ្តើម", trigger: "change" },
-  ],
-  end_date: [
-    { required: true, message: "សូមជ្រើសរើសថ្ងៃបញ្ចប់", trigger: "change" },
-  ],
-  total_day: [
-    { required: true, message: "សូមបញ្ចូលចំនួនថ្ងៃ", trigger: "blur" },
-  ],
+  class_id: [{ required: true, message: "សូមជ្រើសរើសថ្នាក់", trigger: "change" }],
+  start_date: [{ required: true, message: "សូមជ្រើសរើសថ្ងៃចាប់ផ្តើម", trigger: "change" }],
+  end_date: [{ required: true, message: "សូមជ្រើសរើសថ្ងៃបញ្ចប់", trigger: "change" }],
+  back_to_work_date: [{ required: true, message: "សូមជ្រើសរើសថ្ងៃចូលធ្វើការវិញ", trigger: "change" }],
+  total_day: [{ required: true, message: "សូមបញ្ចូលចំនួនថ្ងៃ", trigger: "blur" }],
+  deduct_type_id: [{ required: true, message: "សូមជ្រើសរើសឯកតាកាត់ថ្ងៃ", trigger: "change" }],
   reason: [{ required: true, message: "សូមបញ្ចូលមូលហេតុ", trigger: "blur" }],
 };
 
+const canCreateLeave = computed(() =>
+  userDataStore.permissions?.some((p) => p.name === "add.leave.request"),
+);
 const canEditLeave = computed(() =>
   userDataStore.permissions?.some((p) => p.name === "edit.leave.request"),
 );
-const canEditStatusLeave = computed(() =>
-  userDataStore.permissions?.some(
-    (p) => p.name === "edit.status.leave.request",
-  ),
+const canApproveLeave = computed(() =>
+  userDataStore.permissions?.some((p) => p.name === "edit.status.leave.request"),
+);
+const canDeleteLeave = computed(() =>
+  userDataStore.permissions?.some((p) => p.name === "delete.leave.request"),
 );
 
-async function fetchCompany() {
-  loading.value = true;
+async function fetchClasses() {
   try {
-    const res = await getCompany();
-    companys.value = res.data.data || [];
+    const res = await viewcompanyscan();
+    classes.value = res.data.data || [];
   } catch {
-    ElMessage.error("Failed to load employees");
-  } finally {
-    loading.value = false;
+    notify.error("Failed to load classes");
   }
 }
 
-async function fetchLeaveType() {
+async function fetchDeductTypes() {
   try {
-    const res = await getleavetype();
-    leavetype.value = res.data.data || [];
-  } catch {
-    notify.error("Failed to load leave types");
-  }
-}
-
-async function fetchLeaveDeductType() {
-  try {
-    const res = await getleavedeductype();
-    leavededucttype.value = res.data.data || [];
+    const res = await getLeaveDeductType();
+    deductTypes.value = res.data.data || [];
   } catch {
     notify.error("Failed to load deduct types");
-  }
-}
-
-async function fetchUserApprove() {
-  try {
-    const res = await getuserapprove();
-    userapprove.value = res.data.data || [];
-  } catch {
-    notify.error("Failed to load approvers");
   }
 }
 
 async function fetchLeaveRequest() {
   loading.value = true;
   try {
-    const res = await getleaverequest({
+    const res = await getLeaveRequest({
       page: pagination.page,
       page_size: pagination.page_size,
       ...filter,
     });
-    leaverequest.value = res.data.data || [];
+    leaveRequests.value = res.data.data || [];
     pagination.total = res.data.pagination?.totalCount || 0;
   } catch {
     notify.error("Failed to load leave requests");
@@ -148,13 +132,7 @@ async function fetchLeaveRequest() {
   }
 }
 
-function handleSearch() {
-  pagination.page = 1;
-  fetchLeaveRequest();
-}
-
-function handlePageChange(page) {
-  pagination.page = page;
+function handlePageChange() {
   fetchLeaveRequest();
 }
 
@@ -169,14 +147,13 @@ function openEditDialog(row) {
   isEditMode.value = true;
   editingId.value = row.id;
   Object.assign(form, {
-    leave_type_id: row.leave_type_id,
+    class_id: row.class_id,
     start_date: row.start_date,
     end_date: row.end_date,
     back_to_work_date: row.back_to_work_date,
     total_day: row.total_day,
     deduct_type_id: row.deduct_type_id,
     reason: row.reason,
-    approve_by: row.approve_by || null,
   });
   dialogVisible.value = true;
 }
@@ -189,10 +166,10 @@ async function handleSubmit() {
   submitting.value = true;
   try {
     if (isEditMode.value) {
-      await editleaverequest(editingId.value, { ...form });
+      await editLeaveRequest(editingId.value, { ...form });
       notify.success("កែប្រែជោគជ័យ");
     } else {
-      await addleaverequest({ ...form });
+      await addLeaveRequest({ ...form });
       notify.success("បន្ថែមជោគជ័យ");
     }
     dialogVisible.value = false;
@@ -204,36 +181,38 @@ async function handleSubmit() {
   }
 }
 
-async function updateStatus(row, status) {
+async function handleApprove(row) {
+  approvingId.value = row.id;
   try {
-    await editstatusleaverequest(row.id, { status });
-    notify.success("ធ្វើបច្ចុប្បន្នភាពស្ថានភាពជោគជ័យ");
+    await approveLeaveRequest(row.id);
+    notify.success("អនុម័តច្បាប់ជោគជ័យ");
     await fetchLeaveRequest();
   } catch (e) {
-    notify.error(
-      e.response?.data?.error || "មិនអាចធ្វើបច្ចុប្បន្នភាពស្ថានភាពបានទេ",
-    );
+    notify.error(e.response?.data?.error || "មិនអាចអនុម័តច្បាប់នេះបានទេ");
+  } finally {
+    approvingId.value = null;
   }
 }
 
-async function deleteleave(row) {
+async function handleDelete(row) {
   try {
-    await deleteleaverequest(row.id);
-    notify.success("លុបច្បាប់បានជោគជ័យ");
+    await deleteLeaveRequest(row.id);
+    notify.success("លុបច្បាប់ជោគជ័យ");
     await fetchLeaveRequest();
   } catch (e) {
-    notify.error(
-      e.response?.data?.error || "មិនអាចធ្វើបច្ចុប្បន្នភាពស្ថានភាពបានទេ",
-    );
+    // backend refuses when the row is already linked to payroll
+    notify.error(e.response?.data?.error || "មិនអាចលុបច្បាប់នេះបានទេ");
   }
 }
 
 function statusTagType(status) {
-  if (status === 2) return "success";
-  if (status === 3) return "danger";
-
-  return "warning";
+  return status === "APPROVE" ? "success" : "warning";
 }
+
+function statusLabel(status) {
+  return statusOptions.find((s) => s.value === status)?.label || status;
+}
+
 watch(
   filter,
   () => {
@@ -245,11 +224,10 @@ watch(
   },
   { deep: true },
 );
+
 onMounted(() => {
-  fetchCompany();
-  fetchLeaveType();
-  fetchLeaveDeductType();
-  fetchUserApprove();
+  fetchClasses();
+  fetchDeductTypes();
   fetchLeaveRequest();
 });
 onUnmounted(() => clearTimeout(searchTimer));
@@ -259,9 +237,9 @@ onUnmounted(() => clearTimeout(searchTimer));
   <div>
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 7 },
+        { slot: 'name', span: 8 },
+        { slot: 'class', span: 6 },
         { slot: 'status', span: 6 },
-        { slot: 'company', span: 6 },
         { slot: 'add', span: 4 },
       ]"
       :action-span="4"
@@ -269,11 +247,27 @@ onUnmounted(() => clearTimeout(searchTimer));
       <template #name>
         <AppInput
           v-model="filter.name"
-          placeholder="ស្វែង"
+          placeholder="ស្វែងរកតាមឈ្មោះ"
           prefix-icon="Search"
           clearable
+        />
+      </template>
+
+      <template #class>
+        <el-select
+          v-model="filter.class_id"
+          placeholder="ថ្នាក់"
+          clearable
+          style="width: 100%"
+          size="large"
         >
-        </AppInput>
+          <el-option
+            v-for="cls in classes"
+            :key="cls.id"
+            :label="cls.name"
+            :value="cls.id"
+          />
+        </el-select>
       </template>
 
       <template #status>
@@ -292,26 +286,9 @@ onUnmounted(() => clearTimeout(searchTimer));
           />
         </el-select>
       </template>
-      <template #company>
-        <el-select
-          v-model="filter.company_id"
-          placeholder="ក្រុមហ៑ុន"
-          clearable
-          style="width: 100%"
-          size="large"
-          @change="fetchUsers"
-        >
-          <el-option
-            v-for="company in companys"
-            :key="company.id"
-            :label="company.name"
-            :value="company.id"
-          />
-        </el-select>
-      </template>
 
       <template #add>
-        <AppButton type="primary" @click="openCreateDialog">
+        <AppButton v-if="canCreateLeave" type="primary" @click="openCreateDialog">
           បន្ថែមច្បាប់
         </AppButton>
       </template>
@@ -319,69 +296,57 @@ onUnmounted(() => clearTimeout(searchTimer));
 
     <el-card class="table-card">
       <AppTable
-        :data="leaverequest"
+        :data="leaveRequests"
         :loading="loading"
-        :actions-width="240"
+        :actions-width="200"
         v-model:current-page="pagination.page"
         v-model:page-size="pagination.page_size"
         :total="pagination.total"
-        @page-change="fetchLeaveRequest"
+        @page-change="handlePageChange"
         :columns="[
-          { label: 'ឈ្មោះបុគ្គលិក', slot: 'user_name', minWidth: 140 },
-          { prop: 'role_name', label: 'តួនាទី', minWidth: 100 },
-          { prop: 'company_name', label: 'ក្រុមហ៊ុន', minWidth: 140 },
-          { label: 'ប្រភេទច្បាប់', slot: 'leave_type_name', minWidth: 170 },
-          { prop: 'start_date', label: 'ថ្ងៃចាប់ផ្តើម', minWidth: 110 },
-          { prop: 'end_date', label: 'ថ្ងៃបញ្ចប់', minWidth: 110 },
-          { prop: 'back_to_work_date', label: 'ថ្ងៃមកធ្វេីការ', minWidth: 110 },
+          { label: 'បុគ្គលិក', slot: 'user', minWidth: 170 },
+          { label: 'ថ្នាក់', prop: 'class_name', minWidth: 120 },
+          { label: 'ថ្ងៃចាប់ផ្តើម', prop: 'start_date', minWidth: 110 },
+          { label: 'ថ្ងៃបញ្ចប់', prop: 'end_date', minWidth: 110 },
+          { label: 'ថ្ងៃចូលធ្វើការវិញ', prop: 'back_to_work_date', minWidth: 130 },
           { label: 'ចំនួនថ្ងៃ', slot: 'total_day', width: 150 },
           { label: 'មូលហេតុ', prop: 'reason', minWidth: 150 },
-          { label: 'ស្ថានភាព', slot: 'status', width: 120 },
-          { prop: 'approve_by_name', label: 'អ្នកអនុម័ត្ត', minWidth: 120 },
-          { prop: 'approved_at', label: 'ថ្ងៃអនុម័ត្ត', minWidth: 150 },
+          { label: 'ស្ថានភាព', slot: 'status', width: 110 },
+          { label: 'អ្នកអនុម័ត', slot: 'approver', minWidth: 150 },
         ]"
       >
-        <template #user_name="{ row }">
-          <el-text tag="b">
-            {{ row.user_name }}
-          </el-text>
+        <template #user="{ row }">
+          <el-text tag="b">{{ row.user_name_kh || row.user_name_en }}</el-text>
           <el-tag :type="row.gender === 1 ? 'success' : 'warning'" size="small">
             {{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}
           </el-tag>
+          <div style="color: #909399; font-size: 12px">{{ row.user_code }}</div>
         </template>
-        <template #leave_type_name="{ row }">
-          <el-text type="primary" tag="b">
-            {{ row.leave_type_code }}
-          </el-text>
-          <el-text>
-            {{ row.leave_type_name }}
-          </el-text>
-          <el-tag
-            :type="row.leave_type_is_deduct === true ? 'danger' : 'success'"
-            size="small"
-          >
-            {{ row.leave_type_is_deduct === true ? "កាត់លុយ" : "មិនកាត់លុយ" }}
-          </el-tag>
-        </template>
+
         <template #total_day="{ row }">
-          <el-text>
-            {{ row.total_day }}
-            {{ row.deduct_type_name }}
-          </el-text>
-          <el-text tag="b" type="danger">
-            {{ row.deduct_type_code }}
-          </el-text>
+          <el-text>{{ row.total_day }}</el-text>
+          <el-text tag="b" type="danger">{{ row.deduct_type_code }}</el-text>
+          <div style="color: #909399; font-size: 12px">{{ row.deduct_type_name }}</div>
         </template>
+
         <template #status="{ row }">
           <el-tag :type="statusTagType(row.status)" size="small">
-            {{ row.status_string }}
+            {{ statusLabel(row.status) }}
           </el-tag>
         </template>
 
+        <template #approver="{ row }">
+          <template v-if="row.approve_by">
+            <div>{{ row.approve_by_name }}</div>
+            <div style="color: #909399; font-size: 12px">{{ row.approved_at }}</div>
+          </template>
+          <el-text v-else type="info">—</el-text>
+        </template>
+
         <template #actions="{ row }">
-          <el-tooltip content="កែប្រែច្បាប់"c placement="top">
+          <el-tooltip content="កែប្រែច្បាប់" placement="top">
             <AppButton
-              v-if="canEditLeave && row.status === 1"
+              v-if="canEditLeave && row.status === 'PENDING'"
               size="small"
               icon="Edit"
               type="warning"
@@ -389,45 +354,27 @@ onUnmounted(() => clearTimeout(searchTimer));
               @click="openEditDialog(row)"
             />
           </el-tooltip>
-          <template v-if="canEditStatusLeave">
-            <el-tooltip content="អនុញ្ញាត" placement="top">
-              <AppButton
-                size="small"
-                icon="Check"
-                type="success"
-                circle
-                @click="updateStatus(row, 2)"
-              />
-            </el-tooltip>
-            <el-tooltip content="បដិសេធ" placement="top">
-              <AppButton
-                size="small"
-                icon="Close"
-                type="danger"
-                circle
-                @click="updateStatus(row, 3)"
-              />
-            </el-tooltip>
-            <el-tooltip content="ត្រឡប់" placement="top">
-              <AppButton
-                size="small"
-                icon="Refresh"
-                type="warning"
-                circle
-                @click="updateStatus(row, 1)"
-              />
-            </el-tooltip>
-            <el-tooltip content="លុប" placement="top">
-              <AppButton
-                v-if="row.status === 1"
-                size="small"
-                icon="Delete"
-                type="danger"
-                circle
-                @click="deleteleave(row)"
-              />
-            </el-tooltip>
-          </template>
+          <el-tooltip content="អនុម័ត" placement="top">
+            <AppButton
+              v-if="canApproveLeave && row.status === 'PENDING'"
+              size="small"
+              icon="Check"
+              type="success"
+              circle
+              :loading="approvingId === row.id"
+              @click="handleApprove(row)"
+            />
+          </el-tooltip>
+          <el-tooltip content="លុប" placement="top">
+            <AppButton
+              v-if="canDeleteLeave && row.status === 'PENDING'"
+              size="small"
+              icon="Delete"
+              type="danger"
+              circle
+              @click="handleDelete(row)"
+            />
+          </el-tooltip>
         </template>
       </AppTable>
     </el-card>
@@ -439,33 +386,32 @@ onUnmounted(() => clearTimeout(searchTimer));
     >
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
         <div class="form-row">
-          <el-form-item label="ប្រភេទច្បាប់" prop="leave_type_id">
+          <el-form-item label="ថ្នាក់" prop="class_id">
             <el-select
-              v-model="form.leave_type_id"
-              placeholder="ជ្រើសរើសប្រភេទច្បាប់"
+              v-model="form.class_id"
+              placeholder="ជ្រើសរើសថ្នាក់"
               style="width: 100%"
               size="large"
             >
               <el-option
-                v-for="lt in leavetype"
-                :key="lt.id"
-                :label="`${lt.name} (${lt.company_name}) ${lt.is_deduct ? '- កាត់លុយ' : '- មិនកាត់លុយ'}`"
-                :value="lt.id"
+                v-for="cls in classes"
+                :key="cls.id"
+                :label="cls.name"
+                :value="cls.id"
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="ប្រភេទឯកតា" prop="deduct_type_id">
+          <el-form-item label="ឯកតាកាត់ថ្ងៃ" prop="deduct_type_id">
             <el-select
               v-model="form.deduct_type_id"
               placeholder="ជ្រើសរើសឯកតា"
               style="width: 100%"
-              clearable
               size="large"
             >
               <el-option
-                v-for="dt in leavededucttype"
+                v-for="dt in deductTypes"
                 :key="dt.id"
-                :label="dt.name"
+                :label="`${dt.code} - ${dt.name}`"
                 :value="dt.id"
               />
             </el-select>
@@ -512,32 +458,14 @@ onUnmounted(() => clearTimeout(searchTimer));
           />
         </div>
 
-        <el-form-item label="អ្នកអនុម័ត" prop="approve_by">
-          <el-select
-            v-model="form.approve_by"
-            placeholder="ជ្រើសរើសអ្នកអនុម័ត"
-            style="width: 100%"
-            clearable
-            size="large"
-          >
-            <el-option
-              v-for="u in userapprove"
-              :key="u.id"
-              :label="u.user_name"
-              :value="u.id"
-            />
-          </el-select>
-        </el-form-item>
-
         <AppInput
           prop="reason"
           label="មូលហេតុ"
-          clearable="true"
+          clearable
           v-model="form.reason"
-          type="textarrea"
+          type="textarea"
           :block="true"
-        >
-        </AppInput>
+        />
       </el-form>
 
       <template #footer>
@@ -551,22 +479,8 @@ onUnmounted(() => clearTimeout(searchTimer));
 </template>
 
 <style scoped>
-.filter-card {
-  margin-bottom: 16px;
-  border-radius: 6px;
-}
-.filter-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
-}
 .table-card {
   border-radius: 6px;
-}
-.pagination {
-  margin-top: 16px;
-  justify-content: flex-end;
 }
 .form-row {
   display: flex;

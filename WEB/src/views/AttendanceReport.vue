@@ -58,7 +58,17 @@
               <td>{{ genderLabel(row.gender) }}</td>
               <td>{{ row.code }}</td>
               <td v-for="(cell, i) in row.cells" :key="i" :class="cellClass(cell.status)">
-                {{ cell.status }}
+                              <span>
+                {{
+                  cell.status === 'PR'
+                    ? '✓'
+                    : cell.status === 'P'
+                      ? 'P'
+                      : cell.status === 'A'
+                        ? 'A'
+                        : ''
+                }}
+              </span>
               </td>
               <td>{{ row.absent_count }}</td>
               <td>{{ row.present_count }}</td>
@@ -104,7 +114,7 @@ function genderLabel(gender) {
 }
 function cellClass(status) {
   if (status === "A") return "cell-absent";
-  if (status === "P") return "cell-present";
+  if (status === "PR") return "cell-present";
   return "cell-empty";
 }
 function formatDate(d) {

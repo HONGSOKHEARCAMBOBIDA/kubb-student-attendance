@@ -51,7 +51,8 @@ var requiredPermissions = []string{
 	"view.download.backup", "delete.backup", "add.company",
 	"edit.company", "edit.user", "add.user", "edit.leave.type",
 	"add.leave.type", "edit.leave.request", "edit.status.leave.request",
-	"add.role.has.permission",
+	"add.role.has.permission", "add.leave.request", "edit.leave.request",
+	"edit.status.leave.request",
 }
 
 func (s *authservice) Login(input request.AuthRequest, c *gin.Context) (*response.AuthResponse, error) {

@@ -1,27 +1,29 @@
 package request
 
 type LeaveRequestCreate struct {
-	LeaveTypeID    int     `json:"leave_type_id" gorm:"column:leave_type_id"`
-	StartDate      string  `json:"start_date" gorm:"column:start_date"`
-	EndDate        string  `json:"end_date" gorm:"column:end_date"`
-	BackToWorkDate string  `json:"back_to_work_date" gorm:"column:back_to_work_date"`
-	TotalDay       float64 `json:"total_day" gorm:"column:total_day"`
-	DeductTypeID   int     `json:"deduct_type_id" gorm:"column:deduct_type_id"`
-	Reason         *string `json:"reason" gorm:"column:reason"`
-	ApproveBy      int     `json:"approve_by" gorm:"column:approve_by"`
+	ClassID        int     `gorm:"not null;index:idx_leave_request_class_id" json:"class_id"`
+	StartDate      string  `gorm:"type:date;not null;index:idx_leave_request_date" json:"start_date"`
+	EndDate        string  `gorm:"type:date;not null;index:idx_leave_request_date" json:"end_date"`
+	BackToWorkDate string  `gorm:"type:date;not null" json:"back_to_work_date"`
+	TotalDay       float64 `gorm:"type:decimal(5,2);not null;default:0.00" json:"total_day"`
+	DeductTypeID   int     `gorm:"column:deduct_type_id" json:"deduct_type_id"`
+	Reason         string  `gorm:"type:text" json:"reason"`
 }
 
 type LeaveRequestUpdate struct {
-	LeaveTypeID    *int     `json:"leave_type_id" gorm:"column:leave_type_id"`
-	StartDate      *string  `json:"start_date" gorm:"column:start_date"`
-	EndDate        *string  `json:"end_date" gorm:"column:end_date"`
-	BackToWorkDate *string  `json:"back_to_work_date" gorm:"column:back_to_work_date"`
-	TotalDay       *float64 `json:"total_day" gorm:"column:total_day"`
-	DeductTypeID   *int     `json:"deduct_type_id" gorm:"column:deduct_type_id"`
-	Reason         *string  `json:"reason" gorm:"column:reason"`
-	ApproveBy      *int     `json:"approve_by" gorm:"column:approve_by"`
+	ClassID        int     `gorm:"not null;index:idx_leave_request_class_id" json:"class_id"`
+	StartDate      string  `gorm:"type:date;not null;index:idx_leave_request_date" json:"start_date"`
+	EndDate        string  `gorm:"type:date;not null;index:idx_leave_request_date" json:"end_date"`
+	BackToWorkDate string  `gorm:"type:date;not null" json:"back_to_work_date"`
+	TotalDay       float64 `gorm:"type:decimal(5,2);not null;default:0.00" json:"total_day"`
+	DeductTypeID   int     `gorm:"column:deduct_type_id" json:"deduct_type_id"`
+	Reason         string  `gorm:"type:text" json:"reason"`
 }
 
 type LeaveRequestUpdateStatus struct {
 	Status *int `json:"status" gorm:"column:status"`
+}
+
+type LeaveRequestDetailRequest struct {
+	Type string `gorm:"type:enum('session1','session2','session3','session4','session5');not null;index:idx_leave_request_details_type" json:"type"`
 }

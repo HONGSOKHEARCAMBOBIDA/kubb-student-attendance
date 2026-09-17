@@ -71,7 +71,7 @@ export const deleteBackup = (filename) => api.delete('delete.backup',{
 })
 
 // LeaveDeductType
-export const getleavedeductype = () => api.get('view.leave.deduct.type')
+export const getLeaveDeductType = () => api.get('view.leave.deduct.type')
 
 // LeaveType
 export const getleavetype = () => api.get('view.leave.type')
@@ -79,11 +79,11 @@ export const createleavetype = (data) => api.post('/add.leave.type',data)
 export const updateleavetype = (id, data) => api.put(`/edit.leave.type/${id}`, data)
 
 // LeaveRequest
-export const getleaverequest = (params) => api.get('/view.leave.request',{params})
-export const addleaverequest = (data) => api.post('/add.leave.request',data)
-export const editleaverequest = (id,data) => api.put(`/edit.leave.request/${id}`,data)
-export const editstatusleaverequest = (id,data) => api.put(`/edit.status.leave.request/${id}`,data)
-export const deleteleaverequest = (id) => api.delete(`/delete.leave.request/${id}`)
+export const getLeaveRequest = (params) => api.get('/view.leave.request',{params})
+export const addLeaveRequest = (data) => api.post('/add.leave.request',data)
+export const editLeaveRequest = (id,data) => api.put(`/edit.leave.request/${id}`,data)
+export const approveLeaveRequest = (id,data) => api.put(`/approve.leave/${id}`)
+export const deleteLeaveRequest = (id) => api.delete(`/delete.leave.request/${id}`)
 
 // RoleHasPermission
 export const getrolehaspermission = (id) => api.get(`/view.role.has.permission/${id}`)

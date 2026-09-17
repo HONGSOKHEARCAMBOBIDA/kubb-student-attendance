@@ -44,6 +44,15 @@ func NewAttendanceService() AttendanceService {
 	}
 }
 
+type LeaveSession int
+
+const (
+	LeaveNone LeaveSession = iota
+	LeaveFull
+	LeaveMorning
+	LeaveEvening
+)
+
 var checkTypeKubbLabel = map[string]string{
 	model.AttendanceSession1: "ចូលរៀនSessionទី១",
 	model.AttendanceSession2: "ចូលរៀនSessionទី២",
@@ -67,13 +76,62 @@ type sessionConfig struct {
 
 var ErrAllSessionsRecorded = errors.New("all attendance sessions for today have already been recorded")
 
-func buildSessionV2(shift model.Shift) []sessionConfig {
-	return []sessionConfig{
-		{scheduledTime: shift.Session1, recordType: model.AttendanceSession1},
-		{scheduledTime: shift.Session2, recordType: model.AttendanceSession2},
-		{scheduledTime: shift.Session3, recordType: model.AttendanceSession3},
-		{scheduledTime: shift.Session4, recordType: model.AttendanceSession4},
-		{scheduledTime: shift.Session5, recordType: model.AttendanceSession5},
+func buildSessionV2(shift model.Shift, leave LeaveSession) ([]sessionConfig, error) {
+	if leave == LeaveFull {
+		return nil, errors.New("today is a full-day approved leave")
+	}
+	switch leave {
+	case LeaveMorning:
+		return []sessionConfig{
+			{scheduledTime: shift.Session4, recordType: model.AttendanceSession4},
+			{scheduledTime: shift.Session5, recordType: model.AttendanceSession5},
+		}, nil
+	case LeaveEvening:
+		return []sessionConfig{
+			{scheduledTime: shift.Session1, recordType: model.AttendanceSession1},
+			{scheduledTime: shift.Session2, recordType: model.AttendanceSession2},
+			{scheduledTime: shift.Session3, recordType: model.AttendanceSession3},
+		}, nil
+	default:
+		return []sessionConfig{
+			{scheduledTime: shift.Session1, recordType: model.AttendanceSession1},
+			{scheduledTime: shift.Session2, recordType: model.AttendanceSession2},
+			{scheduledTime: shift.Session3, recordType: model.AttendanceSession3},
+			{scheduledTime: shift.Session4, recordType: model.AttendanceSession4},
+			{scheduledTime: shift.Session5, recordType: model.AttendanceSession5},
+		}, nil
+	}
+
+}
+
+func (s *attendanceservice) getApprovedLeaveSession(ctx context.Context, userID int) (LeaveSession, error) {
+	currentDate := helper.CurrentDate()
+
+	var leaveRequest model.LeaveRequest
+	err := s.db.WithContext(ctx).
+		Preload("LeaveDeductType").
+		Where("user_id = ? AND status = ? AND start_date <= ? AND end_date >= ?",
+			userID, model.LeaveStatusApprove, currentDate, currentDate).Order("id ASC").
+		First(&leaveRequest).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// no approved leave today -> normal full-day attendance flow
+			return LeaveNone, nil
+		}
+		return LeaveNone, fmt.Errorf("failed to load leave request: %w", err)
+	}
+
+	deductCode := leaveRequest.LeaveDeductType.Code
+	switch deductCode {
+	case "FULL":
+		return LeaveFull, nil
+	case "HALF_AM":
+		return LeaveMorning, nil
+	case "HALF_PM":
+		return LeaveEvening, nil
+	default:
+		return LeaveNone, fmt.Errorf("unknown leave deduct type code: %s", deductCode)
 	}
 }
 
@@ -102,14 +160,22 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 	}
 
 	var shift model.Shift
-	if err := s.db.WithContext(ctx).Where("id = ?", userclass.ClassID).First(&shift).Error; err != nil {
+	if err := s.db.WithContext(ctx).Where("id = ?", class.ShiftID).First(&shift).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
 		return err
 	}
 
-	sessions := buildSessionV2(shift)
+	leave, err := s.getApprovedLeaveSession(ctx, user.ID)
+	if err != nil {
+		return err
+	}
+
+	sessions, err := buildSessionV2(shift, leave)
+	if err != nil {
+		return err
+	}
 
 	companyLat, err := strconv.ParseFloat(*class.Latitude, 64)
 	if err != nil {
@@ -157,10 +223,13 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 
 		case errors.Is(err, gorm.ErrRecordNotFound):
 			attendance = model.Attendance{
-				UserID:    user.ID,
-				ClassID:   input.CompanyID,
-				CheckDate: currentDate,
-				Status:    "WORKING",
+				UserID:            user.ID,
+				ClassID:           input.CompanyID,
+				CheckDate:         currentDate,
+				Status:            "WORKING",
+				LeaveRequestID:    nil,
+				VerifyBy:          nil,
+				UnexcuseAbsenceID: nil,
 			}
 			if err := tx.Create(&attendance).Error; err != nil {
 				return fmt.Errorf("failed to create attendance: %w", err)
@@ -190,11 +259,13 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 			UserID:       user.ID,
 			ClassID:      input.CompanyID,
 			ShiftID:      shift.ID,
-			CheckTime:    currentTime,
+			CheckTime:    &currentTime,
 			Type:         current.recordType,
 			Inzone:       inzone,
 			Latitude:     input.Latitude,
 			Longitude:    input.Longitude,
+			Score:        0.42,
+			Status:       model.StatusPresent,
 		}
 		if err := tx.Create(&record).Error; err != nil {
 			return fmt.Errorf("failed to created attendance record: %w", err)
@@ -206,6 +277,11 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 				return fmt.Errorf("faild to update attendance status %w", err)
 			}
 			// justCompleted = true
+		}
+		if err := tx.Model(&model.Attendance{}).
+			Where("id = ?", attendance.ID).
+			UpdateColumn("score", gorm.Expr("score + ?", 0.42)).Error; err != nil {
+			return fmt.Errorf("failed to update attendance score: %w", err)
 		}
 		return nil
 	})
@@ -230,20 +306,28 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
 	}
 
 	var userclass model.UserClass
-	if err := s.db.WithContext(ctx).Select("id,class_id,user_id").
+	if err := s.db.WithContext(ctx).Preload("Class").Select("id,class_id,user_id").
 		Where("user_id = ? AND is_active = 1", user.ID).First(&userclass).Error; err != nil {
 		return response.AttendanceResponseDraft{}, fmt.Errorf("failed to load user class: %w", err)
 	}
 
 	var shift model.Shift
-	if err := s.db.WithContext(ctx).Where("id = ?", userclass.ClassID).First(&shift).Error; err != nil {
+	if err := s.db.WithContext(ctx).Where("id = ?", userclass.Class.ShiftID).First(&shift).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return response.AttendanceResponseDraft{}, fmt.Errorf("shift not found: %w", err)
 		}
 		return response.AttendanceResponseDraft{}, fmt.Errorf("failed to load shift: %w", err)
 	}
 
-	sessions := buildSessionV2(shift)
+	leave, err := s.getApprovedLeaveSession(ctx, user.ID)
+	if err != nil {
+		return response.AttendanceResponseDraft{}, err
+	}
+
+	sessions, err := buildSessionV2(shift, leave)
+	if err != nil {
+		return response.AttendanceResponseDraft{}, err
+	}
 
 	var current sessionConfig
 	txErr := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -463,7 +547,7 @@ func (s *attendanceservice) GetAttendanceReport(ctx context.Context, id int, fil
 			}
 			status := "A"
 			if r.CheckTime != "" {
-				status = "P"
+				status = "PR"
 				agg.row.PresentCount++
 			} else {
 				agg.row.AbsentCount++

@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"errors"
+	"log"
 
 	//"log"
 	"mysql/constant/share"
@@ -95,6 +96,7 @@ func (cr *AttendanceController) GetAttendanceDraft(c *gin.Context) {
 	}
 	data, err := cr.service.GetAttendanceDraft(c, userID)
 	if err != nil {
+		log.Printf("Errr %w", err)
 		share.ResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}

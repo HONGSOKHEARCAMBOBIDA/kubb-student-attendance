@@ -86,7 +86,7 @@
             :type="row.status === 'COMPLETE' ? 'success' : 'warning'"
             size="small"
           >
-            {{ row.status === 'COMPLETE' ? 'ចេញពីរឿន' : 'កំពុងរៀន'  }}
+            {{ row.status  }}
           </el-tag>
         </template>
 

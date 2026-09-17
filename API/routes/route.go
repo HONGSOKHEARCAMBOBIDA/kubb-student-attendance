@@ -13,10 +13,12 @@ func SetupRoutes(r *gin.Engine) {
 	authcontroller := controller.NewAuthController()
 	// shiftcontroller := controller.NewShiftController()
 	backupcontroller := controller.NewBackupController()
-	leavededucttypecontroller := controller.NewLeaveDeductTypeController()
+	//leavededucttypecontroller := controller.NewLeaveDeductTypeController()
 	rolehaspermissioncontroller := controller.NewRoleHasPermissionController()
 	companycontroller := controller.NewCompanyController()
 	attendancecontroller := controller.NewAttendanceController()
+	leavecontroller := controller.NewLeaveController()
+	deductcontroller := controller.NewLeaveDeductTypeController()
 	r.Static("/clientimage", "./public/clientimage")
 	public := r.Group("/")
 	public.Use(middleware.APIKeyAuth())
@@ -59,7 +61,7 @@ func SetupRoutes(r *gin.Engine) {
 		auth.DELETE(route.DeleteBackup, middleware.PermissionMiddleware(permission.DeleteBackup), backupcontroller.DeleteBackup)
 
 		// LeaveDeductType
-		auth.GET(route.ViewLeaveDeductType, middleware.PermissionMiddleware(permission.ViewLeaveDeductType), leavededucttypecontroller.GetLeaveDeductType)
+		//auth.GET(route.ViewLeaveDeductType, middleware.PermissionMiddleware(permission.ViewLeaveDeductType), leavededucttypecontroller.GetLeaveDeductType)
 
 		// RoleHasPermission
 		auth.GET(route.ViewRoleHasPermission, middleware.PermissionMiddleware(permission.ViewRoleHasPermission), rolehaspermissioncontroller.GetRolePermission)
@@ -71,5 +73,12 @@ func SetupRoutes(r *gin.Engine) {
 		auth.POST(route.AddAttendance, middleware.PermissionMiddleware(permission.AddAttendance), attendancecontroller.CreateAttendance)
 		auth.GET(route.ViewAttendance, middleware.PermissionMiddleware(permission.ViewAttendance), attendancecontroller.GetAttendancePDF)
 		auth.GET(route.ViewAttendanceReport, middleware.PermissionMiddleware(permission.ViewAttendance), attendancecontroller.GetAttendanceReport)
+
+		// Leave
+		auth.POST(route.AddLeaveRequest, middleware.PermissionMiddleware(permission.AddLeaveRequest), leavecontroller.CreateLeaveRequest)
+		auth.PUT(route.EditLeaveRequest, middleware.PermissionMiddleware(permission.EditLeaveRequest), leavecontroller.UpdateLeaveRequest)
+		auth.GET(route.ViewLeaveRequest, middleware.PermissionMiddleware(permission.ViewLeaveRequest), leavecontroller.GetLeaveRequest)
+		auth.PUT(route.ApproveLeave, middleware.PermissionMiddleware(permission.EditStatusLeaveRequest), leavecontroller.VerifyLeaveRequest)
+		auth.GET(route.ViewLeaveDeductType, middleware.PermissionMiddleware(permission.ViewLeaveDeductType), deductcontroller.GetLeaveDeductType)
 	}
 }
