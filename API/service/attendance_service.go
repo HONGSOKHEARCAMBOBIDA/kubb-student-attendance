@@ -223,13 +223,12 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 
 		case errors.Is(err, gorm.ErrRecordNotFound):
 			attendance = model.Attendance{
-				UserID:            user.ID,
-				ClassID:           input.CompanyID,
-				CheckDate:         currentDate,
-				Status:            "WORKING",
-				LeaveRequestID:    nil,
-				VerifyBy:          nil,
-				UnexcuseAbsenceID: nil,
+				UserID:         user.ID,
+				ClassID:        input.CompanyID,
+				CheckDate:      currentDate,
+				Status:         "WORKING",
+				LeaveRequestID: nil,
+				VerifyBy:       nil,
 			}
 			if err := tx.Create(&attendance).Error; err != nil {
 				return fmt.Errorf("failed to create attendance: %w", err)
@@ -264,7 +263,6 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 			Inzone:       inzone,
 			Latitude:     input.Latitude,
 			Longitude:    input.Longitude,
-			Score:        0.42,
 			Status:       model.StatusPresent,
 		}
 		if err := tx.Create(&record).Error; err != nil {
@@ -278,11 +276,7 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 			}
 			// justCompleted = true
 		}
-		if err := tx.Model(&model.Attendance{}).
-			Where("id = ?", attendance.ID).
-			UpdateColumn("score", gorm.Expr("score + ?", 0.42)).Error; err != nil {
-			return fmt.Errorf("failed to update attendance score: %w", err)
-		}
+
 		return nil
 	})
 	if txErr != nil {
@@ -547,6 +541,7 @@ func (s *attendanceservice) GetAttendanceReport(ctx context.Context, id int, fil
 				continue
 			}
 			status := "A"
+
 			if r.Status == model.StatusPermission {
 				status = model.StatusPermission
 				agg.row.PermissionCount++

@@ -21,3 +21,25 @@ type LeaveRequestResponse struct {
 	ApproveByName  string  `json:"approve_by_name"`
 	ApproveAt      string  `json:"approved_at" gorm:"column:approved_at"`
 }
+
+type NotPermissionLeave struct {
+	UserID         int    `json:"user_id" gorm:"column:user_id"`
+	UserGender     int    `json:"gender" gorm:"column:gender"`
+	UserNamekh     string `json:"user_name_kh"`
+	UserNameEn     string `json:"user_name_en"`
+	UserCode       string `json:"user_code"`
+	ClassID        int    `json:"class_id"`
+	ClassName      string `json:"class_name"`
+	MajorID        *int64 `gorm:"column:major_id" json:"major_id"`
+	MajorName      string `json:"major_name"`
+	ShiftID        *int64 `gorm:"column:shift_id" json:"shift_id"`
+	ShiftName      string `json:"shift_name"`
+	GenerationID   *int64 `gorm:"column:generation_id" json:"generation_id"`
+	GenerationName string `json:"generation_name"`
+	Year           *int8  `gorm:"column:year" json:"year"`
+	Semester       *int8  `gorm:"column:semester" json:"semester"`
+	Group          *int8  `gorm:"column:group" json:"group"`
+	Term           *int8  `gorm:"column:term" json:"term"`
+	ProgrammeID    *int64 `gorm:"column:programme_id" json:"programme_id"`
+	ProgrammeName  string `json:"programme_name"`
+}

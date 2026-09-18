@@ -77,11 +77,13 @@ const (
 
 	// LeaveRequest
 	ViewLeaveRequest       = "view.leave.request"
+	ViewNotPermisionLeave  = "view.not.permission.leave"
 	AddLeaveRequest        = "add.leave.request"
 	EditLeaveRequest       = "edit.leave.request/:id"
 	EditStatusLeaveRequest = "edit.status.leave.request/:id"
 	DeleteLeaveRequest     = "delete.leave.request/:id"
 	ApproveLeave           = "approve.leave/:id"
+	AddLeaveNotPermission  = "add.leave.not.permission"
 
 	// RoleHasPermission
 	ViewRoleHasPermission   = "view.role.has.permission/:id"

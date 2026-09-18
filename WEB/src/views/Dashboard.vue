@@ -32,7 +32,13 @@
             <el-icon size="26" color="#67C23A">
               <Promotion />
             </el-icon>
-            <span>សុំច្បាប់</span>
+            <span>សិស្សសុំច្បាប់</span>
+          </div>
+          <div class="action-btn" @click="$router.push('/Notpermissionleave')">
+            <el-icon size="26" color="#67C23A">
+              <Promotion />
+            </el-icon>
+            <span>សិស្សឈប់មិនសុំច្បាប់</span>
           </div>
           <div class="action-btn" @click="$router.push('/createattendance')">
             <el-icon size="26" color="#e6a23c">

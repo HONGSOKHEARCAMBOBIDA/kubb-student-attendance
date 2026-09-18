@@ -80,5 +80,8 @@ func SetupRoutes(r *gin.Engine) {
 		auth.GET(route.ViewLeaveRequest, middleware.PermissionMiddleware(permission.ViewLeaveRequest), leavecontroller.GetLeaveRequest)
 		auth.PUT(route.ApproveLeave, middleware.PermissionMiddleware(permission.EditStatusLeaveRequest), leavecontroller.VerifyLeaveRequest)
 		auth.GET(route.ViewLeaveDeductType, middleware.PermissionMiddleware(permission.ViewLeaveDeductType), deductcontroller.GetLeaveDeductType)
+		auth.DELETE(route.DeleteLeaveRequest, middleware.PermissionMiddleware(permission.DeleteLeaveRequest), leavecontroller.DeleteLeaveRequest)
+		auth.GET(route.ViewNotPermisionLeave, middleware.PermissionMiddleware(permission.ViewLeave), leavecontroller.GetNotPermissionLeave)
+		auth.POST(route.AddLeaveNotPermission, middleware.PermissionMiddleware(permission.AddLeaveRequest), leavecontroller.AddNotPermission)
 	}
 }

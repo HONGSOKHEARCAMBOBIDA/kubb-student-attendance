@@ -41,7 +41,7 @@
                 {{ formatDate(g.date) }}
                   <!-- {{ g.date }} -->
               </th>
-              <th colspan="2" rowspan="2">សរុ​ប</th>
+              <th colspan="3" rowspan="2">សរុ​ប</th>
             </tr>
             <tr>
               <th v-for="g in dateGroups" :key="g.date + '-l'" :colspan="g.columns.length">ពេលសិក្សា</th>
@@ -50,6 +50,7 @@
               <th v-for="col in report.columns" :key="col.column_no">Session {{ col.column_no }}</th>
               <th>អត់ច្បាប់</th>
               <th>មានច្បាប់</th>
+              <th>ពិន្ទុ</th>
             </tr>
           </thead>
           <tbody>
@@ -72,7 +73,10 @@
               </span>
               </td>
               <td>{{ row.absent_count }}</td>
-              <td>{{ row.present_count }}</td>
+              <td>{{ row.permission_count }}</td>
+              <td>
+              {{ 10 - (row.absent_count * 1) - (row.permission_count * 0.5) }}
+            </td>
             </tr>
           </tbody>
         </table>

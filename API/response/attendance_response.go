@@ -65,7 +65,8 @@ type AttendanceReportRow struct {
 	ClassName       string                 `json:"class_name"`
 	Cells           []AttendanceReportCell `json:"cells"` // same order/length as Columns
 	AbsentCount     int                    `json:"absent_count"`
-	PermissionCount int                    `json:"present_count"`
+	PermissionCount int                    `json:"permission_count"`
+	Score           float64                `json:"score"`
 	// Permission   int                    `json:"permission_count"`
 }
 

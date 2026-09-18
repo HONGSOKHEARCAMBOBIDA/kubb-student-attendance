@@ -62,9 +62,20 @@ const routes = [
         name: "LeaveRequest",
         component: () => import("../views/LeaveRequest.vue"),
         meta: {
-          title: "សុំច្បាប់",
+          title: "សិស្សសុំច្បាប់",
           icon: "Promotion",
-          short: "សុំច្បាប់",
+          short: "សិស្សសុំច្បាប់",
+          showInNav: false,
+        }
+      },
+      {
+        path: "Notpermissionleave",
+        name: "Notpermissionleave",
+        component: () => import("../views/Notpermissionleave.vue"),
+        meta: {
+          title: "សិស្សឈប់មិនសុំច្បាប់",
+          icon: "Promotion",
+          short: "សិស្សឈប់មិនសុំច្បាប់",
           showInNav: false,
         }
       },

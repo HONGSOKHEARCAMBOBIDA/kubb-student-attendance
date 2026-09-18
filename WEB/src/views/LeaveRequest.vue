@@ -18,15 +18,6 @@ import {
 } from "../api/services.js";
 import { useUserDataStore } from "../stores/user_data.js";
 
-// NOTE on assumptions (please rename to match your real services.js / permission list):
-// - service function names: getLeaveRequest, addLeaveRequest, editLeaveRequest,
-//   deleteLeaveRequest, approveLeaveRequest, getLeaveDeductType, getClass
-// - permission names: "create.leave.request", "edit.leave.request",
-//   "approve.leave.request", "delete.leave.request"
-// - approveLeaveRequest(id) hits the VerifyLeaveRequest endpoint; the approver
-//   is taken from the authenticated user on the server, so no approve_by field
-//   is sent from the client.
-
 let searchTimer = null;
 const notify = useNotification();
 const userDataStore = useUserDataStore();
@@ -296,6 +287,7 @@ onUnmounted(() => clearTimeout(searchTimer));
 
     <el-card class="table-card">
       <AppTable
+        show-index
         :data="leaveRequests"
         :loading="loading"
         :actions-width="200"
@@ -308,7 +300,7 @@ onUnmounted(() => clearTimeout(searchTimer));
           { label: 'ថ្នាក់', prop: 'class_name', minWidth: 120 },
           { label: 'ថ្ងៃចាប់ផ្តើម', prop: 'start_date', minWidth: 110 },
           { label: 'ថ្ងៃបញ្ចប់', prop: 'end_date', minWidth: 110 },
-          { label: 'ថ្ងៃចូលធ្វើការវិញ', prop: 'back_to_work_date', minWidth: 130 },
+          { label: 'ថ្ងៃចូលរៀនវិញ', prop: 'back_to_work_date', minWidth: 130 },
           { label: 'ចំនួនថ្ងៃ', slot: 'total_day', width: 150 },
           { label: 'មូលហេតុ', prop: 'reason', minWidth: 150 },
           { label: 'ស្ថានភាព', slot: 'status', width: 110 },
@@ -316,17 +308,21 @@ onUnmounted(() => clearTimeout(searchTimer));
         ]"
       >
         <template #user="{ row }">
-          <el-text tag="b">{{ row.user_name_kh || row.user_name_en }}</el-text>
-          <el-tag :type="row.gender === 1 ? 'success' : 'warning'" size="small">
-            {{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}
-          </el-tag>
-          <div style="color: #909399; font-size: 12px">{{ row.user_code }}</div>
-        </template>
+  <el-space direction="vertical" alignment="start" :size="0">
+    <el-text tag="b" size="large" type="primary">
+      {{ row.user_name_kh || row.user_name_en }}
+    </el-text>
+
+    <el-text size="small">
+      {{ row.user_code }} | {{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}
+    </el-text>
+  </el-space>
+</template>
 
         <template #total_day="{ row }">
-          <el-text>{{ row.total_day }}</el-text>
-          <el-text tag="b" type="danger">{{ row.deduct_type_code }}</el-text>
-          <div style="color: #909399; font-size: 12px">{{ row.deduct_type_name }}</div>
+          <el-text>{{ row.total_day }}{{ row.deduct_type_name }}</el-text>
+          
+        
         </template>
 
         <template #status="{ row }">
@@ -440,7 +436,7 @@ onUnmounted(() => clearTimeout(searchTimer));
         </div>
 
         <div class="form-row">
-          <el-form-item label="ថ្ងៃចូលធ្វើការវិញ" prop="back_to_work_date">
+          <el-form-item label="ថ្ងៃចូលរៀនវិញ" prop="back_to_work_date">
             <el-date-picker
               v-model="form.back_to_work_date"
               type="date"

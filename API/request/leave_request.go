@@ -27,3 +27,14 @@ type LeaveRequestUpdateStatus struct {
 type LeaveRequestDetailRequest struct {
 	Type string `gorm:"type:enum('session1','session2','session3','session4','session5');not null;index:idx_leave_request_details_type" json:"type"`
 }
+
+type NotPermissionLeaveRequest struct {
+	CheckDate               string                    `json:"check_date"`
+	NotPermissionLeaveInput []NotPermissionLeaveInput `json:"data"`
+}
+
+type NotPermissionLeaveInput struct {
+	UserID  int `json:"user_id"`
+	ClassID int `json:"class_id"`
+	ShiftID int `json:"shift_id"`
+}

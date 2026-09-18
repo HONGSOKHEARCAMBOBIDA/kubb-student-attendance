@@ -30,7 +30,6 @@ type AttendanceRecord struct {
 	Inzone       bool    `gorm:"column:inzone;not null;default:0" json:"inzone"`
 	Latitude     string  `gorm:"column:latitude;size:255" json:"latitude"`
 	Longitude    string  `gorm:"column:longitude;size:255" json:"longitude"`
-	Score        float64 `gorm:"column:score" json:"score"`
 	Status       string  `gorm:"column:status;type:enum('PR','P','A')" json:"status"`
 }
 

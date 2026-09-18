@@ -79,11 +79,15 @@ export const createleavetype = (data) => api.post('/add.leave.type',data)
 export const updateleavetype = (id, data) => api.put(`/edit.leave.type/${id}`, data)
 
 // LeaveRequest
+export const exportNotPermissionLeave = (params, config) =>
+  request.get("/leave-request/not-permission/export", { params, ...config });
+export const getNotPermissionLeave = (params) => api.get('/view.not.permission.leave',{params})
 export const getLeaveRequest = (params) => api.get('/view.leave.request',{params})
 export const addLeaveRequest = (data) => api.post('/add.leave.request',data)
 export const editLeaveRequest = (id,data) => api.put(`/edit.leave.request/${id}`,data)
 export const approveLeaveRequest = (id,data) => api.put(`/approve.leave/${id}`)
 export const deleteLeaveRequest = (id) => api.delete(`/delete.leave.request/${id}`)
+export const addNotPermissionLeave = (data) => api.post('/add.leave.not.permission',data)
 
 // RoleHasPermission
 export const getrolehaspermission = (id) => api.get(`/view.role.has.permission/${id}`)

@@ -23,6 +23,8 @@ type LeaveRequestService interface {
 	DeleteLeaveRequest(ctx context.Context, id int) error
 	GetLeaveRequest(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.LeaveRequestResponse, *model.PaginationMetadata, error)
 	VerifyLeaveRequest(ctx context.Context, id int, verifyBy int) error
+	GetNotPermissionLeave(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.NotPermissionLeave, *model.PaginationMetadata, error)
+	AddNotPermission(ctx context.Context, input request.NotPermissionLeaveRequest) error
 }
 
 type leaveRequestService struct {
@@ -74,7 +76,7 @@ func (s *leaveRequestService) GetLeaveRequest(ctx context.Context, id int, pf re
 
 	applyFilters := func(tx *gorm.DB) *gorm.DB {
 		if v, ok := filter["name"]; ok && v != "" {
-			tx = tx.Where("u.name LIKE ?", "%"+v+"%")
+			tx = tx.Where("u.name_kh LIKE ?", "%"+v+"%")
 		}
 		if v, ok := filter["class_id"]; ok && v != "" {
 			tx = tx.Where("l.class_id = ?", v)
@@ -158,6 +160,64 @@ func (s *leaveRequestService) CreateLeaveRequest(ctx context.Context, id int, in
 	})
 	return err
 
+}
+
+func (s *leaveRequestService) AddNotPermission(ctx context.Context, input request.NotPermissionLeaveRequest) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	checkDate := input.CheckDate
+	if checkDate == "" {
+		checkDate = time.Now().Format("2006-01-02")
+	}
+
+	sessionOrder := []string{"session1", "session2", "session3", "session4", "session5"}
+
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for _, n := range input.NotPermissionLeaveInput {
+			// guard against duplicate processing for the same user/date
+			var count int64
+			if err := tx.Model(&model.Attendance{}).
+				Where("user_id = ? AND class_id = ? AND check_date = ?", n.UserID, n.ClassID, checkDate).
+				Count(&count).Error; err != nil {
+				return apperror.New(apperror.CodeInternal, "failed to check existing attendance", nil)
+			}
+			if count > 0 {
+				continue // already recorded, skip
+			}
+
+			attendance := model.Attendance{
+				UserID:         n.UserID,
+				ClassID:        n.ClassID,
+				CheckDate:      checkDate,
+				Status:         "LEAVE NOT PERMISSION",
+				LeaveRequestID: nil,
+				VerifyBy:       nil,
+			}
+			if err := tx.Create(&attendance).Error; err != nil {
+				return apperror.New(apperror.CodeInternal, "failed to create attendance", nil)
+			}
+
+			records := make([]model.AttendanceRecord, 0, len(sessionOrder))
+			for _, session := range sessionOrder {
+				records = append(records, model.AttendanceRecord{
+					AttendanceID: attendance.ID,
+					UserID:       n.UserID,
+					ClassID:      n.ClassID,
+					ShiftID:      n.ShiftID,
+					Type:         session,
+					Status:       model.StatusAbsence,
+					Inzone:       false,
+				})
+			}
+			if err := tx.Create(&records).Error; err != nil {
+				return apperror.New(apperror.CodeInternal, "failed to create attendance records", nil)
+			}
+		}
+		return nil
+	})
+
+	return err
 }
 
 func (s *leaveRequestService) VerifyLeaveRequest(ctx context.Context, id int, verifyBy int) error {
@@ -268,18 +328,12 @@ func (s *leaveRequestService) VerifyLeaveRequest(ctx context.Context, id int, ve
 					CheckTime:    nil,
 					Type:         sess.recordType,
 					Inzone:       false,
-					Score:        leaveScore,
 					Status:       model.StatusPermission,
 				}
 				if err := tx.Create(&record).Error; err != nil {
 					return fmt.Errorf("failed to create leave attendance record: %w", err)
 				}
 
-				if err := tx.Model(&model.Attendance{}).
-					Where("id = ?", attendance.ID).
-					UpdateColumn("score", gorm.Expr("score + ?", leaveScore)).Error; err != nil {
-					return fmt.Errorf("failed to update attendance score: %w", err)
-				}
 			}
 		}
 		return nil
@@ -356,7 +410,7 @@ func (s *leaveRequestService) UpdateLeaveRequest(ctx context.Context, id int, us
 func (s *leaveRequestService) DeleteLeaveRequest(ctx context.Context, id int) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		result := tx.
-			Where("id = ? AND payroll_id IS NULL", id).
+			Where("id = ?", id).
 			Delete(&model.LeaveRequest{})
 
 		if result.Error != nil {
@@ -369,4 +423,97 @@ func (s *leaveRequestService) DeleteLeaveRequest(ctx context.Context, id int) er
 
 		return nil
 	})
+}
+
+func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.NotPermissionLeave, *model.PaginationMetadata, error) {
+	var data []response.NotPermissionLeave
+	var user model.User
+	if err := s.db.WithContext(ctx).Preload("Role").First(&user, id).Error; err != nil {
+		return nil, nil, err
+	}
+	helper.NormalizePagination(&pf)
+	var total int64
+
+	// check_date drives both joins below, so pull it out first (default = today)
+	checkDate := filter["check_date"]
+	if checkDate == "" {
+		checkDate = time.Now().Format("2006-01-02")
+	}
+
+	base := func() *gorm.DB {
+		return s.db.WithContext(ctx).
+			Table("user_class uc").
+			Joins("INNER JOIN `user` u ON u.id = uc.user_id").
+			Joins("INNER JOIN `class` c ON c.id = uc.class_id AND c.is_active = 1").
+			Joins("LEFT JOIN major m ON m.id = c.major_id").
+			Joins("LEFT JOIN shift sh ON sh.id = c.shift_id").
+			Joins("LEFT JOIN generation g ON g.id = c.generation_id").
+			Joins("LEFT JOIN programmes p ON p.id = c.programme_id").
+			Joins("LEFT JOIN attendance a ON a.user_id = uc.user_id AND a.class_id = uc.class_id AND a.check_date = ?", checkDate).
+			Joins("LEFT JOIN leave_request lr ON lr.user_id = uc.user_id AND lr.class_id = uc.class_id AND lr.status = ? AND ? BETWEEN lr.start_date AND lr.end_date", model.LeaveStatusApprove, checkDate).
+			Where("uc.is_active = ?", 1).
+			Where("a.id IS NULL").
+			Where("lr.id IS NULL")
+	}
+
+	applyFilters := func(tx *gorm.DB) *gorm.DB {
+		if v, ok := filter["name"]; ok && v != "" {
+			tx = tx.Where("(u.name_kh LIKE ? OR u.name_en LIKE ?)", "%"+v+"%", "%"+v+"%")
+		}
+		if v, ok := filter["class_id"]; ok && v != "" {
+			tx = tx.Where("uc.class_id = ?", v)
+		}
+		if v, ok := filter["major_id"]; ok && v != "" {
+			tx = tx.Where("c.major_id = ?", v)
+		}
+		if v, ok := filter["shift_id"]; ok && v != "" {
+			tx = tx.Where("c.shift_id = ?", v)
+		}
+		if v, ok := filter["generation_id"]; ok && v != "" {
+			tx = tx.Where("c.generation_id = ?", v)
+		}
+		// NOTE: no "check_date" branch here anymore — it's already baked into base()'s joins above.
+		return tx
+	}
+
+	if err := applyFilters(base()).Count(&total).Error; err != nil {
+		return nil, nil, fmt.Errorf("count not-permission-leave: %w", err)
+	}
+
+	if total == 0 {
+		return []response.NotPermissionLeave{}, helper.BuildPaginationMeta(pf, total), nil
+	}
+
+	offset := (pf.Page - 1) * pf.PageSize
+	query := applyFilters(base()).
+		Select(`
+			u.id            AS user_id,
+			u.gender        AS user_gender,
+			u.name_kh       AS user_namekh,
+			u.name_en       AS user_name_en,
+			u.code          AS user_code,
+			c.id            AS class_id,
+			c.name          AS class_name,
+			c.major_id      AS major_id,
+			m.name_kh          AS major_name,
+			c.shift_id      AS shift_id,
+			sh.name         AS shift_name,
+			c.generation_id AS generation_id,
+			g.name_kh          AS generation_name,
+			c.year          AS year,
+			c.semester      AS semester,
+			c.` + "`group`" + `       AS ` + "`group`" + `,
+			c.term          AS term,
+			c.programme_id  AS programme_id,
+			p.name          AS programme_name
+		`).
+		Order("c.name, u.code").
+		Limit(pf.PageSize).
+		Offset(offset)
+
+	if err := query.Scan(&data).Error; err != nil {
+		return nil, nil, fmt.Errorf("query not-permission-leave: %w", err)
+	}
+
+	return data, helper.BuildPaginationMeta(pf, total), nil
 }
