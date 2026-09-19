@@ -52,6 +52,18 @@
             </el-icon>
             <span>ថ្នាក់រៀន</span>
           </div>
+          <div class="action-btn" @click="$router.push('/subject')">
+            <el-icon size="26" color="#f56c6c">
+              <OfficeBuilding />
+            </el-icon>
+            <span>Subject</span>
+          </div>
+          <div class="action-btn" @click="$router.push('/Major')">
+            <el-icon size="26" color="#f56c6c">
+              <OfficeBuilding />
+            </el-icon>
+            <span>Major</span>
+          </div>
         </div>
       </el-card>
 

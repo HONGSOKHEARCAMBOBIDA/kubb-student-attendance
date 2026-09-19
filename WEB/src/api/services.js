@@ -94,3 +94,27 @@ export const getrolehaspermission = (id) => api.get(`/view.role.has.permission/$
 export const addrolehaspermission = (data) => api.post('/add.role.has.permission',data)
 export const deleterolehaspermission = (data) => api.delete('/delete.role.has.permission',{data})
 export const editrole = (id,data) => api.put(`/edit.role/${id}`,data)
+
+// Subject
+export const getSubject = (params) => api.get('/view.subject',{params})
+export const addSubject = (data) => api.post('/add.subject',data)
+export const editSubject = (id,data) => api.put(`/edit.subject/${id}`,data)
+export const toggleSubject = (id) => api.put(`/toggle.subject/${id}`,)
+
+// Major
+export const addMajor = (data) => api.post('add.Major',data)
+export const editMajor = (id,data) => api.put(`edit.Major/${id}`,data)
+export const viewMajorWithPagination = (params) => api.get('view.major.pagination',{params})
+export const toggleMajor = (id) => api.put(`Toggle.Major/${id}`,)
+export const getMajorSubjects = (id, params) =>
+  api.post(`view.major.subject/${id}`, {}, { params });
+export const addMajorSubject = (id,data) => api.post(`add.major.subject/${id}`,data)
+export const toggleMajorSubject = (id) => api.put(`Toggle.major.subject/${id}`)
+export const removeMajorSubject = (id) => api.delete(`Remove.major.subject/${id}`)
+
+// class schedule
+
+export const getClassSchedule = (classId) => api.get(`/class/${classId}/schedule`);
+export const getClassAvailableSubjects = (classId) =>api.get(`/class/${classId}/schedule/subjects`);
+export const createClassSchedule = (classId, data) =>api.post(`/class/${classId}/schedule`, data);
+export const toggleClassSchedule = (id) => api.patch(`/class-schedule/${id}/toggle`);

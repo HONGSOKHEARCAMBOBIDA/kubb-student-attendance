@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"errors"
-	"log"
 
 	//"log"
 	"mysql/constant/share"
@@ -96,7 +95,6 @@ func (cr *AttendanceController) GetAttendanceDraft(c *gin.Context) {
 	}
 	data, err := cr.service.GetAttendanceDraft(c, userID)
 	if err != nil {
-		log.Printf("Errr %w", err)
 		share.ResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -137,10 +135,9 @@ func (h *AttendanceController) GetAttendanceReport(c *gin.Context) {
 		return
 	}
 	filter := map[string]string{
-		"name":      c.Query("name"),
-		"class_id":  c.Query("class_id"),
-		"date_from": c.Query("date_from"),
-		"date_to":   c.Query("date_to"),
+		"name":       c.Query("name"),
+		"class_id":   c.Query("class_id"),
+		"check_date": c.Query("check_date"),
 	}
 	report, err := h.service.GetAttendanceReport(c.Request.Context(), userID, filter)
 	if err != nil {

@@ -110,7 +110,7 @@
         v-model:page-size="pageSize"
         :total="total"
         @page-change="fetchClasses"
-        actions-width="250px"
+        actions-width="300px"
         :columns="[
           { prop: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
           { prop: 'major_name', label: 'ជំនាញ', minWidth: 110 },
@@ -145,6 +145,7 @@
         <template #actions="{ row }">
           <el-tooltip content="កែប្រែ" placement="top">
             <AppButton
+            :disabled="row.is_active === false"
             v-if="canEditClass"
             size="small"
             icon="Edit"
@@ -155,6 +156,7 @@
           </AppButton>
           </el-tooltip>
           <AppButton
+            :disabled="row.is_active === false"
             v-if="canEditClass"
             size="small"
             icon="Promotion"
@@ -176,6 +178,7 @@
           </el-tooltip>
 <el-tooltip content="បញ្ជូលសិស្សតាមExcell" placement="top">
   <AppButton
+    :disabled="row.is_active === false"
     size="small"
     icon="Download"
     type="success"
@@ -186,11 +189,23 @@
 </el-tooltip>
 <el-tooltip content="Copy ទិន្ន័យសិស្សទៅថ្នាក់ផ្សេង" placement="top">
   <AppButton
+  :disabled="row.is_active === false"
     size="small"
     icon="CopyDocument"
     type="primary"
     circle
     @click="openCopy(row)"
+  >
+  </AppButton>
+</el-tooltip>
+<el-tooltip content="កាលវិភាគ" placement="top">
+  <AppButton
+  :disabled="row.is_active === false"
+    size="small"
+    icon="Calendar"
+    type="primary"
+    circle
+    @click="openSchedule(row)"
   >
   </AppButton>
 </el-tooltip>
@@ -518,6 +533,7 @@
     </AppButton>
   </template>
 </AppDialog>
+<ClassScheduleDialog v-model="scheduleDialog" :class-row="scheduleClass" />
   </div>
 </template>
 
@@ -544,10 +560,17 @@ import AppDialog from "../../components/AppDialog.vue";
 import { useNotification } from "../../composables/useNotification.js";
 import { useLoading } from "../../composables/useLoading.js";
 import AppFilterBar from "../../components/AppFilterBar.vue";
-
+import ClassScheduleDialog from "../../components/ClassScheduleDialog.vue"; // adjust path
 const notify = useNotification();
 const userDataStore = useUserDataStore();
 const useloading = useLoading();
+
+const scheduleDialog = ref(false);
+const scheduleClass = ref(null);
+function openSchedule(row) {
+  scheduleClass.value = row;
+  scheduleDialog.value = true;
+}
 
 const classes = ref([]);
 const majors = ref([]);

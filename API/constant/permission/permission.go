@@ -51,4 +51,14 @@ const (
 	ViewRoleHasPermission   = "view.role.has.permission"
 	AddRoleHasPermission    = "add.role.has.permission"
 	DeleteRoleHasPermission = "delete.role.has.permission"
+
+	// Subject
+	Viewsubject = "view.subject"
+	Addsubject  = "add.subject"
+	Editsubject = "edit.subject"
+
+	// Major
+
+	AddMajor  = "add.Major"
+	EditMajor = "edit.Major"
 )

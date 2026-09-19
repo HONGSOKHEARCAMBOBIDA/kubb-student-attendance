@@ -170,6 +170,18 @@ const routes = [
         name: "NotFound",
         component: () => import("../views/NotFound.vue"),
       },
+       {
+        path: "subject",
+        name: "subject",
+        component: () => import("../views/subject.vue"),
+        meta: { title: "Subject",showInNav: false }, // no showInNav -> hidden from sidebar
+      },
+     {
+        path: "Major",
+        name: "Major",
+        component: () => import("../views/Major.vue"),
+        meta: { title: "Major",showInNav: false }, // no showInNav -> hidden from sidebar
+      },
     ],
   },
 ];

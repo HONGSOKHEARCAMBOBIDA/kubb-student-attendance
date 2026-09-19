@@ -4,7 +4,6 @@
       :fields="[
         { slot: 'name', span: 5 },
         { slot: 'dateFrom', span: 5 },
-        { slot: 'dateTo', span: 5 },
         { slot: 'class', span: 5 },
       ]"
       :action-span="3"
@@ -13,10 +12,7 @@
         <el-input v-model="filters.name" placeholder="ស្វែងរក" clearable size="large" />
       </template>
       <template #dateFrom>
-        <el-date-picker v-model="filters.date_from" type="date" placeholder="ពីថ្ងៃទី" value-format="YYYY-MM-DD" clearable style="width:100%" size="large" />
-      </template>
-      <template #dateTo>
-        <el-date-picker v-model="filters.date_to" type="date" placeholder="ដល់ថ្ងៃទី" value-format="YYYY-MM-DD" clearable style="width:100%" size="large" />
+        <el-date-picker v-model="filters.check_date" type="date" placeholder="ពីថ្ងៃទី" value-format="YYYY-MM-DD" clearable style="width:100%" size="large" />
       </template>
       <template #class>
         <el-select v-model="filters.class_id" placeholder="ថ្នាក់" clearable style="width:100%" size="large">
@@ -87,7 +83,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted,watch } from "vue";
 import { ElMessage } from "element-plus";
 import { getAttendanceReport, getClass } from "../api/services";
 import AppFilterBar from "../../components/AppFilterBar.vue";
@@ -97,7 +93,10 @@ const loading = ref(false);
 const classes = ref([]);
 const report = reactive({ columns: [], rows: [] });
 
-const filters = reactive({ name: "", date_from: "", date_to: "", class_id: "" });
+const filters = reactive({ 
+  name: "",
+  check_date: new Date().toISOString().split("T")[0],
+   class_id: "" });
 
 const dateGroups = computed(() => {
   const groups = [];
@@ -143,8 +142,7 @@ async function fetchReport() {
   try {
     const params = {};
     if (filters.name) params.name = filters.name;
-    if (filters.date_from) params.date_from = filters.date_from;
-    if (filters.date_to) params.date_to = filters.date_to;
+    if (filters.check_date) params.check_date = filters.check_date;
     if (filters.class_id) params.class_id = filters.class_id;
 
     const res = await getAttendanceReport(params);
@@ -156,6 +154,22 @@ async function fetchReport() {
     loading.value = false;
   }
 }
+
+function debounce(fn, delay = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+const debouncedFetch = debounce(fetchReport);
+
+watch(
+  () => filters.check_date,
+  () => {
+    debouncedFetch();
+  }
+);
 
 onMounted(() => {
   fetchReport();

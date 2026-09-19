@@ -19,6 +19,9 @@ func SetupRoutes(r *gin.Engine) {
 	attendancecontroller := controller.NewAttendanceController()
 	leavecontroller := controller.NewLeaveController()
 	deductcontroller := controller.NewLeaveDeductTypeController()
+	subjectcontroller := controller.NewSubjectController()
+	majorcontroller := controller.NewMajorController()
+	classschedulecontroller := controller.NewClassScheduleController()
 	r.Static("/clientimage", "./public/clientimage")
 	public := r.Group("/")
 	public.Use(middleware.APIKeyAuth())
@@ -83,5 +86,27 @@ func SetupRoutes(r *gin.Engine) {
 		auth.DELETE(route.DeleteLeaveRequest, middleware.PermissionMiddleware(permission.DeleteLeaveRequest), leavecontroller.DeleteLeaveRequest)
 		auth.GET(route.ViewNotPermisionLeave, middleware.PermissionMiddleware(permission.ViewLeave), leavecontroller.GetNotPermissionLeave)
 		auth.POST(route.AddLeaveNotPermission, middleware.PermissionMiddleware(permission.AddLeaveRequest), leavecontroller.AddNotPermission)
+
+		// Subject
+		auth.POST(route.Addsubjec, middleware.PermissionMiddleware(permission.Addsubject), subjectcontroller.Create)
+		auth.GET(route.Viewsubject, middleware.PermissionMiddleware(permission.Viewsubject), subjectcontroller.Get)
+		auth.PUT(route.Editsubject, middleware.PermissionMiddleware(permission.Editsubject), subjectcontroller.Update)
+		auth.PUT(route.ToggleSubject, middleware.PermissionMiddleware(permission.Editsubject), subjectcontroller.Toggle)
+
+		// Majoir
+		auth.POST(route.AddMajor, middleware.PermissionMiddleware(permission.AddMajor), majorcontroller.Create)
+		auth.PUT(route.EditMajor, middleware.PermissionMiddleware(permission.EditMajor), majorcontroller.Update)
+		auth.GET(route.ViewMajorWithPagination, middleware.PermissionMiddleware(permission.ViewMajor), majorcontroller.GetWithPagination)
+		auth.PUT(route.ToggleMajor, middleware.PermissionMiddleware(permission.EditMajor), majorcontroller.Toggle)
+		auth.POST(route.AddMajorSubject, middleware.PermissionMiddleware(permission.AddMajor), majorcontroller.AddSubject)
+		auth.POST(route.GetMajorSubject, middleware.PermissionMiddleware(permission.ViewMajor), majorcontroller.GetSubjects)
+		auth.PUT(route.ToggleMajorSubject, middleware.PermissionMiddleware(permission.Editsubject), majorcontroller.ToggleSubject)
+		auth.DELETE(route.RemoveMajorSubject, middleware.PermissionMiddleware(permission.Editsubject), majorcontroller.RemoveSubject)
+
+		// Class Schedule
+		auth.GET(route.GetClassSchedule, middleware.PermissionMiddleware(permission.ViewCompany), classschedulecontroller.GetByClass)
+		auth.GET(route.GetClassAvailableSubjects, middleware.PermissionMiddleware(permission.Viewsubject), classschedulecontroller.GetAvailableSubjects)
+		auth.POST(route.CreateClassSchedule, middleware.PermissionMiddleware(permission.AddCompany), classschedulecontroller.Create)
+		auth.PATCH(route.ToggleClassSchedule, middleware.PermissionMiddleware(permission.Editsubject), classschedulecontroller.Toggle)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"sort"
 	"strconv"
 	"strings"
@@ -290,6 +291,7 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 
 func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (response.AttendanceResponseDraft, error) {
 	currentDate := helper.CurrentDate()
+	dayOfWeek := helper.GetCurrentDay()
 
 	var user model.User
 	if err := s.db.WithContext(ctx).Select("id").First(&user, id).Error; err != nil {
@@ -298,11 +300,21 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
 		}
 		return response.AttendanceResponseDraft{}, fmt.Errorf("failed to load user: %w", err)
 	}
-
 	var userclass model.UserClass
-	if err := s.db.WithContext(ctx).Preload("Class").Select("id,class_id,user_id").
-		Where("user_id = ? AND is_active = 1", user.ID).First(&userclass).Error; err != nil {
-		return response.AttendanceResponseDraft{}, fmt.Errorf("failed to load user class: %w", err)
+	if err := s.db.WithContext(ctx).
+		Joins("JOIN class ON class.id = user_class.class_id").
+		Preload("Class").
+		Select("user_class.id, user_class.class_id, user_class.user_id").
+		Where(`
+        user_class.user_id = ?
+        AND user_class.is_active = ?
+        AND class.is_active = ?
+    `, user.ID, true, true).
+		First(&userclass).Error; err != nil {
+		return response.AttendanceResponseDraft{}, fmt.Errorf(
+			"failed to load user class: %w",
+			err,
+		)
 	}
 
 	var shift model.Shift
@@ -312,6 +324,26 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
 		}
 		return response.AttendanceResponseDraft{}, fmt.Errorf("failed to load shift: %w", err)
 	}
+
+	var classSchedule model.ClassSchedule
+
+	if err := s.db.WithContext(ctx).
+		Preload("Subject").
+		Where(
+			"class_id = ? AND day_of_week = ? AND is_active = ?",
+			userclass.Class.ID,
+			dayOfWeek,
+			true,
+		).
+		First(&classSchedule).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return response.AttendanceResponseDraft{}, fmt.Errorf("subject schedule not found")
+		}
+
+		return response.AttendanceResponseDraft{}, fmt.Errorf("failed to get class schedule: %w", err)
+	}
+
+	subjectName := classSchedule.Subject.NameKh
 
 	leave, err := s.getApprovedLeaveSession(ctx, user.ID)
 	if err != nil {
@@ -360,6 +392,7 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
 		Type:          current.recordType, // now a string, e.g. "session1"
 		TypeString:    label,
 		ScheduledTime: current.scheduledTime,
+		SubjectName:   *subjectName,
 	}, nil
 }
 
@@ -400,7 +433,7 @@ func applyCommonFilterAttendance(query *gorm.DB, filter map[string]string) *gorm
 		case "class_id":
 			query = query.Where("a.class_id =?", value)
 		case "check_date":
-			query = query.Where("a.check_date >=?", value)
+			query = query.Where("a.check_date =?", value)
 		}
 	}
 	return query

@@ -19,6 +19,7 @@ type AttendanceResponseDraft struct {
 	Type          string `json:"type"`
 	TypeString    string `json:"type_string"`
 	ScheduledTime string `json:"scheduled_time"`
+	SubjectName   string `json:"subject_name"`
 }
 
 type AttendanceResponseGenerate struct {

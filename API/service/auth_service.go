@@ -52,7 +52,8 @@ var requiredPermissions = []string{
 	"edit.company", "edit.user", "add.user", "edit.leave.type",
 	"add.leave.type", "edit.leave.request", "edit.status.leave.request",
 	"add.role.has.permission", "add.leave.request", "edit.leave.request",
-	"edit.status.leave.request", "delete.leave.request",
+	"edit.status.leave.request", "delete.leave.request", "add.subject", "edit.subject",
+	"add.Major", "edit.Major",
 }
 
 func (s *authservice) Login(input request.AuthRequest, c *gin.Context) (*response.AuthResponse, error) {

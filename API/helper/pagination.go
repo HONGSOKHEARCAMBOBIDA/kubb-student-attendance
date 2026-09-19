@@ -12,7 +12,7 @@ func GetPagination(c *gin.Context) (page, pageSize int) {
 		page = 1
 	}
 
-	pageSize, err = strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+	pageSize, err = strconv.Atoi(c.DefaultQuery("page_size", "10"))
 	if err != nil || pageSize < 1 {
 		pageSize = 10
 	}

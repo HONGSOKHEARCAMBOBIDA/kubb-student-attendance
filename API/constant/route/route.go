@@ -89,4 +89,28 @@ const (
 	ViewRoleHasPermission   = "view.role.has.permission/:id"
 	AddRoleHasPermission    = "add.role.has.permission"
 	DeleteRoleHasPermission = "delete.role.has.permission"
+
+	// Subject
+	Viewsubject   = "view.subject"
+	Addsubjec     = "add.subject"
+	Editsubject   = "edit.subject/:id"
+	ToggleSubject = "toggle.subject/:id"
+
+	// Major
+
+	AddMajor                = "add.Major"
+	EditMajor               = "edit.Major/:id"
+	ViewMajorWithPagination = "view.major.pagination"
+	ToggleMajor             = "Toggle.Major/:id"
+
+	AddMajorSubject    = "add.major.subject/:id"
+	GetMajorSubject    = "view.major.subject/:id"
+	UpdateMajorSubject = "Update.major.subject/:id"
+	ToggleMajorSubject = "Toggle.major.subject/:id"
+	RemoveMajorSubject = "Remove.major.subject/:id"
+
+	GetClassSchedule          = "class/:id/schedule"
+	GetClassAvailableSubjects = "class/:id/schedule/subjects"
+	CreateClassSchedule       = "class/:id/schedule"
+	ToggleClassSchedule       = "class-schedule/:id/toggle"
 )

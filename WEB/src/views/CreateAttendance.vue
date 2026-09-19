@@ -3,7 +3,7 @@
     <template #header>
       <div style="display:flex;align-items:center;justify-content:center;gap:8px">
         <el-text style="color:black;font-size:18px;font-weight:bold">
-          {{ draft?.type_string ?? "វត្តមាន" }}
+          {{ draft?.subject_name ?? "វត្តមាន" }}
         </el-text>
       </div>
       <el-row justify="space-between" align="middle">
