@@ -8,6 +8,7 @@ type AttendanceResponse struct {
 	GenderString             string                     `json:"gender_string"`
 	CompanyID                int                        `json:"company_id"`
 	CompanyName              string                     `json:"company_name"`
+	SubjectName              string                     `json:"subject_name"`
 	RoleID                   int                        `json:"role_id"`
 	RoleName                 string                     `json:"role_name" gorm:"column:role_name"`
 	CheckDate                string                     `json:"check_date"`
@@ -23,14 +24,15 @@ type AttendanceResponseDraft struct {
 }
 
 type AttendanceResponseGenerate struct {
-	ID        int    `json:"id"`
-	UserID    int    `json:"user_id"`
-	NameKH    string `json:"name_kh" gorm:"column:name_kh"`
-	NameEN    string `json:"name_en" gorm:"column:name_en"`
-	Code      string `json:"code" gorm:"column:code"`
-	Gender    int    `json:"gender"`
-	ClassID   int    `json:"class_id" gorm:"column:class_id"`
-	ClassName string `json:"class_name"`
+	ID          int    `json:"id"`
+	UserID      int    `json:"user_id"`
+	NameKH      string `json:"name_kh" gorm:"column:name_kh"`
+	NameEN      string `json:"name_en" gorm:"column:name_en"`
+	Code        string `json:"code" gorm:"column:code"`
+	Gender      int    `json:"gender"`
+	ClassID     int    `json:"class_id" gorm:"column:class_id"`
+	ClassName   string `json:"class_name"`
+	SubjectName string `json:"subject_name"`
 
 	CheckDate string `json:"check_date"`
 	Status    string `json:"status"`

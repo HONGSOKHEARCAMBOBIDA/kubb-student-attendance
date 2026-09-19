@@ -139,6 +139,7 @@ func (s *attendanceservice) getApprovedLeaveSession(ctx context.Context, userID 
 func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input request.AttendanceRequestCreate) error {
 	currentDate := helper.CurrentDate()
 	currentTime := helper.CurrentTime()
+	dayOfWeek := helper.GetCurrentDay()
 
 	var class model.Class
 
@@ -155,16 +156,42 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 	}
 
 	var userclass model.UserClass
-	if err := s.db.WithContext(ctx).Select("id,class_id,user_id").
-		Where("user_id = ? AND is_active = 1", user.ID).First(&userclass).Error; err != nil {
+	if err := s.db.WithContext(ctx).
+		Joins("JOIN class ON class.id = user_class.class_id").
+		Preload("Class").
+		Select("user_class.id, user_class.class_id, user_class.user_id").
+		Where(`
+        user_class.user_id = ?
+        AND user_class.is_active = ?
+        AND class.is_active = ?
+    `, user.ID, true, true).
+		First(&userclass).Error; err != nil {
 		return err
 	}
 
 	var shift model.Shift
-	if err := s.db.WithContext(ctx).Where("id = ?", class.ShiftID).First(&shift).Error; err != nil {
+	if err := s.db.WithContext(ctx).Where("id = ?", userclass.Class.ShiftID).First(&shift).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
+		return err
+	}
+
+	var classSchedule model.ClassSchedule
+
+	if err := s.db.WithContext(ctx).
+		Preload("Subject").
+		Where(
+			"class_id = ? AND day_of_week = ? AND is_active = ?",
+			userclass.Class.ID,
+			dayOfWeek,
+			true,
+		).
+		First(&classSchedule).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+
 		return err
 	}
 
@@ -224,12 +251,14 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 
 		case errors.Is(err, gorm.ErrRecordNotFound):
 			attendance = model.Attendance{
-				UserID:         user.ID,
-				ClassID:        input.CompanyID,
-				CheckDate:      currentDate,
-				Status:         "WORKING",
-				LeaveRequestID: nil,
-				VerifyBy:       nil,
+				UserID:          user.ID,
+				ClassID:         input.CompanyID,
+				ClassScheduleID: classSchedule.ID,
+				SubjectID:       int(classSchedule.SubjectID),
+				CheckDate:       currentDate,
+				Status:          "WORKING",
+				LeaveRequestID:  nil,
+				VerifyBy:        nil,
 			}
 			if err := tx.Create(&attendance).Error; err != nil {
 				return fmt.Errorf("failed to create attendance: %w", err)
@@ -255,16 +284,18 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 		current = sessions[recordCount]
 		//attendanceType := helper.DetermineAttendanceType(currentTime, current.scheduledTime, current.isCheckIn)
 		record = model.AttendanceRecord{
-			AttendanceID: attendance.ID,
-			UserID:       user.ID,
-			ClassID:      input.CompanyID,
-			ShiftID:      shift.ID,
-			CheckTime:    &currentTime,
-			Type:         current.recordType,
-			Inzone:       inzone,
-			Latitude:     input.Latitude,
-			Longitude:    input.Longitude,
-			Status:       model.StatusPresent,
+			AttendanceID:    attendance.ID,
+			UserID:          user.ID,
+			ClassID:         input.CompanyID,
+			ShiftID:         shift.ID,
+			CheckTime:       &currentTime,
+			Type:            current.recordType,
+			ClassScheduleID: classSchedule.ID,
+			SubjectID:       int(classSchedule.SubjectID),
+			Inzone:          inzone,
+			Latitude:        input.Latitude,
+			Longitude:       input.Longitude,
+			Status:          model.StatusPresent,
 		}
 		if err := tx.Create(&record).Error; err != nil {
 			return fmt.Errorf("failed to created attendance record: %w", err)
@@ -434,6 +465,8 @@ func applyCommonFilterAttendance(query *gorm.DB, filter map[string]string) *gorm
 			query = query.Where("a.class_id =?", value)
 		case "check_date":
 			query = query.Where("a.check_date =?", value)
+		case "subject_id":
+			query = query.Where("a.subject_id =?", value)
 		}
 	}
 	return query
@@ -617,10 +650,12 @@ func (s *attendanceservice) GetAttendancePDF(ctx context.Context, id int, pf req
 			u.gender AS gender,
 			c.name AS class_name,
 			a.check_date AS check_date,
-			a.status AS status
+			a.status AS status,
+			s.name_kh AS subject_name
 		`).
 		Joins("LEFT JOIN user u ON u.id = a.user_id").
-		Joins("LEFT JOIN class c ON c.id = a.class_id")
+		Joins("LEFT JOIN class c ON c.id = a.class_id").
+		Joins("LEFT JOIN subject s ON s.id = a.subject_id")
 
 	attendancequery = attendancequery.Order("a.id DESC")
 	attendancequery = applyAccessFilterAttendance(attendancequery, s.db, user.Role, user)

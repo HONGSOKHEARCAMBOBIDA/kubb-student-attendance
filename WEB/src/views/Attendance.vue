@@ -3,9 +3,10 @@
     <!-- Filters -->
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 10 },
-        { slot: 'date', span: 6 },
-        { slot: 'class', span: 5 }
+        { slot: 'name', span: 5 },
+        { slot: 'date', span: 5 },
+        { slot: 'class', span: 5 },
+        {slot:'subject',span: 5},
       ]"
       :action-span="3"
     >
@@ -38,7 +39,7 @@
           clearable
           style="width: 100%"
           size="large"
-          @change="fetchAttendance"
+          @change="onclasschange"
         >
           <el-option
             v-for="cls in classes"
@@ -47,6 +48,18 @@
             :value="cls.id"
           />
         </el-select>
+      </template>
+      <template #subject>
+            <AppSelect
+            v-model="filters.subject_id"
+            :options="subjectOptions"
+            :loading="subjectsLoading"
+            placeholder="ជ្រើសរើសមុខវិជ្ជា"
+            size="large"
+            filterable
+            clearable
+            @change="fetchAttendance"
+          />
       </template>
       <template #actions>
         <AppButton type="primary" @click="fetchAttendance"> ស្វែងរក </AppButton>
@@ -67,6 +80,7 @@
           { prop: 'code', label: 'កូដ', minWidth: 90 },
           { label: 'ភេទ', slot: 'gender', minWidth: 80 },
           { prop: 'class_name', label: 'ថ្នាក់', minWidth: 110 },
+          { prop: 'subject_name', label: 'មុខវិជ្ជា', minWidth: 110 },
           { prop: 'check_date', label: 'ថ្ងៃស្កែន', minWidth: 110 },
           { label: 'ម៉ោងទី ១', slot: 'session1', minWidth: 100 },
           { label: 'ម៉ោងទី ២', slot: 'session2', minWidth: 100 },
@@ -114,12 +128,13 @@
 <script setup>
 import { ref, reactive, onMounted, h, computed } from "vue";
 import { ElMessage } from "element-plus";
-import { getAttendance, exportAttendancePDF, getClass, deleteattendance } from "../api/services";
+import { getAttendance, exportAttendancePDF, getClass, deleteattendance,getClassAvailableSubjects } from "../api/services";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppButton from "../../components/AppButton.vue";
 import AppTable from "../../components/AppTable.vue";
 import { useNotification } from "../../composables/useNotification.js";
 import { useUserDataStore } from "../stores/user_data.js";
+import AppSelect from "../../components/AppSelect.vue";
 
 const userDataStore = useUserDataStore();
 const notify = useNotification();
@@ -130,11 +145,13 @@ const page = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 const classes = ref([]);
-
+const subjectOptions = ref([]);
+const subjectsLoading = ref(false)
 const filters = reactive({
   name: "",
   check_date: new Date().toISOString().split("T")[0],
-  class_id: "",
+  class_id: null,
+  subject_id: null,
 });
 
 const candeleteattendance = computed(() =>
@@ -156,6 +173,30 @@ const CheckCell = (props) => {
   return h("div", { style: "font-weight:600" }, props.time);
 };
 CheckCell.props = ["time"];
+
+async function onclasschange(classID) {
+  filters.subject_id = null
+  subjectOptions.value = []
+  if (classID){
+    await fetchSubjectOptions(classID)
+  }
+  fetchAttendance();
+}
+
+async function fetchSubjectOptions(classID) {
+  subjectsLoading.value = true;
+  try {
+    const res = await getClassAvailableSubjects(classID);
+    subjectOptions.value = (res.data.data || []).map((s) => ({
+      label: `${s.code} — ${s.name_kh}`,
+      value: s.id,
+    }));
+  } catch (e) {
+    notify.error(e.response?.data?.error || "Failed to load subjects");
+  } finally {
+    subjectsLoading.value = false;
+  }
+}
 
 async function fetchClasses() {
   try {
@@ -183,7 +224,7 @@ async function fetchAttendance() {
     if (filters.name) params.name = filters.name;
     if (filters.check_date) params.check_date = filters.check_date;
     if (filters.class_id) params.class_id = filters.class_id;
-
+    if (filters.subject_id) params.subject_id = filters.subject_id;
     const res = await exportAttendancePDF(params);
     attendance.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;

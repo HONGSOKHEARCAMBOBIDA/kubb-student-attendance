@@ -111,6 +111,7 @@ func (cr *AttendanceController) GetAttendancePDF(c *gin.Context) {
 		"name":       c.Query("name"),
 		"class_id":   c.Query("class_id"),
 		"check_date": c.Query("check_date"),
+		"subject_id": c.Query("subject_id"),
 	}
 
 	data, meta, err := cr.service.GetAttendancePDF(c.Request.Context(), userID, request.Pagination{
