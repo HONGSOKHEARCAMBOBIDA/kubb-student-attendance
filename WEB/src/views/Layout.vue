@@ -3,7 +3,7 @@
     <aside class="sidebar" :class="{ collapsed }">
       <div class="sidebar-header">
         <el-icon size="26" color="#fff"><UserFilled /></el-icon>
-        <span v-if="!collapsed" class="brand">ប្រព័ន្ធគ្រប់គ្រងធនធានមនុស្ស</span>
+        <span v-if="!collapsed" class="brand">ប្រព័ន្ធវត្តមាននិស្សិត</span>
       </div>
       <el-menu :default-active="$route.path" router :collapse="collapsed"
         background-color="var(--brand-color)" text-color="#a0a8c0" active-text-color="#fff">
@@ -94,7 +94,7 @@ onMounted(() => {
 .brand { color: #fff; font-size: 15px; font-weight: 700; white-space: nowrap; }
 :deep(.el-menu) { border: none; }
 :deep(.el-menu-item) { margin: 2px 8px; border-radius: 6px; }
-:deep(.el-menu-item.is-active) { background: rgba(64,158,255,.2) !important; color: #fff !important; }
+:deep(.el-menu-item.is-active) { background: rgba(18, 33, 51) !important; color: #fff !important; }
 
 /* Main */
 .wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }

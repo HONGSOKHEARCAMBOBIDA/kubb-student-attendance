@@ -68,7 +68,7 @@
         </el-button>
       </el-form-item>
 
-      <el-alert v-if="draftError" :title="draftError" type="warning" show-icon :closable="false" />
+      <el-alert v-if="draftError" :title="draftError" type="error" show-icon :closable="false" />
     </el-form>
   </el-card>
 </template>
@@ -126,7 +126,7 @@ async function fetchDraft() {
     const res = await getAttendanceDraft();
     draft.value = res.data.data || null;
   } catch (e) {
-    draftError.value = e.response?.data?.message || "គ្មានព័ត៌មានវត្តមានបាន";
+    draftError.value = e.response?.data?.message || "គ្មានព័ត៌មានវត្តមាន";
   } finally {
     draftLoading.value = false;
   }

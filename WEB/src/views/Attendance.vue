@@ -11,18 +11,20 @@
       :action-span="3"
     >
       <template #name>
-        <el-input
-          v-model="filters.name"
+        <AppInput
+                 v-model="filters.name"
           placeholder="ស្វែងរក"
           prefix-icon="Search"
           clearable
           @change="fetchAttendance"
           size="large"
-        />
+        >
+
+        </AppInput>
       </template>
       <template #date>
-        <el-date-picker
-          v-model="filters.check_date"
+        <AppDatePicker
+                  v-model="filters.check_date"
           type="date"
           placeholder="ជ្រេីសរេីសថ្ងៃទី"
           value-format="YYYY-MM-DD"
@@ -30,24 +32,22 @@
           @change="fetchAttendance"
           style="width: 100%"
           size="large"
-        />
+        >
+
+        </AppDatePicker>
       </template>
       <template #class>
-        <el-select
-          v-model="filters.class_id"
+        <AppSelect
+        :options="classes"
+           v-model="filters.class_id"
           placeholder="ថ្នាក់"
           clearable
           style="width: 100%"
           size="large"
           @change="onclasschange"
         >
-          <el-option
-            v-for="cls in classes"
-            :key="cls.id"
-            :label="cls.name"
-            :value="cls.id"
-          />
-        </el-select>
+
+        </AppSelect>
       </template>
       <template #subject>
             <AppSelect
@@ -88,7 +88,6 @@
           { label: 'ម៉ោងទី ៤', slot: 'session4', minWidth: 100 },
           { label: 'ម៉ោងទី ៥', slot: 'session5', minWidth: 100 },
           { prop: 'reason', label: 'មូលហេតុ', minWidth: 100 },
-          { label: 'ស្ថានភាព', slot: 'status', width: 100 },
         ]"
       >
         <template #gender="{ row }">
@@ -110,7 +109,7 @@
         <template #session4="{ row }"><CheckCell :time="row.session4" /></template>
         <template #session5="{ row }"><CheckCell :time="row.session5" /></template>
 
-        <template #actions="{ row }">
+        <!-- <template #actions="{ row }">
           <AppButton
             v-if="candeleteattendance"
             size="small"
@@ -119,7 +118,7 @@
             circle
             @click="deleteattendancev1(row)"
           />
-        </template>
+        </template> -->
       </AppTable>
     </el-card>
   </div>
@@ -128,13 +127,15 @@
 <script setup>
 import { ref, reactive, onMounted, h, computed } from "vue";
 import { ElMessage } from "element-plus";
-import { getAttendance, exportAttendancePDF, getClass, deleteattendance,getClassAvailableSubjects } from "../api/services";
+import { getAttendance, exportAttendancePDF, viewcompanyscan, deleteattendance,getClassAvailableSubjects } from "../api/services";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppButton from "../../components/AppButton.vue";
 import AppTable from "../../components/AppTable.vue";
 import { useNotification } from "../../composables/useNotification.js";
 import { useUserDataStore } from "../stores/user_data.js";
 import AppSelect from "../../components/AppSelect.vue";
+import AppInput from "../../components/AppInput.vue";
+import AppDatePicker from "../../components/AppDatePicker.vue";
 
 const userDataStore = useUserDataStore();
 const notify = useNotification();
@@ -142,7 +143,7 @@ const notify = useNotification();
 const attendance = ref([]);
 const loading = ref(false);
 const page = ref(1);
-const pageSize = ref(10);
+const pageSize = ref(20);
 const total = ref(0);
 const classes = ref([]);
 const subjectOptions = ref([]);
@@ -200,8 +201,11 @@ async function fetchSubjectOptions(classID) {
 
 async function fetchClasses() {
   try {
-    const res = await getClass();
-    classes.value = res.data.data || [];
+    const res = await viewcompanyscan();
+    classes.value = (res.data.data || []).map((s)=> ({
+      label: `${s.name}`,
+      value: s.id
+    }))
   } catch {
     ElMessage.error("Failed to load classes");
   }

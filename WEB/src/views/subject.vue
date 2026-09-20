@@ -161,8 +161,7 @@ onUnmounted(() => clearTimeout(searchTimer));
   <div>
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 16 },
-        { slot: 'add', span: 8 },
+        { slot: 'name', span: 10 },
       ]"
       :action-span="4"
     >
@@ -175,7 +174,7 @@ onUnmounted(() => clearTimeout(searchTimer));
         />
       </template>
 
-      <template #add>
+      <template #actions>
         <AppButton v-if="canCreateSubject" type="primary" @click="openCreateDialog">
           បន្ថែមមុខវិជ្ជា
         </AppButton>

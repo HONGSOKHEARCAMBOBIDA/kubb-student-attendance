@@ -7,7 +7,6 @@
     { slot: 'shift', span: 4 },
     { slot: 'generation', span: 4 },
     { slot: 'programm', span: 4 },
-    { slot: 'create', span: 4 },
   ]"
 >
   <template #name>
@@ -86,7 +85,7 @@
     </el-select>
   </template>
 
-  <template #create>
+  <template #actions>
     <AppButton
       v-if="canAddClass"
       type="primary"
@@ -120,7 +119,7 @@
           { prop: 'year', label: 'ឆ្នាំ', width: 90 },
           { prop: 'semester', label: 'ឆមាស', width: 90 },
           { prop: 'group', label: 'ក្រុម', width: 90 },
-          { prop: 'term', label: 'ឆមាស/Term', width: 100 },
+          { prop: 'term', label: 'ឆមាស', width: 100 },
           { prop: 'radius', label: 'ចម្ងាយអាចស្កែន (m)', width: 150 },
           { label: 'អាចស្កែនក្រៅតំបន់', slot: 'outsize', width: 150 },
           { label: 'ស្ថានភាព', slot: 'status', width: 100 },
@@ -178,6 +177,7 @@
           </el-tooltip>
 <el-tooltip content="បញ្ជូលសិស្សតាមExcell" placement="top">
   <AppButton
+    v-if="adminLevel"
     :disabled="row.is_active === false"
     size="small"
     icon="Download"
@@ -189,6 +189,7 @@
 </el-tooltip>
 <el-tooltip content="Copy ទិន្ន័យសិស្សទៅថ្នាក់ផ្សេង" placement="top">
   <AppButton
+  v-if="adminLevel"
   :disabled="row.is_active === false"
     size="small"
     icon="CopyDocument"
@@ -200,6 +201,7 @@
 </el-tooltip>
 <el-tooltip content="កាលវិភាគ" placement="top">
   <AppButton
+  v-if="adminLevel"
   :disabled="row.is_active === false"
     size="small"
     icon="Calendar"
@@ -320,8 +322,7 @@
           </el-form-item>
         </div>
 
-        <template v-if="!isEdit">
-          <el-form-item label="Map Link" prop="map_link">
+          <el-form-item label="Map Link" >
             <el-input
               v-model.trim="form.map_link"
               size="large"
@@ -344,7 +345,6 @@
               </el-radio-group>
             </el-form-item>
           </div>
-        </template>
       </el-form>
 
       <template #footer>
@@ -598,6 +598,9 @@ const copyTargetClassId = ref(null);
 const copyStudents = ref([]);
 const copySelectAll = ref(true);
 
+
+const adminLevel = computed(() => userDataStore.level === 7)
+
 const copyTargetOptions = computed(() =>
   classes.value.filter((c) => c.id !== copySourceClass.value?.id),
 );
@@ -807,6 +810,7 @@ async function handleSave() {
         semester: form.semester,
         group: form.group,
         term: form.term,
+        can_scan_outsize: form.can_scan_outsize
       };
       await updateClass(editId.value, payload);
       notify.success("កែប្រែបានជោគជ័យ");

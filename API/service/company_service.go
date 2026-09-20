@@ -290,6 +290,7 @@ func (s *companyservice) UpdateClass(ctx context.Context, id int, input request.
 		data.Group = input.Group
 		data.Term = input.Term
 		data.ProgrammeID = input.ProgrammeID
+		data.CanScanOutsize = input.CanScanOutsize
 		if err := tx.Save(&data).Error; err != nil {
 			return apperror.New(apperror.CodeInternal, "failed to update product", nil)
 		}

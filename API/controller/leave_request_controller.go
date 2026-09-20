@@ -30,9 +30,10 @@ func (cr *LeaveController) GetLeaveRequest(c *gin.Context) {
 		return
 	}
 	filter := map[string]string{
-		"name":     c.Query("name"),
-		"class_id": c.Query("class_id"),
-		"status":   c.Query("status"),
+		"name":       c.Query("name"),
+		"class_id":   c.Query("class_id"),
+		"status":     c.Query("status"),
+		"subject_id": c.Query("subject_id"),
 	}
 
 	data, meta, err := cr.service.GetLeaveRequest(c.Request.Context(), userID, request.Pagination{

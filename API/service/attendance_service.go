@@ -464,7 +464,7 @@ func applyCommonFilterAttendance(query *gorm.DB, filter map[string]string) *gorm
 		case "class_id":
 			query = query.Where("a.class_id =?", value)
 		case "check_date":
-			query = query.Where("a.check_date =?", value)
+			query = query.Where("a.check_date >=?", value)
 		case "subject_id":
 			query = query.Where("a.subject_id =?", value)
 		}
@@ -479,14 +479,22 @@ func (s *attendanceservice) GetAttendanceReport(ctx context.Context, id int, fil
 	}
 
 	type attendanceHeader struct {
-		ID        int
-		UserID    int
-		NameKH    string
-		NameEN    string
-		Code      string
-		Gender    int
-		ClassName string
-		CheckDate string
+		ID          int
+		UserID      int
+		NameKH      string
+		NameEN      string
+		Code        string
+		Gender      int
+		ClassName   string
+		MajorName   string
+		Generation  string
+		GroupName   int
+		Term        int
+		Year        int
+		Semester    int
+		ShiftName   string
+		SubjectName string
+		CheckDate   string
 	}
 	var headers []attendanceHeader
 
@@ -499,10 +507,22 @@ func (s *attendanceservice) GetAttendanceReport(ctx context.Context, id int, fil
 			u.code AS code,
 			u.gender AS gender,
 			c.name AS class_name,
-			a.check_date AS check_date
+			a.check_date AS check_date,
+			m.name_kh AS major_name,
+			g.name_kh AS generation,
+			c.` + "`group`" + ` AS group_name,
+			c.term AS term,
+			c.year AS year,
+			c.semester AS semester,
+			s.name_kh AS subject_name,
+			sf.name AS shift_name
 		`).
 		Joins("LEFT JOIN user u ON u.id = a.user_id").
-		Joins("LEFT JOIN class c ON c.id = a.class_id")
+		Joins("LEFT JOIN class c ON c.id = a.class_id").
+		Joins("LEFT JOIN subject s ON s.id = a.subject_id").
+		Joins("LEFT JOIN major m ON m.id = c.major_id").
+		Joins("LEFT JOIN generation g ON g.id = c.generation_id").
+		Joins("LEFT JOIN shift sf ON sf.id = c.shift_id")
 
 	q = applyAccessFilterAttendance(q, s.db, user.Role, user)
 	q = applyCommonFilterAttendance(q, filter) // now also handles date_from/date_to
@@ -589,13 +609,21 @@ func (s *attendanceservice) GetAttendanceReport(ctx context.Context, id int, fil
 		agg, ok := userRows[h.UserID]
 		if !ok {
 			agg = &userAgg{row: response.AttendanceReportRow{
-				UserID:    h.UserID,
-				NameKH:    h.NameKH,
-				NameEN:    h.NameEN,
-				Code:      h.Code,
-				Gender:    h.Gender,
-				ClassName: h.ClassName,
-				Cells:     make([]response.AttendanceReportCell, len(columns)),
+				UserID:      h.UserID,
+				NameKH:      h.NameKH,
+				NameEN:      h.NameEN,
+				Code:        h.Code,
+				Gender:      h.Gender,
+				ClassName:   h.ClassName,
+				MajorName:   h.MajorName,
+				Generation:  h.Generation,
+				GroupName:   h.GroupName,
+				Term:        h.Term,
+				Year:        h.Year,
+				Semester:    h.Semester,
+				ShiftName:   h.ShiftName,
+				SubjectName: h.SubjectName,
+				Cells:       make([]response.AttendanceReportCell, len(columns)),
 			}}
 			userRows[h.UserID] = agg
 			userOrder = append(userOrder, h.UserID)

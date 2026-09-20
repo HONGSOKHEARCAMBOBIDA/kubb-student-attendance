@@ -15,8 +15,10 @@ import {
   getLeaveDeductType,
   getClass,
   viewcompanyscan,
+  getClassAvailableSubjects
 } from "../api/services.js";
 import { useUserDataStore } from "../stores/user_data.js";
+import AppSelect from "../../components/AppSelect.vue";
 
 let searchTimer = null;
 const notify = useNotification();
@@ -34,6 +36,9 @@ const dialogVisible = ref(false);
 const isEditMode = ref(false);
 const editingId = ref(null);
 
+const subjectOptions = ref([]);
+const subjectsLoading = ref(false)
+
 const pagination = reactive({
   page: 1,
   page_size: 10,
@@ -45,6 +50,7 @@ const filter = reactive({
   name: "",
   class_id: "",
   status: "",
+  subject_id: null
 });
 
 // Model enum is only PENDING / APPROVE — no REJECTED/CANCELLED on the backend today
@@ -52,6 +58,30 @@ const statusOptions = [
   { value: "PENDING", label: "កំពុងរង់ចាំ" },
   { value: "APPROVE", label: "អនុម័តរួច" },
 ];
+
+async function fetchSubjectOptions(classID) {
+  subjectsLoading.value = true;
+  try {
+    const res = await getClassAvailableSubjects(classID);
+    subjectOptions.value = (res.data.data || []).map((s) => ({
+      label: `${s.code} — ${s.name_kh}`,
+      value: s.id,
+    }));
+  } catch (e) {
+    notify.error(e.response?.data?.error || "Failed to load subjects");
+  } finally {
+    subjectsLoading.value = false;
+  }
+}
+
+async function onclasschange(classID) {
+  filter.subject_id = null
+  subjectOptions.value = []
+  if (classID){
+    await fetchSubjectOptions(classID)
+  }
+  fetchLeaveRequest();
+}
 
 const defaultForm = () => ({
   class_id: null,
@@ -91,7 +121,9 @@ const canDeleteLeave = computed(() =>
 async function fetchClasses() {
   try {
     const res = await viewcompanyscan();
-    classes.value = res.data.data || [];
+    classes.value = (res.data.data || []).map((s)=> ({
+      label: `${s.name}`,
+      value: s.id}))
   } catch {
     notify.error("Failed to load classes");
   }
@@ -228,10 +260,10 @@ onUnmounted(() => clearTimeout(searchTimer));
   <div>
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 8 },
-        { slot: 'class', span: 6 },
-        { slot: 'status', span: 6 },
-        { slot: 'add', span: 4 },
+        { slot: 'name', span: 5 },
+        { slot: 'class', span: 5 },
+        { slot: 'subject', span: 5 },
+        { slot: 'status', span: 5 },
       ]"
       :action-span="4"
     >
@@ -245,40 +277,46 @@ onUnmounted(() => clearTimeout(searchTimer));
       </template>
 
       <template #class>
-        <el-select
-          v-model="filter.class_id"
+     <AppSelect
+        :options="classes"
+           v-model="filter.class_id"
           placeholder="ថ្នាក់"
           clearable
           style="width: 100%"
           size="large"
+          @change="onclasschange"
         >
-          <el-option
-            v-for="cls in classes"
-            :key="cls.id"
-            :label="cls.name"
-            :value="cls.id"
-          />
-        </el-select>
+
+        </AppSelect>
+      </template>
+
+      <template #subject>
+            <AppSelect
+            v-model="filter.subject_id"
+            :options="subjectOptions"
+            :loading="subjectsLoading"
+            placeholder="ជ្រើសរើសមុខវិជ្ជា"
+            size="large"
+            filterable
+            clearable
+            @change="fetchLeaveRequest"
+          /> 
       </template>
 
       <template #status>
-        <el-select
+        <AppSelect
+          :options="statusOptions"
           v-model="filter.status"
           placeholder="ស្ថានភាព"
           clearable
           style="width: 100%"
           size="large"
         >
-          <el-option
-            v-for="s in statusOptions"
-            :key="s.value"
-            :label="s.label"
-            :value="s.value"
-          />
-        </el-select>
+
+        </AppSelect>
       </template>
 
-      <template #add>
+      <template #actions>
         <AppButton v-if="canCreateLeave" type="primary" @click="openCreateDialog">
           បន្ថែមច្បាប់
         </AppButton>
@@ -383,19 +421,15 @@ onUnmounted(() => clearTimeout(searchTimer));
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
         <div class="form-row">
           <el-form-item label="ថ្នាក់" prop="class_id">
-            <el-select
-              v-model="form.class_id"
+            <AppSelect
+            :options="classes"
+                v-model="form.class_id"
               placeholder="ជ្រើសរើសថ្នាក់"
               style="width: 100%"
               size="large"
             >
-              <el-option
-                v-for="cls in classes"
-                :key="cls.id"
-                :label="cls.name"
-                :value="cls.id"
-              />
-            </el-select>
+
+            </AppSelect>
           </el-form-item>
           <el-form-item label="ឯកតាកាត់ថ្ងៃ" prop="deduct_type_id">
             <el-select

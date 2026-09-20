@@ -139,6 +139,7 @@ func (h *AttendanceController) GetAttendanceReport(c *gin.Context) {
 		"name":       c.Query("name"),
 		"class_id":   c.Query("class_id"),
 		"check_date": c.Query("check_date"),
+		"subject_id": c.Query("subject_id"),
 	}
 	report, err := h.service.GetAttendanceReport(c.Request.Context(), userID, filter)
 	if err != nil {

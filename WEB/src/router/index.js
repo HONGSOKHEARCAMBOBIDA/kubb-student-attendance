@@ -32,7 +32,7 @@ const routes = [
           title: "ថ្នាក់រៀន",
           icon: "OfficeBuilding",
           short: "ថ្នាក់រៀន",
-          showInNav: true,
+          showInNav: false,
         },
       },
       {

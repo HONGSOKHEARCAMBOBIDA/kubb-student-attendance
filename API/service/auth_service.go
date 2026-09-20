@@ -443,8 +443,10 @@ func (s *authservice) GetUserData(ctx context.Context, id int) (response.UserDat
 		Select(`
 			u.id AS id,
 			u.name_kh AS name,
-			u.role_id AS role_id
+			u.role_id AS role_id,
+			r.level AS level
 		`).
+		Joins("LEFT JOIN role r ON r.id = u.role_id").
 		Where("u.id = ?", id).
 		First(&userdata).Error
 

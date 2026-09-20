@@ -66,6 +66,14 @@ type AttendanceReportRow struct {
 	Code            string                 `json:"code"`
 	Gender          int                    `json:"gender"`
 	ClassName       string                 `json:"class_name"`
+	MajorName       string                 `json:"major_name" gorm:"column:major_name"`
+	Generation      string                 `json:"generation"`
+	GroupName       int                    `json:"group_name" gorm:"column:group_name"`
+	Term            int                    `json:"term"`
+	Year            int                    `json:"year"`
+	Semester        int                    `json:"semester"`
+	ShiftName       string                 `json:"shift_name"`
+	SubjectName     string                 `json:"subject_name"`
 	Cells           []AttendanceReportCell `json:"cells"` // same order/length as Columns
 	AbsentCount     int                    `json:"absent_count"`
 	PermissionCount int                    `json:"permission_count"`

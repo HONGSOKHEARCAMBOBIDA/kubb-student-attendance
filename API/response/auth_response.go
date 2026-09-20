@@ -14,6 +14,7 @@ type UserDataResponse struct {
 	ID          int                `json:"id"`
 	Name        string             `json:"name"`
 	RoleID      int                `json:"role_id" gorm:"column:role_id"`
+	Level       int                `json:"level"`
 	ClassID     int                `json:"class_id" gorm:"column:class_id"`
 	Permissions []model.Permission `json:"permissions" gorm:"-"`
 }

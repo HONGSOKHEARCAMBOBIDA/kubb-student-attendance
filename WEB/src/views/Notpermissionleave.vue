@@ -174,7 +174,7 @@ const generations = ref([]);
 const loading = ref(false);
 const exporting = ref(false);
 const page = ref(1);
-const pageSize = ref(10);
+const pageSize = ref(50);
 const total = ref(0);
 
 function todayStr() {

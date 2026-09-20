@@ -81,6 +81,9 @@ func (s *leaveRequestService) GetLeaveRequest(ctx context.Context, id int, pf re
 		if v, ok := filter["class_id"]; ok && v != "" {
 			tx = tx.Where("l.class_id = ?", v)
 		}
+		if v, ok := filter["subject_id"]; ok && v != "" {
+			tx = tx.Where("l.subject_id = ?", v)
+		}
 		if v, ok := filter["status"]; ok && v != "" {
 			tx = tx.Where("l.status = ?", v)
 		}
@@ -134,6 +137,7 @@ func (s *leaveRequestService) GetLeaveRequest(ctx context.Context, id int, pf re
 }
 
 func (s *leaveRequestService) CreateLeaveRequest(ctx context.Context, id int, input request.LeaveRequestCreate) error {
+	dayOfWeek := helper.GetCurrentDay()
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
 	defer cancel()
 	var user model.User
@@ -141,17 +145,37 @@ func (s *leaveRequestService) CreateLeaveRequest(ctx context.Context, id int, in
 		return err
 	}
 
+	var classSchedule model.ClassSchedule
+
+	if err := s.db.WithContext(ctx).
+		Preload("Subject").
+		Where(
+			"class_id = ? AND day_of_week = ? AND is_active = ?",
+			input.ClassID,
+			dayOfWeek,
+			true,
+		).
+		First(&classSchedule).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+
+		return err
+	}
+
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		newleave := model.LeaveRequest{
-			UserID:         id,
-			ClassID:        input.ClassID,
-			StartDate:      input.StartDate,
-			EndDate:        input.EndDate,
-			BackToWorkDate: input.BackToWorkDate,
-			TotalDay:       input.TotalDay,
-			DeductTypeID:   input.DeductTypeID,
-			Reason:         input.Reason,
-			Status:         model.LeaveStatusPending,
+			UserID:          id,
+			ClassID:         input.ClassID,
+			ClassScheduleID: classSchedule.ID,
+			SubjectID:       classSchedule.Subject.ID,
+			StartDate:       input.StartDate,
+			EndDate:         input.EndDate,
+			BackToWorkDate:  input.BackToWorkDate,
+			TotalDay:        input.TotalDay,
+			DeductTypeID:    input.DeductTypeID,
+			Reason:          input.Reason,
+			Status:          model.LeaveStatusPending,
 		}
 		if err := tx.Create(&newleave).Error; err != nil {
 			return err
@@ -165,7 +189,7 @@ func (s *leaveRequestService) CreateLeaveRequest(ctx context.Context, id int, in
 func (s *leaveRequestService) AddNotPermission(ctx context.Context, input request.NotPermissionLeaveRequest) error {
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
 	defer cancel()
-
+	dayOfWeek := helper.GetCurrentDay()
 	checkDate := input.CheckDate
 	if checkDate == "" {
 		checkDate = time.Now().Format("2006-01-02")
@@ -175,6 +199,22 @@ func (s *leaveRequestService) AddNotPermission(ctx context.Context, input reques
 
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		for _, n := range input.NotPermissionLeaveInput {
+			var classSchedule model.ClassSchedule
+
+			if err := tx.WithContext(ctx).
+				Preload("Subject").
+				Where(
+					"class_id = ? AND day_of_week = ? AND is_active = ?",
+					n.ClassID,
+					dayOfWeek,
+					true,
+				).
+				First(&classSchedule).Error; err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return err
+				}
+				return err
+			}
 			// guard against duplicate processing for the same user/date
 			var count int64
 			if err := tx.Model(&model.Attendance{}).
@@ -187,12 +227,14 @@ func (s *leaveRequestService) AddNotPermission(ctx context.Context, input reques
 			}
 
 			attendance := model.Attendance{
-				UserID:         n.UserID,
-				ClassID:        n.ClassID,
-				CheckDate:      checkDate,
-				Status:         "LEAVE NOT PERMISSION",
-				LeaveRequestID: nil,
-				VerifyBy:       nil,
+				UserID:          n.UserID,
+				ClassID:         n.ClassID,
+				ClassScheduleID: classSchedule.ID,
+				SubjectID:       classSchedule.Subject.ID,
+				CheckDate:       checkDate,
+				Status:          "LEAVE NOT PERMISSION",
+				LeaveRequestID:  nil,
+				VerifyBy:        nil,
 			}
 			if err := tx.Create(&attendance).Error; err != nil {
 				return apperror.New(apperror.CodeInternal, "failed to create attendance", nil)
@@ -201,13 +243,15 @@ func (s *leaveRequestService) AddNotPermission(ctx context.Context, input reques
 			records := make([]model.AttendanceRecord, 0, len(sessionOrder))
 			for _, session := range sessionOrder {
 				records = append(records, model.AttendanceRecord{
-					AttendanceID: attendance.ID,
-					UserID:       n.UserID,
-					ClassID:      n.ClassID,
-					ShiftID:      n.ShiftID,
-					Type:         session,
-					Status:       model.StatusAbsence,
-					Inzone:       false,
+					AttendanceID:    attendance.ID,
+					UserID:          n.UserID,
+					ClassID:         n.ClassID,
+					ShiftID:         n.ShiftID,
+					Type:            session,
+					ClassScheduleID: classSchedule.ID,
+					SubjectID:       classSchedule.Subject.ID,
+					Status:          model.StatusAbsence,
+					Inzone:          false,
 				})
 			}
 			if err := tx.Create(&records).Error; err != nil {
@@ -296,11 +340,13 @@ func (s *leaveRequestService) VerifyLeaveRequest(ctx context.Context, id int, ve
 			case errors.Is(err, gorm.ErrRecordNotFound):
 				leaveID := leaveforupdte.ID
 				attendance = model.Attendance{
-					UserID:         leaveforupdte.UserID,
-					ClassID:        leaveforupdte.ClassID,
-					CheckDate:      checkDate,
-					Status:         "LEAVE",
-					LeaveRequestID: &leaveID,
+					UserID:          leaveforupdte.UserID,
+					ClassID:         leaveforupdte.ClassID,
+					ClassScheduleID: leaveforupdte.ClassScheduleID,
+					SubjectID:       leaveforupdte.SubjectID,
+					CheckDate:       checkDate,
+					Status:          "LEAVE",
+					LeaveRequestID:  &leaveID,
 				}
 				if err := tx.Create(&attendance).Error; err != nil {
 					return fmt.Errorf("failed to create attendance: %w", err)
@@ -321,14 +367,16 @@ func (s *leaveRequestService) VerifyLeaveRequest(ctx context.Context, id int, ve
 				}
 
 				record := model.AttendanceRecord{
-					AttendanceID: attendance.ID,
-					UserID:       leaveforupdte.UserID,
-					ClassID:      leaveforupdte.ClassID,
-					ShiftID:      shift.ID,
-					CheckTime:    nil,
-					Type:         sess.recordType,
-					Inzone:       false,
-					Status:       model.StatusPermission,
+					AttendanceID:    attendance.ID,
+					UserID:          leaveforupdte.UserID,
+					ClassID:         leaveforupdte.ClassID,
+					ShiftID:         shift.ID,
+					CheckTime:       nil,
+					Type:            sess.recordType,
+					ClassScheduleID: leaveforupdte.ClassScheduleID,
+					SubjectID:       leaveforupdte.SubjectID,
+					Inzone:          false,
+					Status:          model.StatusPermission,
 				}
 				if err := tx.Create(&record).Error; err != nil {
 					return fmt.Errorf("failed to create leave attendance record: %w", err)

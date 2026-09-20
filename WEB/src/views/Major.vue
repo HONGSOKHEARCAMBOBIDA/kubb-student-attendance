@@ -36,7 +36,7 @@ const editingId = ref(null);
 
 const pagination = reactive({
   page: 1,
-  page_size: 10,
+  page_size: 20,
   total: 0,
 });
 
@@ -321,7 +321,7 @@ onUnmounted(() => clearTimeout(searchTimer));
         />
       </template>
 
-      <template #add>
+      <template #actions>
         <AppButton v-if="canCreateMajor" type="primary" @click="openCreateDialog">
           បន្ថែមជំនាញ
         </AppButton>
