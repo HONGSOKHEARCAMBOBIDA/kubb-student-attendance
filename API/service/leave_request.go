@@ -429,12 +429,13 @@ func (s *leaveRequestService) VerifyLeaveRequest(ctx context.Context, id int, ve
 				}
 			case errors.Is(err, gorm.ErrRecordNotFound):
 				leaveID := leaveforupdte.ID
+				checkDate := helper.FormatDate(leaveforupdte.ClassSchedule.ScheduleDate)
 				attendance = model.Attendance{
 					UserID:          leaveforupdte.UserID,
 					ClassID:         leaveforupdte.ClassID,
 					ClassScheduleID: leaveforupdte.ClassScheduleID,
 					SubjectID:       leaveforupdte.SubjectID,
-					CheckDate:       leaveforupdte.ClassSchedule.ScheduleDate,
+					CheckDate:       checkDate,
 					Status:          "LEAVE",
 					LeaveRequestID:  &leaveID,
 				}

@@ -220,11 +220,17 @@
 
           <template #expand="{ row: students }">
           <el-divider content-position="left">
-            <el-text> សិស្ស </el-text>
+            
+            <AppInput
+      v-model.trim="studentSearch[students.id]"
+      placeholder="ស្វែងរកសិស្ស (ឈ្មោះ ឬ កូដ)"
+      clearable
+      
+    />
           </el-divider>
           <AppTable
             show-index
-            :data="students.students"
+            :data="filteredStudents(students)"
             :columns="studentcolumn"
             :show-pagination="false"
           >
@@ -570,6 +576,7 @@ import { useLoading } from "../../composables/useLoading.js";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import ClassScheduleDialog from "../../components/ClassScheduleDialog.vue"; // adjust path
 import AppSelect from "../../components/AppSelect.vue";
+import AppInput from "../../components/AppInput.vue";
 const notify = useNotification();
 const userDataStore = useUserDataStore();
 const useloading = useLoading();
@@ -579,6 +586,20 @@ const scheduleClass = ref(null);
 function openSchedule(row) {
   scheduleClass.value = row;
   scheduleDialog.value = true;
+}
+
+const studentSearch = reactive({});
+
+function filteredStudents(row) {
+  const keyword = (studentSearch[row.id] || "").trim().toLowerCase();
+  if (!keyword) return row.students || [];
+  return (row.students || []).filter((s) => {
+    return (
+      s.name_kh?.toLowerCase().includes(keyword) ||
+      s.name_en?.toLowerCase().includes(keyword) ||
+      s.code?.toLowerCase().includes(keyword)
+    );
+  });
 }
 
 const classes = ref([]);
