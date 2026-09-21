@@ -120,6 +120,7 @@
           { prop: 'semester', label: 'ឆមាស', width: 90 },
           { prop: 'group', label: 'ក្រុម', width: 90 },
           { prop: 'term', label: 'ឆមាស', width: 100 },
+          { slot: 'type', label: 'ប្រភេទ', width: 100 },
           { prop: 'radius', label: 'ចម្ងាយអាចស្កែន (m)', width: 150 },
           { label: 'អាចស្កែនក្រៅតំបន់', slot: 'outsize', width: 150 },
           { label: 'ស្ថានភាព', slot: 'status', width: 100 },
@@ -139,6 +140,10 @@
         </template>
         <template #total="{row}">
           <el-text>{{ row.students?.length ?? 0 }} នាក់</el-text>
+        </template>
+
+        <template #type="{row}">
+          <el-text>{{ row.type === 'onclass' ? "ផ្ទាល់" : "អនឡាញ" }}</el-text>
         </template>
 
         <template #actions="{ row }">
@@ -320,6 +325,9 @@
           <el-form-item label="Term" prop="term">
             <el-input type="number" v-model.number="form.term" size="large" placeholder="e.g. 1" />
           </el-form-item>
+          <AppSelect size="large" v-model="form.type" :options="classType" label="ប្រភេទថ្នាក់" placeholder="ប្រភេទថ្នាក់">
+
+          </AppSelect>
         </div>
 
           <el-form-item label="Map Link" >
@@ -561,6 +569,7 @@ import { useNotification } from "../../composables/useNotification.js";
 import { useLoading } from "../../composables/useLoading.js";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import ClassScheduleDialog from "../../components/ClassScheduleDialog.vue"; // adjust path
+import AppSelect from "../../components/AppSelect.vue";
 const notify = useNotification();
 const userDataStore = useUserDataStore();
 const useloading = useLoading();
@@ -665,8 +674,14 @@ const studentcolumn = [
   { prop: "code", label: "អត្តលេខ", minwidth: 100 },
 ];
 
+const classType = [
+  { value: "onclass", label: "ផ្ទាល់" },
+  { value: "online", label: "អនឡាញ" },
+]
+
 const form = reactive({
   name: "",
+  type: "",
   major_id: null,
   shift_id: null,
   generation_id: null,
@@ -749,6 +764,7 @@ async function fetchLookups() {
 
 function resetForm() {
   form.name = "";
+  form.type = "";
   form.major_id = null;
   form.shift_id = null;
   form.generation_id = null;
@@ -773,6 +789,7 @@ function openEdit(row) {
   editId.value = row.id;
   Object.assign(form, {
     name: row.name || "",
+    type: row.type || "",
     major_id: row.major_id ?? null,
     shift_id: row.shift_id ?? null,
     generation_id: row.generation_id ?? null,
@@ -802,6 +819,7 @@ async function handleSave() {
     if (isEdit.value) {
       const payload = {
         name: form.name,
+        type: form.type,
         major_id: form.major_id,
         shift_id: form.shift_id,
         generation_id: form.generation_id,

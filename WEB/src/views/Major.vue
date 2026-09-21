@@ -307,8 +307,7 @@ onUnmounted(() => clearTimeout(searchTimer));
   <div>
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 16 },
-        { slot: 'add', span: 8 },
+        { slot: 'name', span: 8 },
       ]"
       :action-span="4"
     >
@@ -479,7 +478,7 @@ onUnmounted(() => clearTimeout(searchTimer));
         @page-change="handleSubjectsPageChange"
         :columns="[
           { label: 'លេខកូដ', prop: 'subject_code', minWidth: 100 },
-          { label: 'ឈ្មោះខ្មែរ', prop: 'subject_name_kh', minWidth: 160 },
+          { label: 'ឈ្មោះ', slot: 'subject_name_kh', minWidth: 160 },
           { label: 'ម៉ោងក្រេឌីត', prop: 'credit_hour', width: 100 },
           { label: 'ឆ្នាំ', slot: 'year', width: 80 },
           { label: 'ឆមាស', prop: 'semester', width: 80 },
@@ -497,6 +496,9 @@ onUnmounted(() => clearTimeout(searchTimer));
             :loading="subjectTogglingId === row.id"
             @change="handleToggleMajorSubject(row)"
           />
+        </template>
+        <template #subject_name_kh="{row}">
+          <el-text>{{ row.subject_name_kh }} | {{ row.subject_name_en }}</el-text>
         </template>
 
         <template #actions="{ row }">

@@ -214,6 +214,7 @@ func (s *majorService) GetSubjects(ctx context.Context, majorID int, pf request.
 		ms.semester AS semester,
 		ms.is_active AS is_active
 	`)
+	dataQuery = dataQuery.Order("id ASC")
 	if err := dataQuery.Offset(offset).Limit(pf.PageSize).Scan(&data).Error; err != nil {
 		return nil, nil, fmt.Errorf("fetch major subject: %w", err)
 	}

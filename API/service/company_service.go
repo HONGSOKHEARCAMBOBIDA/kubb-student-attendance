@@ -152,6 +152,7 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 	dataQuery := applyFilters(base()).Select(`
 		c.id AS id,
 		c.name AS name,
+		c.type AS type,
 		c.is_active AS is_active,
 		c.latitude AS latitude,
 		c.longitude AS longitude,
@@ -245,6 +246,7 @@ func (s *companyservice) CreateClass(ctx context.Context, input request.ClassReq
 	}
 	newClass := model.Class{
 		Name:           &input.Name,
+		Type:           input.Type,
 		IsActive:       true,
 		Latitude:       &lat,
 		Longitude:      &lng,
@@ -282,6 +284,7 @@ func (s *companyservice) UpdateClass(ctx context.Context, id int, input request.
 			return apperror.New(apperror.CodeInternal, "failed to fetch classcurriculumn", nil)
 		}
 		data.Name = &input.Name
+		data.Type = input.Type
 		data.MajorID = input.MajorID
 		data.ShiftID = input.ShiftID
 		data.GenerationID = input.GenerationID

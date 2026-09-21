@@ -1,17 +1,21 @@
 package response
 
-import "mysql/model/base"
+import (
+	"mysql/model"
+	"mysql/model/base"
+)
 
 type ClassResponse struct {
 	base.ModelBase
-	Name           *string `gorm:"column:name;type:varchar(255)" json:"name"`
-	IsActive       bool    `gorm:"column:is_active;default:1" json:"is_active"`
-	Latitude       *string `gorm:"column:latitude;type:varchar(255)" json:"latitude"`
-	Longitude      *string `gorm:"column:longitude;type:varchar(255)" json:"longitude"`
-	Radius         *string `gorm:"column:radius;type:varchar(255)" json:"radius"`
-	BotToken       *string `gorm:"column:bot_token;type:varchar(255)" json:"bot_token"`
-	GroupChatID    *string `gorm:"column:group_chatID;type:varchar(255)" json:"group_chatID"`
-	CanScanOutsize bool    `gorm:"column:can_scan_outsize;default:0" json:"can_scan_outsize"`
+	Name           *string         `gorm:"column:name;type:varchar(255)" json:"name"`
+	Type           model.ClassType `json:"type"`
+	IsActive       bool            `gorm:"column:is_active;default:1" json:"is_active"`
+	Latitude       *string         `gorm:"column:latitude;type:varchar(255)" json:"latitude"`
+	Longitude      *string         `gorm:"column:longitude;type:varchar(255)" json:"longitude"`
+	Radius         *string         `gorm:"column:radius;type:varchar(255)" json:"radius"`
+	BotToken       *string         `gorm:"column:bot_token;type:varchar(255)" json:"bot_token"`
+	GroupChatID    *string         `gorm:"column:group_chatID;type:varchar(255)" json:"group_chatID"`
+	CanScanOutsize bool            `gorm:"column:can_scan_outsize;default:0" json:"can_scan_outsize"`
 
 	MajorID        *int64         `gorm:"column:major_id" json:"major_id"`
 	MajorName      string         `json:"major_name"`
