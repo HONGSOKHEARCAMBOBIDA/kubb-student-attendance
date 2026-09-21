@@ -137,7 +137,7 @@ func (s *leaveRequestService) GetLeaveRequest(ctx context.Context, id int, pf re
 }
 
 func (s *leaveRequestService) CreateLeaveRequest(ctx context.Context, id int, input request.LeaveRequestCreate) error {
-	dayOfWeek := helper.GetCurrentDay()
+
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
 	defer cancel()
 	var user model.User
@@ -150,9 +150,8 @@ func (s *leaveRequestService) CreateLeaveRequest(ctx context.Context, id int, in
 	if err := s.db.WithContext(ctx).
 		Preload("Subject").
 		Where(
-			"class_id = ? AND day_of_week = ? AND is_active = ?",
+			"class_id  = ? AND is_active = ?",
 			input.ClassID,
-			dayOfWeek,
 			true,
 		).
 		First(&classSchedule).Error; err != nil {
@@ -186,10 +185,41 @@ func (s *leaveRequestService) CreateLeaveRequest(ctx context.Context, id int, in
 
 }
 
+func (s *leaveRequestService) getApprovedLeaveSessionForLeave(ctx context.Context, userID int) (LeaveSession, error) {
+	currentDate := helper.CurrentDate()
+
+	var leaveRequest model.LeaveRequest
+	err := s.db.WithContext(ctx).
+		Preload("LeaveDeductType").
+		Where("user_id = ? AND status = ? AND start_date <= ? AND end_date >= ?",
+			userID, model.LeaveStatusApprove, currentDate, currentDate).Order("id ASC").
+		First(&leaveRequest).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// no approved leave today -> normal full-day attendance flow
+			return LeaveNone, nil
+		}
+		return LeaveNone, fmt.Errorf("failed to load leave request: %w", err)
+	}
+
+	deductCode := leaveRequest.LeaveDeductType.Code
+	switch deductCode {
+	case "FULL":
+		return LeaveFull, nil
+	case "HALF_AM":
+		return LeaveMorning, nil
+	case "HALF_PM":
+		return LeaveEvening, nil
+	default:
+		return LeaveNone, fmt.Errorf("unknown leave deduct type code: %s", deductCode)
+	}
+}
+
 func (s *leaveRequestService) AddNotPermission(ctx context.Context, input request.NotPermissionLeaveRequest) error {
+	currentTime := helper.CurrentTime()
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
 	defer cancel()
-	dayOfWeek := helper.GetCurrentDay()
 	checkDate := input.CheckDate
 	if checkDate == "" {
 		checkDate = time.Now().Format("2006-01-02")
@@ -204,9 +234,8 @@ func (s *leaveRequestService) AddNotPermission(ctx context.Context, input reques
 			if err := tx.WithContext(ctx).
 				Preload("Subject").
 				Where(
-					"class_id = ? AND day_of_week = ? AND is_active = ?",
+					"class_id = ? AND is_active = ?",
 					n.ClassID,
-					dayOfWeek,
 					true,
 				).
 				First(&classSchedule).Error; err != nil {
@@ -218,45 +247,106 @@ func (s *leaveRequestService) AddNotPermission(ctx context.Context, input reques
 			// guard against duplicate processing for the same user/date
 			var count int64
 			if err := tx.Model(&model.Attendance{}).
-				Where("user_id = ? AND class_id = ? AND check_date = ?", n.UserID, n.ClassID, checkDate).
+				Where("user_id = ? AND class_id = ? AND check_date = ? AND status = ?", n.UserID, n.ClassID, classSchedule.ScheduleDate, model.AttendanceStatusLeave).
 				Count(&count).Error; err != nil {
 				return apperror.New(apperror.CodeInternal, "failed to check existing attendance", nil)
 			}
 			if count > 0 {
-				continue // already recorded, skip
-			}
+				var shift model.Shift
+				if err := s.db.WithContext(ctx).Where("id = ?", n.ShiftID).First(&shift).Error; err != nil {
+					if errors.Is(err, gorm.ErrRecordNotFound) {
+						return err
+					}
+					return err
+				}
 
-			attendance := model.Attendance{
-				UserID:          n.UserID,
-				ClassID:         n.ClassID,
-				ClassScheduleID: classSchedule.ID,
-				SubjectID:       classSchedule.Subject.ID,
-				CheckDate:       checkDate,
-				Status:          "LEAVE NOT PERMISSION",
-				LeaveRequestID:  nil,
-				VerifyBy:        nil,
-			}
-			if err := tx.Create(&attendance).Error; err != nil {
-				return apperror.New(apperror.CodeInternal, "failed to create attendance", nil)
-			}
+				leave, err := s.getApprovedLeaveSessionForLeave(ctx, n.UserID)
+				if err != nil {
+					return err
+				}
 
-			records := make([]model.AttendanceRecord, 0, len(sessionOrder))
-			for _, session := range sessionOrder {
-				records = append(records, model.AttendanceRecord{
-					AttendanceID:    attendance.ID,
+				sessions, err := buildSessionV2(shift, leave)
+				if err != nil {
+					return err
+				}
+
+				txErr := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+					var attendance model.Attendance
+					err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+						Where("user_id = ? AND check_date = ?", n.UserID, classSchedule.ScheduleDate).First(&attendance).Error
+					if err != nil {
+
+					}
+					var existingRecords []model.AttendanceRecord
+					if err := tx.Where("attendance_id = ? AND status = ?", attendance.ID, model.StatusPresent).Order("id ASC").Find(&existingRecords).Error; err != nil {
+						return fmt.Errorf("failed to load attendance :%w", err)
+					}
+					for _, sess := range sessions {
+						var existing model.AttendanceRecord
+						err := tx.Where("attendance_id =? AND type = ?", attendance.ID, sess.recordType).First(&existing).Error
+						if err == nil {
+							continue
+						}
+						record := model.AttendanceRecord{
+							AttendanceID:    attendance.ID,
+							UserID:          n.UserID,
+							ClassID:         n.ClassID,
+							ShiftID:         shift.ID,
+							CheckTime:       &currentTime,
+							Type:            sess.recordType,
+							ClassScheduleID: classSchedule.ID,
+							SubjectID:       int(classSchedule.SubjectID),
+							Inzone:          false,
+							Latitude:        "",
+							Longitude:       "",
+							Status:          model.StatusAbsence,
+						}
+						if err := tx.Create(&record).Error; err != nil {
+							return fmt.Errorf("failed to created attendance record: %w", err)
+						}
+					}
+
+					return nil
+				})
+				if txErr != nil {
+					return txErr
+				}
+
+			} else {
+				attendance := model.Attendance{
 					UserID:          n.UserID,
 					ClassID:         n.ClassID,
-					ShiftID:         n.ShiftID,
-					Type:            session,
 					ClassScheduleID: classSchedule.ID,
 					SubjectID:       classSchedule.Subject.ID,
-					Status:          model.StatusAbsence,
-					Inzone:          false,
-				})
+					CheckDate:       classSchedule.ScheduleDate,
+					Status:          "LEAVE NOT PERMISSION",
+					LeaveRequestID:  nil,
+					VerifyBy:        nil,
+				}
+				if err := tx.Create(&attendance).Error; err != nil {
+					return apperror.New(apperror.CodeInternal, "failed to create attendance", nil)
+				}
+
+				records := make([]model.AttendanceRecord, 0, len(sessionOrder))
+				for _, session := range sessionOrder {
+					records = append(records, model.AttendanceRecord{
+						AttendanceID:    attendance.ID,
+						UserID:          n.UserID,
+						ClassID:         n.ClassID,
+						ShiftID:         n.ShiftID,
+						Type:            session,
+						ClassScheduleID: classSchedule.ID,
+						SubjectID:       classSchedule.Subject.ID,
+						Status:          model.StatusAbsence,
+						Inzone:          false,
+					})
+				}
+				if err := tx.Create(&records).Error; err != nil {
+					return apperror.New(apperror.CodeInternal, "failed to create attendance records", nil)
+				}
+
 			}
-			if err := tx.Create(&records).Error; err != nil {
-				return apperror.New(apperror.CodeInternal, "failed to create attendance records", nil)
-			}
+
 		}
 		return nil
 	})
@@ -269,7 +359,7 @@ func (s *leaveRequestService) VerifyLeaveRequest(ctx context.Context, id int, ve
 	defer cancel()
 
 	var leaveforupdte model.LeaveRequest
-	if err := s.db.WithContext(ctx).Preload("LeaveDeductType").First(&leaveforupdte, id).Error; err != nil {
+	if err := s.db.WithContext(ctx).Preload("LeaveDeductType").Preload("ClassSchedule").First(&leaveforupdte, id).Error; err != nil {
 		return err
 	}
 
@@ -344,7 +434,7 @@ func (s *leaveRequestService) VerifyLeaveRequest(ctx context.Context, id int, ve
 					ClassID:         leaveforupdte.ClassID,
 					ClassScheduleID: leaveforupdte.ClassScheduleID,
 					SubjectID:       leaveforupdte.SubjectID,
-					CheckDate:       checkDate,
+					CheckDate:       leaveforupdte.ClassSchedule.ScheduleDate,
 					Status:          "LEAVE",
 					LeaveRequestID:  &leaveID,
 				}
@@ -500,8 +590,8 @@ func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, id int,
 			Joins("LEFT JOIN attendance a ON a.user_id = uc.user_id AND a.class_id = uc.class_id AND a.check_date = ?", checkDate).
 			Joins("LEFT JOIN leave_request lr ON lr.user_id = uc.user_id AND lr.class_id = uc.class_id AND lr.status = ? AND ? BETWEEN lr.start_date AND lr.end_date", model.LeaveStatusApprove, checkDate).
 			Where("uc.is_active = ?", 1).
-			Where("a.id IS NULL").
-			Where("lr.id IS NULL")
+			Where("(a.id IS NULL OR a.status = ?)", model.AttendanceStatusLeave).
+			Where("(lr.id IS NULL OR lr.status = ?)", model.LeaveStatusApprove)
 	}
 
 	applyFilters := func(tx *gorm.DB) *gorm.DB {

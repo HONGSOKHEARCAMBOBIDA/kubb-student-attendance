@@ -29,6 +29,7 @@ type LeaveRequest struct {
 	ApproveBy       *int            `gorm:"index:idx_leave_request_approve_by" json:"approve_by"`
 	ApprovedAt      *time.Time      `json:"approved_at"`
 	LeaveDeductType LeaveDeductType `gorm:"foreignKey:deduct_type_id"`
+	ClassSchedule   ClassSchedule
 }
 
 func (LeaveRequest) TableName() string {

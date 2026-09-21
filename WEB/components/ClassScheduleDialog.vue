@@ -5,7 +5,7 @@ import AppTable from "./AppTable.vue";
 import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
 import AppSelect from "./AppSelect.vue";
-
+import AppDatePicker from "./AppDatePicker.vue";
 import {
   getClassSchedule,
   getClassAvailableSubjects,
@@ -47,11 +47,12 @@ const subjectOptions = ref([]);
 const subjectsLoading = ref(false);
 
 const formRef = ref();
-const defaultForm = () => ({ subject_id: null, day_of_week: null });
+const defaultForm = () => ({ subject_id: null, day_of_week: null,schedule_date:"" });
 const form = reactive(defaultForm());
 const rules = {
   subject_id: [{ required: true, message: "សូមជ្រើសរើសមុខវិជ្ជា", trigger: "change" }],
   day_of_week: [{ required: true, message: "សូមជ្រើសរើសថ្ងៃ", trigger: "change" }],
+  schedule_date: [{ required: true, message: "សូមជ្រើសរើសថ្ងៃទី", trigger: "change" }],
 };
 const submitting = ref(false);
 
@@ -160,6 +161,14 @@ watch(
             <el-option v-for="d in DAYS" :key="d.value" :label="d.label" :value="d.value" />
           </el-select>
         </el-form-item>
+       <el-form-item label="ថ្ងៃទី" prop="schedule_date">
+  <AppDatePicker
+    v-model="form.schedule_date"
+    placeholder="ជ្រើសរើសថ្ងៃទី"
+    size="large"
+    clearable
+  />
+</el-form-item>
       </div>
 
       <AppButton type="primary" :loading="submitting" @click="handleAdd">
@@ -177,6 +186,7 @@ watch(
         { label: 'លេខកូដ', prop: 'subject_code', minWidth: 100 },
         { label: 'មុខវិជ្ជា', prop: 'subject_name_kh', minWidth: 160 },
         { label: 'ថ្ងៃ', slot: 'day', width: 120 },
+        { label: 'កាលបរិច្ឆេទ', prop: 'schedule_date', width: 120 },
         { label: 'ស្ថានភាព', slot: 'status', width: 110 },
       ]"
     >

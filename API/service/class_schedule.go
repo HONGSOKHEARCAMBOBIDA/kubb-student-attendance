@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mysql/config"
 	"mysql/constant/apperror"
+	"mysql/helper"
 	"mysql/model"
 	"mysql/request"
 	"mysql/response"
@@ -52,14 +53,17 @@ func (s *classScheduleService) GetByClass(ctx context.Context, classID int) ([]r
 			sub.code AS subject_code,
 			sub.name_kh AS subject_name,
 			cs.day_of_week AS day_of_week,
-			cs.is_active AS is_active
+			cs.is_active AS is_active,
+			cs.schedule_date AS schedule_date
 		`).
 		Order("cs.id DESC").
 		Scan(&data).Error
 	if err != nil {
 		return nil, fmt.Errorf("fetch class schedule: %w", err)
 	}
-
+	for i := range data {
+		data[i].ScheduleDate = helper.FormatDate(data[i].ScheduleDate)
+	}
 	return data, nil
 }
 
@@ -134,10 +138,11 @@ func (s *classScheduleService) Create(ctx context.Context, classID int, input re
 		}
 
 		newdata := model.ClassSchedule{
-			ClassID:   int64(classID),
-			SubjectID: input.SubjectID,
-			DayOfWeek: input.DayOfWeek,
-			IsActive:  true,
+			ClassID:      int64(classID),
+			SubjectID:    input.SubjectID,
+			DayOfWeek:    input.DayOfWeek,
+			ScheduleDate: input.ScheduleDate,
+			IsActive:     true,
 		}
 		if err := tx.Create(&newdata).Error; err != nil {
 			return apperror.New(apperror.CodeInternal, "failed to create class schedule", nil)

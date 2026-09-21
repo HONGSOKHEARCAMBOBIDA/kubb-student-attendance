@@ -137,9 +137,8 @@ func (s *attendanceservice) getApprovedLeaveSession(ctx context.Context, userID 
 }
 
 func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input request.AttendanceRequestCreate) error {
-	currentDate := helper.CurrentDate()
+
 	currentTime := helper.CurrentTime()
-	dayOfWeek := helper.GetCurrentDay()
 
 	var class model.Class
 
@@ -182,9 +181,8 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 	if err := s.db.WithContext(ctx).
 		Preload("Subject").
 		Where(
-			"class_id = ? AND day_of_week = ? AND is_active = ?",
+			"class_id = ?  AND is_active = ?",
 			userclass.Class.ID,
-			dayOfWeek,
 			true,
 		).
 		First(&classSchedule).Error; err != nil {
@@ -245,7 +243,7 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 	txErr := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var attendance model.Attendance
 		err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("user_id = ? AND check_date = ?", user.ID, currentDate).First(&attendance).Error
+			Where("user_id = ? AND check_date = ?", user.ID, classSchedule.ScheduleDate).First(&attendance).Error
 		switch {
 		case err == nil:
 
@@ -255,7 +253,7 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 				ClassID:         input.CompanyID,
 				ClassScheduleID: classSchedule.ID,
 				SubjectID:       int(classSchedule.SubjectID),
-				CheckDate:       currentDate,
+				CheckDate:       classSchedule.ScheduleDate,
 				Status:          "WORKING",
 				LeaveRequestID:  nil,
 				VerifyBy:        nil,
@@ -321,8 +319,6 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 }
 
 func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (response.AttendanceResponseDraft, error) {
-	currentDate := helper.CurrentDate()
-	dayOfWeek := helper.GetCurrentDay()
 
 	var user model.User
 	if err := s.db.WithContext(ctx).Select("id").First(&user, id).Error; err != nil {
@@ -361,9 +357,9 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
 	if err := s.db.WithContext(ctx).
 		Preload("Subject").
 		Where(
-			"class_id = ? AND day_of_week = ? AND is_active = ?",
+			"class_id = ?  AND is_active = ?",
 			userclass.Class.ID,
-			dayOfWeek,
+
 			true,
 		).
 		First(&classSchedule).Error; err != nil {
@@ -392,7 +388,7 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
 		var existingRecords []model.AttendanceRecord
 
 		err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("user_id = ? AND check_date = ?", user.ID, currentDate).First(&attendance).Error
+			Where("user_id = ? AND check_date = ?", user.ID, classSchedule.ScheduleDate).First(&attendance).Error
 
 		switch {
 		case err == nil:

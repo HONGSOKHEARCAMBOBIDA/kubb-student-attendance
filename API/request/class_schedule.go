@@ -6,6 +6,7 @@ package request
 // so the frontend should only offer subjects returned by
 // ClassScheduleService.GetAvailableSubjects.
 type ClassScheduleRequestCreate struct {
-	SubjectID int64 `json:"subject_id" binding:"required"`
-	DayOfWeek int8  `json:"day_of_week" binding:"required,min=1,max=7"` // 1=Monday ... 7=Sunday
+	SubjectID    int64  `json:"subject_id" binding:"required"`
+	DayOfWeek    int8   `json:"day_of_week" binding:"required,min=1,max=7"` // 1=Monday ... 7=Sunday
+	ScheduleDate string `gorm:"column:schedule_date" json:"schedule_date"`
 }

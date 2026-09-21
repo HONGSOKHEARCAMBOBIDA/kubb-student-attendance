@@ -2,6 +2,12 @@ package model
 
 import "mysql/model/base"
 
+type AttendanceStatus string
+
+const (
+	AttendanceStatusLeave AttendanceStatus = "LEAVE"
+)
+
 type Attendance struct {
 	base.ModelBase
 	UserID          int    `gorm:"column:user_id" json:"user_id"`
