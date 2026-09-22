@@ -42,12 +42,14 @@ const (
 	AddShift  = "add.shift"
 
 	// Attendance
-	AddAttendance        = "add.attendance"
-	ViewAttendance       = "view.attendance"
-	ViewAttendanceReport = "view.attendance.report"
-	ViewAttendanceDraft  = "view.attendance.draft"
-	EditAttendance       = "edit.attendance"
-	DeleteAttendance     = "delete.attendance/:id"
+	AddAttendance         = "add.attendance"
+	ViewAttendance        = "view.attendance"
+	ViewAttendanceReport  = "view.attendance.report"
+	ViewAttendanceDraft   = "view.attendance.draft"
+	EditAttendance        = "edit.attendance"
+	DeleteAttendance      = "delete.attendance/:id"
+	ViewAttendanceForEdit = "view.attendance.for.edit"
+	UpdateAttendance      = "update.attendance/:id"
 
 	// Payroll
 	AddPayroll            = "add.payroll"

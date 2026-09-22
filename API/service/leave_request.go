@@ -265,7 +265,7 @@ func (s *leaveRequestService) AddNotPermission(ctx context.Context, input reques
 					return err
 				}
 
-				sessions, err := buildSessionV2(shift, leave)
+				sessions, err := buildSessionV2(shift, leave, classSchedule.TotalSession)
 				if err != nil {
 					return err
 				}
@@ -326,9 +326,12 @@ func (s *leaveRequestService) AddNotPermission(ctx context.Context, input reques
 				if err := tx.Create(&attendance).Error; err != nil {
 					return apperror.New(apperror.CodeInternal, "failed to create attendance", nil)
 				}
-
-				records := make([]model.AttendanceRecord, 0, len(sessionOrder))
-				for _, session := range sessionOrder {
+				total := classSchedule.TotalSession
+				if total <= 0 || total > len(sessionOrder) {
+					total = len(sessionOrder)
+				}
+				records := make([]model.AttendanceRecord, 0, total)
+				for _, session := range sessionOrder[:total] {
 					records = append(records, model.AttendanceRecord{
 						AttendanceID:    attendance.ID,
 						UserID:          n.UserID,

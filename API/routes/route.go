@@ -76,6 +76,8 @@ func SetupRoutes(r *gin.Engine) {
 		auth.POST(route.AddAttendance, middleware.PermissionMiddleware(permission.AddAttendance), attendancecontroller.CreateAttendance)
 		auth.GET(route.ViewAttendance, middleware.PermissionMiddleware(permission.ViewAttendance), attendancecontroller.GetAttendancePDF)
 		auth.GET(route.ViewAttendanceReport, middleware.PermissionMiddleware(permission.ViewAttendance), attendancecontroller.GetAttendanceReport)
+		auth.GET(route.ViewAttendanceForEdit, middleware.PermissionMiddleware(permission.ViewAttendance), attendancecontroller.GetAttendance)
+		auth.PUT(route.UpdateAttendance, middleware.PermissionMiddleware(permission.EditAttendance), attendancecontroller.UpdateAttendanceRecordStatus)
 
 		// Leave
 		auth.POST(route.AddLeaveRequest, middleware.PermissionMiddleware(permission.AddLeaveRequest), leavecontroller.CreateLeaveRequest)

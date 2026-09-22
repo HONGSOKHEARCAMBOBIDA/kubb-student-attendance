@@ -182,6 +182,12 @@ const routes = [
         component: () => import("../views/Major.vue"),
         meta: { title: "Major",showInNav: false }, // no showInNav -> hidden from sidebar
       },
+      {
+        path: "AttendanceForUpdate",
+        name: "AttendanceForUpdate",
+        component: () => import("../views/AttendanceForUpdate.vue"),
+        meta: { title: "AttendanceForUpdate",showInNav: false }, // no showInNav -> hidden from sidebar
+      },
     ],
   },
 ];

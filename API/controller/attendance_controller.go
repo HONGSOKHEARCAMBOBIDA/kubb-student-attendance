@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	//"log"
 	"mysql/constant/share"
@@ -162,3 +163,54 @@ func (h *AttendanceController) GetAttendanceReport(c *gin.Context) {
 // 	}
 // 	share.ResponseSuccess(c, http.StatusOK, "Deleted")
 // }
+
+func (h *AttendanceController) GetAttendance(c *gin.Context) {
+	page, pageSize := helper.GetPagination(c)
+	userID, ok := helper.GetUserID(c)
+	if !ok {
+		return
+	}
+	filter := map[string]string{
+		"name":       c.Query("name"),
+		"class_id":   c.Query("class_id"),
+		"subject_id": c.Query("subject_id"),
+		"check_date": c.Query("check_date"),
+	}
+
+	data, meta, err := h.service.GetAttendance(c.Request.Context(), userID, request.Pagination{
+		Page:     page,
+		PageSize: pageSize,
+	}, filter)
+
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			share.ResponseError(c, http.StatusGatewayTimeout, err.Error())
+			return
+		}
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponsePagination(c, 200, data, meta)
+}
+
+func (h *AttendanceController) UpdateAttendanceRecordStatus(c *gin.Context) {
+	idparam := c.Param("id")
+	id, err := strconv.Atoi(idparam)
+	if err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var req request.UpdateAttendanceRecordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.UpdateAttendanceRecordStatus(c.Request.Context(), id, req.Status); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "updated"})
+}

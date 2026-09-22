@@ -22,7 +22,7 @@
         </div>
         <el-dropdown @command="handleCommand">
           <div class="avatar-row">
-            <el-avatar :size="32" style="background:#409eff">{{ userName[0]?.toUpperCase() }}</el-avatar>
+            <el-avatar :size="32" style="background:#fc05aa">{{ userName[0]?.toUpperCase() }}</el-avatar>
             <span class="d-only" style="font-size:14px">{{ userName }}</span>
           </div>
           <template #dropdown>

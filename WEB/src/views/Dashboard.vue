@@ -25,9 +25,9 @@
             </div>
 
             <div class="action-content">
-              <span class="action-title">មើលវត្តមាន</span>
+              <span class="action-title">មើលវត្តមានសង្ខែប</span>
               <span class="action-description">
-                ពិនិត្យវត្តមានសិស្ស
+                ពិនិត្យវត្តមានសង្ខែប
               </span>
             </div>
 
@@ -69,7 +69,7 @@
             </div>
 
             <div class="action-content">
-              <span class="action-title">សិស្សសុំច្បាប់</span>
+              <span class="action-title">សុំច្បាប់</span>
               <span class="action-description">
                 គ្រប់គ្រងការសុំច្បាប់
               </span>
@@ -187,6 +187,29 @@
               <span class="action-title">ជំនាញ</span>
               <span class="action-description">
                 គ្រប់គ្រងជំនាញសិក្សា
+              </span>
+            </div>
+
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </div>
+
+                    <div
+          v-if="adminLevel"
+            class="action-btn"
+            @click="$router.push('/AttendanceForUpdate')"
+          >
+            <div class="icon-box">
+              <el-icon :size="23">
+                <Collection />
+              </el-icon>
+            </div>
+
+            <div class="action-content">
+              <span class="action-title">កែវត្តមាន</span>
+              <span class="action-description">
+                កែវត្តមាន
               </span>
             </div>
 

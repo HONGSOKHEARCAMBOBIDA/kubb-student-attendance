@@ -237,19 +237,19 @@
             <template #gender="{ row: students }">
               <el-text>{{ students.gender === '1' ? 'ប្រុស' : 'ស្រី' }}</el-text>
             </template>
-            <template #actions>
-          <el-tooltip content="កែប្រែ" placement="top">
-            <AppButton
-            v-if="canEditClass"
-            size="small"
-            icon="Edit"
-            type="warning"
-            circle
-          
-          >
-          </AppButton>
-          </el-tooltip>
-            </template>
+          <template #actions="{ row: student }">
+  <el-tooltip content="កែប្រែ" placement="top">
+    <AppButton
+      v-if="canEditClass"
+      size="small"
+      icon="Edit"
+      type="warning"
+      circle
+      @click="openEditStudent(student)"
+    >
+    </AppButton>
+  </el-tooltip>
+</template>
           </AppTable>
         </template>
       </AppTable>
@@ -548,6 +548,41 @@
   </template>
 </AppDialog>
 <ClassScheduleDialog v-model="scheduleDialog" :class-row="scheduleClass" />
+
+<AppDialog v-model="studentDialogVisible" title="កែប្រែសិស្ស" width="500px">
+  <el-form :model="studentForm" ref="studentFormRef" label-position="top">
+    <el-form-item label="ឈ្មោះខ្មែរ" prop="name_kh">
+      <el-input v-model.trim="studentForm.name_kh" size="large" />
+    </el-form-item>
+    <el-form-item label="ឈ្មោះឡាតាំង" prop="name_en">
+      <el-input v-model.trim="studentForm.name_en" size="large" />
+    </el-form-item>
+    <el-form-item label="ភេទ" prop="gender">
+      <el-radio-group v-model="studentForm.gender" size="large">
+        <el-radio-button :value="1">ប្រុស</el-radio-button>
+        <el-radio-button :value="2">ស្រី</el-radio-button>
+      </el-radio-group>
+    </el-form-item>
+    <el-form-item label="អត្តលេខ" prop="code">
+      <el-input v-model.trim="studentForm.code" size="large" />
+    </el-form-item>
+  </el-form>
+
+  <template #footer>
+    <AppButton @click="studentDialogVisible = false" size="large" :block="false" type="warning">
+      បោះបង់
+    </AppButton>
+    <AppButton
+      @click="handleSaveStudent"
+      type="primary"
+      :loading="studentSaving"
+      size="large"
+      :block="false"
+    >
+      កែប្រែ
+    </AppButton>
+  </template>
+</AppDialog>
   </div>
 </template>
 
@@ -566,7 +601,8 @@ import {
   getShift,
   getGeneration,
   getProgramme,
-  adduserclass
+  adduserclass,
+  updateUser
 } from "../api/services";
 import AppTable from "../../components/AppTable.vue";
 import AppButton from "../../components/AppButton.vue";
@@ -586,6 +622,49 @@ const scheduleClass = ref(null);
 function openSchedule(row) {
   scheduleClass.value = row;
   scheduleDialog.value = true;
+}
+
+const studentDialogVisible = ref(false);
+const studentFormRef = ref();
+const studentSaving = ref(false);
+const editStudentId = ref(null)
+const studentForm = reactive({
+  name_kh: "",
+  name_en: "",
+  gender: null,
+  code: "",
+});
+function openEditStudent(row) {
+  editStudentId.value = row.id;
+  studentForm.name_kh = row.name_kh || "";
+  studentForm.name_en = row.name_en || "";
+  studentForm.gender = row.gender !== undefined && row.gender !== null
+    ? Number(row.gender)
+    : null;
+  studentForm.code = row.code || "";
+  studentDialogVisible.value = true;
+}
+async function handleSaveStudent() {
+  await studentFormRef.value.validate();
+  studentSaving.value = true;
+  try {
+    // Only send fields that make sense as a partial update — matches
+    // the *string / *int pointer semantics on the Go side (nil = untouched).
+    const payload = {
+      name_kh: studentForm.name_kh,
+      name_en: studentForm.name_en,
+      gender: studentForm.gender,
+      code: studentForm.code,
+    };
+    await updateUser(editStudentId.value, payload);
+    notify.success("កែប្រែសិស្សបានជោគជ័យ");
+    studentDialogVisible.value = false;
+    fetchClasses(); // refresh so the expanded row shows fresh data
+  } catch (e) {
+    notify.error(e.response?.data?.error || "កែប្រែបរាជ័យ");
+  } finally {
+    studentSaving.value = false;
+  }
 }
 
 const studentSearch = reactive({});

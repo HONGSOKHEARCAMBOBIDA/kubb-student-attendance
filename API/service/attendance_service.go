@@ -27,12 +27,14 @@ import (
 )
 
 type AttendanceService interface {
+	UpdateAttendanceRecordStatus(ctx context.Context, recordID int, status string) error
 	CreateAttendance(ctx context.Context, id int, input request.AttendanceRequestCreate) error
 	//GetAttendance(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.AttendanceResponse, *model.PaginationMetadata, error)
 	GetAttendanceDraft(ctx context.Context, id int) (response.AttendanceResponseDraft, error)
 	GetAttendancePDF(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.AttendanceResponseGenerate, *model.PaginationMetadata, error)
 	//DeleteAttendance(ctx context.Context, id int) error
 	GetAttendanceReport(ctx context.Context, id int, filter map[string]string) (*response.AttendanceReportResponse, error)
+	GetAttendance(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.AttendanceResponse, *model.PaginationMetadata, error)
 }
 
 type attendanceservice struct {
@@ -77,32 +79,39 @@ type sessionConfig struct {
 
 var ErrAllSessionsRecorded = errors.New("all attendance sessions for today have already been recorded")
 
-func buildSessionV2(shift model.Shift, leave LeaveSession) ([]sessionConfig, error) {
+func buildSessionV2(shift model.Shift, leave LeaveSession, totalSession int) ([]sessionConfig, error) {
 	if leave == LeaveFull {
 		return nil, errors.New("today is a full-day approved leave")
 	}
-	switch leave {
-	case LeaveMorning:
-		return []sessionConfig{
-			{scheduledTime: shift.Session4, recordType: model.AttendanceSession4},
-			{scheduledTime: shift.Session5, recordType: model.AttendanceSession5},
-		}, nil
-	case LeaveEvening:
-		return []sessionConfig{
-			{scheduledTime: shift.Session1, recordType: model.AttendanceSession1},
-			{scheduledTime: shift.Session2, recordType: model.AttendanceSession2},
-			{scheduledTime: shift.Session3, recordType: model.AttendanceSession3},
-		}, nil
-	default:
-		return []sessionConfig{
-			{scheduledTime: shift.Session1, recordType: model.AttendanceSession1},
-			{scheduledTime: shift.Session2, recordType: model.AttendanceSession2},
-			{scheduledTime: shift.Session3, recordType: model.AttendanceSession3},
-			{scheduledTime: shift.Session4, recordType: model.AttendanceSession4},
-			{scheduledTime: shift.Session5, recordType: model.AttendanceSession5},
-		}, nil
+
+	full := []sessionConfig{
+		{scheduledTime: shift.Session1, recordType: model.AttendanceSession1},
+		{scheduledTime: shift.Session2, recordType: model.AttendanceSession2},
+		{scheduledTime: shift.Session3, recordType: model.AttendanceSession3},
+		{scheduledTime: shift.Session4, recordType: model.AttendanceSession4},
+		{scheduledTime: shift.Session5, recordType: model.AttendanceSession5},
 	}
 
+	if totalSession <= 0 || totalSession > len(full) {
+		totalSession = len(full)
+	}
+	full = full[:totalSession] // only sessions that actually exist for this class schedule
+
+	switch leave {
+	case LeaveMorning:
+		// keep whatever falls in the "afternoon" half, bounded by totalSession
+		if totalSession <= 3 {
+			return nil, errors.New("no afternoon sessions available for this class schedule")
+		}
+		return full[3:], nil
+	case LeaveEvening:
+		if totalSession < 3 {
+			return full, nil // whole (short) day is "morning"
+		}
+		return full[:3], nil
+	default:
+		return full, nil
+	}
 }
 
 func (s *attendanceservice) getApprovedLeaveSession(ctx context.Context, userID int, check_date string) (LeaveSession, error) {
@@ -196,7 +205,7 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 		return err
 	}
 
-	sessions, err := buildSessionV2(shift, leave)
+	sessions, err := buildSessionV2(shift, leave, classSchedule.TotalSession)
 	if err != nil {
 		return err
 	}
@@ -357,7 +366,6 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
 		Where(
 			"class_id = ?  AND is_active = ?",
 			userclass.Class.ID,
-
 			true,
 		).
 		First(&classSchedule).Error; err != nil {
@@ -375,7 +383,7 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
 		return response.AttendanceResponseDraft{}, err
 	}
 
-	sessions, err := buildSessionV2(shift, leave)
+	sessions, err := buildSessionV2(shift, leave, classSchedule.TotalSession)
 	if err != nil {
 		return response.AttendanceResponseDraft{}, err
 	}
@@ -777,3 +785,106 @@ func (s *attendanceservice) GetAttendancePDF(ctx context.Context, id int, pf req
 // 		return nil
 // 	})
 // }
+
+func (s *attendanceservice) UpdateAttendanceRecordStatus(ctx context.Context, recordID int, status string) error {
+	result := s.db.WithContext(ctx).
+		Table("attendance_record").
+		Where("id = ?", recordID).
+		Updates(map[string]interface{}{
+			"status": status,
+		})
+
+	if result.Error != nil {
+		return fmt.Errorf("update attendance record: %w", result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("attendance record %d not found", recordID)
+	}
+	return nil
+}
+
+func (s *attendanceservice) GetAttendance(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.AttendanceResponse, *model.PaginationMetadata, error) {
+	helper.NormalizePagination(&pf)
+	var data []response.AttendanceResponse
+	var total int64
+	var user model.User
+	if err := s.db.WithContext(ctx).Preload("Role").First(&user, id).Error; err != nil {
+		return nil, nil, err
+	}
+	base := func() *gorm.DB {
+		return s.db.WithContext(ctx).
+			Table("attendance a").
+			Joins("LEFT JOIN user u ON u.id = a.user_id").
+			Joins("LEFT JOIN class c ON c.id = a.class_id").
+			Joins("LEFT JOIN subject s ON s.id = a.subject_id")
+	}
+	applyFilters := func(tx *gorm.DB) *gorm.DB {
+		if v, ok := filter["name"]; ok && v != "" {
+			tx = tx.Where("u.name_kh LIKE ?", "%"+v+"%")
+		}
+		if v, ok := filter["class_id"]; ok && v != "" {
+			tx = tx.Where("a.class_id = ?", v)
+		}
+		if v, ok := filter["subject_id"]; ok && v != "" {
+			tx = tx.Where("a.subject_id = ?", v)
+		}
+		if v, ok := filter["check_date"]; ok && v != "" {
+			tx = tx.Where("a.check_date = ?", v)
+		}
+		return tx
+	}
+	if err := applyFilters(base()).Count(&total).Error; err != nil {
+		return nil, nil, fmt.Errorf("count product: %w", err)
+	}
+
+	if total == 0 {
+		return []response.AttendanceResponse{}, helper.BuildPaginationMeta(pf, total), nil
+	}
+
+	offset := (pf.Page - 1) * pf.PageSize
+	dataQuery := applyFilters(base()).Select(`
+		a.id AS id,
+		a.user_id AS user_id,
+		u.name_kh AS name_kh,
+		u.name_en AS name_en,
+		u.code AS code,
+		u.gender AS gender,
+		a.class_id AS class_id,
+		c.name AS class_name,
+		s.name_kh AS subject_name,
+		a.check_date AS check_date,
+		a.status AS status
+	`)
+	if err := dataQuery.Offset(offset).Limit(pf.PageSize).Order("id DESC").Scan(&data).Error; err != nil {
+		return nil, nil, fmt.Errorf("fetch class: %w", err)
+	}
+	for i := range data {
+		data[i].CheckDate = helper.FormatDate(data[i].CheckDate)
+	}
+	attendanceIDs := make([]int, len(data))
+	for i, a := range data {
+		attendanceIDs[i] = a.ID
+	}
+
+	var record []response.RecordResponse
+	if err := s.db.WithContext(ctx).Table("attendance_record ar").
+		Where("ar.attendance_id IN ?", attendanceIDs).Select(`
+		ar.id AS id,
+		ar.attendance_id AS attendance_id,
+		ar.type AS type,
+		ar.status AS status
+	`).Scan(&record).Error; err != nil {
+		return nil, nil, err
+	}
+	attendanceByID := make(map[int][]response.RecordResponse, len(record))
+	for _, r := range record {
+		attendanceByID[r.AttendanceID] = append(attendanceByID[r.AttendanceID], r)
+	}
+
+	for i := range data {
+		data[i].RecordResponse = attendanceByID[data[i].ID]
+	}
+
+	return data, helper.BuildPaginationMeta(pf, total), nil
+
+}

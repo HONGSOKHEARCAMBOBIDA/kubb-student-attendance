@@ -51,7 +51,8 @@ export const exportAttendancePDF = (params) => api.get('/view.attendance', {
   params,
 })
 export const deleteattendance = (id) => api.delete(`/delete.attendance/${id}`)
-
+export const getAttendanceforedit = (params) => api.get(`/view.attendance.for.edit`,{params}) 
+export const updateAttendanceRecordStatus = (id,status) => api.put(`/update.attendance/${id}`,status)
 // Payroll
 export const getPayrollDraft = (params) => api.get('/view.payroll.draft', { params })
 export const createPayroll = (data) => api.post('/add.payroll', data)
