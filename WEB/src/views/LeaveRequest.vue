@@ -148,6 +148,7 @@ async function fetchLeaveRequest() {
     });
     leaveRequests.value = res.data.data || [];
     pagination.total = res.data.pagination?.totalCount || 0;
+    console.log(leaveRequests.value)
   } catch {
     notify.error("Failed to load leave requests");
   } finally {
@@ -334,7 +335,7 @@ onUnmounted(() => clearTimeout(searchTimer));
         :total="pagination.total"
         @page-change="handlePageChange"
         :columns="[
-          { label: 'បុគ្គលិក', slot: 'user', minWidth: 170 },
+          { label: 'ឈ្មោះ', slot: 'user', minWidth: 170 },
           { label: 'ថ្នាក់', prop: 'class_name', minWidth: 120 },
           { label: 'ថ្ងៃចាប់ផ្តើម', prop: 'start_date', minWidth: 110 },
           { label: 'ថ្ងៃបញ្ចប់', prop: 'end_date', minWidth: 110 },
@@ -348,7 +349,7 @@ onUnmounted(() => clearTimeout(searchTimer));
         <template #user="{ row }">
   <el-space direction="vertical" alignment="start" :size="0">
     <el-text tag="b" size="large" type="primary">
-      {{ row.user_name_kh || row.user_name_en }}
+      {{ row.user_name_kh }} | <el-text>{{ row.user_name_en  }}</el-text>
     </el-text>
 
     <el-text size="small">

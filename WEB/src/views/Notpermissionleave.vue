@@ -104,7 +104,7 @@
       <template #header>
         <div class="card-header">
           <el-text tag="b">
-            សិស្សមិនបានស្កែនវត្តមាន និងមិនបានសុំច្បាប់ — {{ filters.check_date }}
+            សិស្សមិនបានស្កែនវត្តមាន និងមិនបានសុំច្បាប់ — {{ filters.check_date }} សិស្សសរុប {{ total }}នាក់
           </el-text>
            <AppButton size="small" icon="Upload" type="primary" :loading="submitting" :disabled="!selectedRows.length" @click="handleAddNotPermission">
       បញ្ចូនទិន្ន័យ

@@ -9,6 +9,7 @@ type ClassScheduleResponse struct {
 	SubjectCode  string `json:"subject_code"`
 	SubjectName  string `json:"subject_name_kh"`
 	DayOfWeek    int8   `json:"day_of_week"`
+	TotalSession int    `json:"total_session"`
 	ScheduleDate string `json:"schedule_date"`
 	IsActive     bool   `json:"is_active"`
 }

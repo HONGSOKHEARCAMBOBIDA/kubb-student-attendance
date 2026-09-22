@@ -105,14 +105,12 @@ func buildSessionV2(shift model.Shift, leave LeaveSession) ([]sessionConfig, err
 
 }
 
-func (s *attendanceservice) getApprovedLeaveSession(ctx context.Context, userID int) (LeaveSession, error) {
-	currentDate := helper.CurrentDate()
-
+func (s *attendanceservice) getApprovedLeaveSession(ctx context.Context, userID int, check_date string) (LeaveSession, error) {
 	var leaveRequest model.LeaveRequest
 	err := s.db.WithContext(ctx).
 		Preload("LeaveDeductType").
 		Where("user_id = ? AND status = ? AND start_date <= ? AND end_date >= ?",
-			userID, model.LeaveStatusApprove, currentDate, currentDate).Order("id ASC").
+			userID, model.LeaveStatusApprove, check_date, check_date).Order("id ASC").
 		First(&leaveRequest).Error
 
 	if err != nil {
@@ -193,7 +191,7 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 		return err
 	}
 
-	leave, err := s.getApprovedLeaveSession(ctx, user.ID)
+	leave, err := s.getApprovedLeaveSession(ctx, user.ID, classSchedule.ScheduleDate)
 	if err != nil {
 		return err
 	}
@@ -254,7 +252,7 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 				ClassScheduleID: classSchedule.ID,
 				SubjectID:       int(classSchedule.SubjectID),
 				CheckDate:       classSchedule.ScheduleDate,
-				Status:          "WORKING",
+				Status:          "LEARNING",
 				LeaveRequestID:  nil,
 				VerifyBy:        nil,
 			}
@@ -372,7 +370,7 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
 
 	subjectName := classSchedule.Subject.NameKh
 
-	leave, err := s.getApprovedLeaveSession(ctx, user.ID)
+	leave, err := s.getApprovedLeaveSession(ctx, user.ID, classSchedule.ScheduleDate)
 	if err != nil {
 		return response.AttendanceResponseDraft{}, err
 	}

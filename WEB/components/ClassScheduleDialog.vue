@@ -12,6 +12,7 @@ import {
   createClassSchedule,
   toggleClassSchedule,
 } from "../src/api/services.js";
+import AppInput from "./AppInput.vue";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -47,12 +48,13 @@ const subjectOptions = ref([]);
 const subjectsLoading = ref(false);
 
 const formRef = ref();
-const defaultForm = () => ({ subject_id: null, day_of_week: null,schedule_date:"" });
+const defaultForm = () => ({ subject_id: null, day_of_week: null,schedule_date:"",total_session:0 });
 const form = reactive(defaultForm());
 const rules = {
   subject_id: [{ required: true, message: "សូមជ្រើសរើសមុខវិជ្ជា", trigger: "change" }],
   day_of_week: [{ required: true, message: "សូមជ្រើសរើសថ្ងៃ", trigger: "change" }],
   schedule_date: [{ required: true, message: "សូមជ្រើសរើសថ្ងៃទី", trigger: "change" }],
+  total_session: [{ required: true, message: "សូម Session សរុបដែលសិស្សត្រូវរៀន", trigger: "change" }],
 };
 const submitting = ref(false);
 
@@ -169,6 +171,15 @@ watch(
     clearable
   />
 </el-form-item>
+<el-form-item label="Session សរុប" prop="total_session">
+  <AppInput
+    type="number"
+    v-model.number="form.total_session"
+    placeholder="Session សរុប"
+    size="large"
+    clearable
+  />
+</el-form-item>
       </div>
 
       <AppButton type="primary" :loading="submitting" @click="handleAdd">
@@ -187,6 +198,7 @@ watch(
         { label: 'មុខវិជ្ជា', prop: 'subject_name_kh', minWidth: 160 },
         { label: 'ថ្ងៃ', slot: 'day', width: 120 },
         { label: 'កាលបរិច្ឆេទ', prop: 'schedule_date', width: 120 },
+        { label: 'Session សរុប', prop: 'total_session', width: 120 },
         { label: 'ស្ថានភាព', slot: 'status', width: 110 },
       ]"
     >

@@ -139,10 +139,6 @@ func (cr *LeaveController) DeleteLeaveRequest(c *gin.Context) {
 
 func (cr *LeaveController) GetNotPermissionLeave(c *gin.Context) {
 	page, pageSize := helper.GetPagination(c)
-	userID, ok := helper.GetUserID(c)
-	if !ok {
-		return
-	}
 	filter := map[string]string{
 		"name":          c.Query("name"),
 		"class_id":      c.Query("class_id"),
@@ -152,7 +148,7 @@ func (cr *LeaveController) GetNotPermissionLeave(c *gin.Context) {
 		"check_date":    c.Query("check_date"),
 	}
 
-	data, meta, err := cr.service.GetNotPermissionLeave(c.Request.Context(), userID, request.Pagination{
+	data, meta, err := cr.service.GetNotPermissionLeave(c.Request.Context(), request.Pagination{
 		Page:     page,
 		PageSize: pageSize,
 	}, filter)

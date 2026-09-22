@@ -23,7 +23,7 @@ type LeaveRequestService interface {
 	DeleteLeaveRequest(ctx context.Context, id int) error
 	GetLeaveRequest(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.LeaveRequestResponse, *model.PaginationMetadata, error)
 	VerifyLeaveRequest(ctx context.Context, id int, verifyBy int) error
-	GetNotPermissionLeave(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.NotPermissionLeave, *model.PaginationMetadata, error)
+	GetNotPermissionLeave(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.NotPermissionLeave, *model.PaginationMetadata, error)
 	AddNotPermission(ctx context.Context, input request.NotPermissionLeaveRequest) error
 }
 
@@ -564,12 +564,8 @@ func (s *leaveRequestService) DeleteLeaveRequest(ctx context.Context, id int) er
 	})
 }
 
-func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.NotPermissionLeave, *model.PaginationMetadata, error) {
+func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.NotPermissionLeave, *model.PaginationMetadata, error) {
 	var data []response.NotPermissionLeave
-	var user model.User
-	if err := s.db.WithContext(ctx).Preload("Role").First(&user, id).Error; err != nil {
-		return nil, nil, err
-	}
 	helper.NormalizePagination(&pf)
 	var total int64
 
@@ -589,10 +585,10 @@ func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, id int,
 			Joins("LEFT JOIN generation g ON g.id = c.generation_id").
 			Joins("LEFT JOIN programmes p ON p.id = c.programme_id").
 			Joins("LEFT JOIN attendance a ON a.user_id = uc.user_id AND a.class_id = uc.class_id AND a.check_date = ?", checkDate).
-			Joins("LEFT JOIN leave_request lr ON lr.user_id = uc.user_id AND lr.class_id = uc.class_id AND lr.status = ? AND ? BETWEEN lr.start_date AND lr.end_date", model.LeaveStatusApprove, checkDate).
+			Joins("LEFT JOIN (SELECT attendance_id, COUNT(*) AS cnt FROM attendance_record GROUP BY attendance_id) ad ON ad.attendance_id = a.id").
+			Joins("LEFT JOIN class_schedule cs ON cs.class_id = uc.class_id AND cs.schedule_date = ?", checkDate).
 			Where("uc.is_active = ?", 1).
-			Where("(a.id IS NULL OR a.status = ?)", model.AttendanceStatusLeave).
-			Where("(lr.id IS NULL OR lr.status = ?)", model.LeaveStatusApprove)
+			Where("COALESCE(ad.cnt, 0) < cs.total_session")
 	}
 
 	applyFilters := func(tx *gorm.DB) *gorm.DB {
