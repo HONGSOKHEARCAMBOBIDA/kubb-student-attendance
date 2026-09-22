@@ -188,6 +188,12 @@ const routes = [
         component: () => import("../views/AttendanceForUpdate.vue"),
         meta: { title: "AttendanceForUpdate",showInNav: false }, // no showInNav -> hidden from sidebar
       },
+      {
+        path: "Generation",
+        name: "Generation",
+        component: () => import("../views/Generation.vue"),
+        meta: { title: "Generation",showInNav: false }, // no showInNav -> hidden from sidebar
+      },
     ],
   },
 ];

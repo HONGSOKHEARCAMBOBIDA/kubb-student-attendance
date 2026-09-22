@@ -27,6 +27,9 @@ type CompanyService interface {
 	GetMajor(ctx context.Context) ([]model.Major, error)
 	GetShift(ctx context.Context) ([]model.Shift, error)
 	GetGeneration(ctx context.Context) ([]model.Generation, error)
+	CreateGeneration(ctx context.Context, input request.GenerationRequestCreate) error
+	UpdateGeneration(ctx context.Context, id int, input request.GenerationRequestUpdate) error
+	ToggleGeneration(ctx context.Context, id int) error
 	GetProgramme(ctx context.Context) ([]model.Programme, error)
 }
 
@@ -38,6 +41,54 @@ func NewCompanyService() CompanyService {
 	return &companyservice{
 		db: config.DB,
 	}
+}
+
+func (s *companyservice) CreateGeneration(ctx context.Context, input request.GenerationRequestCreate) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newdata := model.Generation{
+			NameKh:    input.NameKh,
+			NameEn:    input.NameEn,
+			Code:      input.Code,
+			StartYear: input.StartYear,
+			EndYear:   input.EndYear,
+			IsActive:  true,
+		}
+		if err := tx.Create(&newdata).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *companyservice) UpdateGeneration(ctx context.Context, id int, input request.GenerationRequestUpdate) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var data model.Generation
+		if err := tx.Where("id = ?", id).First(&data).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return apperror.New(apperror.CodeNotFound, "classcurriculumn not found", nil)
+			}
+			return apperror.New(apperror.CodeInternal, "failed to fetch classcurriculumn", nil)
+		}
+		data.NameKh = input.NameKh
+		data.NameEn = input.NameEn
+		data.Code = input.Code
+		data.StartYear = input.StartYear
+		data.EndYear = input.EndYear
+		if err := tx.Save(&data).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to update product", nil)
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *companyservice) ToggleGeneration(ctx context.Context, id int) error {
+	return utils.ToggleStatus[model.Generation](ctx, s.db, id)
 }
 
 func (s *companyservice) GetMajor(ctx context.Context) ([]model.Major, error) {
@@ -69,7 +120,6 @@ func (s *companyservice) GetGeneration(ctx context.Context) ([]model.Generation,
 	var data []model.Generation
 
 	if err := s.db.WithContext(ctx).
-		Where("is_active = ?", 1).
 		Order("id ASC").
 		Find(&data).Error; err != nil {
 		return nil, err
@@ -166,6 +216,8 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		sh.name AS shift_name,
 		c.generation_id AS generation_id,
 		g.name_kh AS generation_name,
+		g.start_year AS generation_start,
+		g.end_year AS generation_end,
 		c.year AS year,
 		c.semester AS semester,
 		c.` + "`group`" + ` AS ` + "`group`" + `,

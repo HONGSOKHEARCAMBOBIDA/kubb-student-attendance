@@ -218,6 +218,29 @@
             </el-icon>
           </div>
 
+           <div
+          v-if="adminLevel"
+            class="action-btn"
+            @click="$router.push('/Generation')"
+          >
+            <div class="icon-box">
+              <el-icon :size="23">
+                <Collection />
+              </el-icon>
+            </div>
+
+            <div class="action-content">
+              <span class="action-title">ជំនាន់</span>
+              <span class="action-description">
+                ជំនាន់
+              </span>
+            </div>
+
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </div>
+
         </div>
       </el-card>
     </div>

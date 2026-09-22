@@ -2,13 +2,15 @@ package permission
 
 const (
 	// Company
-	AddCompany     = "add.company"
-	ViewCompany    = "view.company"
-	EditCompany    = "edit.company"
-	ViewMajor      = "view.Major"
-	ViewShift      = "view.Shift"
-	ViewGeneration = "view.Generation"
-	ViewProgramme  = "view.Programme"
+	AddCompany       = "add.company"
+	ViewCompany      = "view.company"
+	EditCompany      = "edit.company"
+	ViewMajor        = "view.Major"
+	ViewShift        = "view.Shift"
+	ViewGeneration   = "view.Generation"
+	AddGeneration    = "add.Generation"
+	UpdateGeneration = "update.Generation"
+	ViewProgramme    = "view.Programme"
 
 	// User
 	AddUser        = "add.user"

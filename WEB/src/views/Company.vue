@@ -115,12 +115,12 @@
           { prop: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
           { prop: 'major_name', label: 'ជំនាញ', minWidth: 110 },
           { prop: 'shift_name', label: 'វេន', width: 100 },
-          { slot: 'generation_name', label: 'ជំនាន់', width: 110 },
+          { slot: 'generation_name', label: 'ជំនាន់', width: 200 },
           { slot: 'programme_name', label: 'កម្មវិធីសិក្សា', minWidth: 130 },
-          { prop: 'year', label: 'ឆ្នាំ', width: 90 },
-          { prop: 'semester', label: 'ឆមាស', width: 90 },
-          { prop: 'group', label: 'ក្រុម', width: 90 },
-          { prop: 'term', label: 'ឆមាស', width: 100 },
+          { prop: 'year', label: 'ឆ្នាំ', width: 60 },
+          { prop: 'semester', label: 'ឆមាស', width: 70 },
+          { prop: 'group', label: 'ក្រុម', width: 60 },
+          { prop: 'term', label: 'វគ្គ', width: 60 },
           { slot: 'type', label: 'ប្រភេទ', width: 100 },
           { prop: 'radius', label: 'ចម្ងាយអាចស្កែន (m)', width: 150 },
           { label: 'អាចស្កែនក្រៅតំបន់', slot: 'outsize', width: 150 },
@@ -129,7 +129,7 @@
         ]"
       >
       <template #generation_name="{row}">
-        <el-text style="color: red;">{{ row.generation_name }}</el-text>
+        <el-text style="color: red;">{{ row.generation_name }} | {{ row.generation_start }}-{{ row.generation_end }}</el-text>
       </template>
           <template #programme_name="{row}">
         <el-text style="color: red;">{{ row.programme_name }}</el-text>
