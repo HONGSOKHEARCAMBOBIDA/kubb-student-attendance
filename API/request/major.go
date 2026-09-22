@@ -15,14 +15,18 @@ type MajorRequestUpdate struct {
 // MajorSubjectRequestCreate is used to attach a subject to a major
 // for a given academic year/semester (row in major_subject).
 type MajorSubjectRequestCreate struct {
-	SubjectID int   `json:"subject_id" binding:"required"`
-	Year      uint8 `json:"year" binding:"required"`
-	Semester  uint8 `json:"semester" binding:"required"`
+	SubjectID    int   `json:"subject_id" binding:"required"`
+	Year         uint8 `json:"year" binding:"required"`
+	Semester     uint8 `json:"semester" binding:"required"`
+	GenerationID int   `gorm:"column:generation_id" json:"generation_id"`
+	ProgrammeID  int   `gorm:"column:programme_id" json:"programme_id"`
 }
 
 // MajorSubjectRequestUpdate lets you move a subject to a different
 // year/semester within the same major without removing/re-adding it.
 type MajorSubjectRequestUpdate struct {
-	Year     uint8 `json:"year" binding:"required"`
-	Semester uint8 `json:"semester" binding:"required"`
+	Year         uint8 `json:"year" binding:"required"`
+	Semester     uint8 `json:"semester" binding:"required"`
+	GenerationID int   `gorm:"column:generation_id" json:"generation_id"`
+	ProgrammeID  int   `gorm:"column:programme_id" json:"programme_id"`
 }

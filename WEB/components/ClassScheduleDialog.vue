@@ -137,7 +137,7 @@ watch(
   <AppDialog
     v-model="visible"
     :title="classRow ? `កាលវិភាគសម្រាប់ ${classRow.name}` : 'កាលវិភាគ'"
-    width="70%"
+    width="78%"
   >
     <el-form
       ref="formRef"

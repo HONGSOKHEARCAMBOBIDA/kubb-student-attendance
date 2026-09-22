@@ -81,8 +81,8 @@ func (s *classScheduleService) GetAvailableSubjects(ctx context.Context, classID
 	err := s.db.WithContext(ctx).
 		Table("major_subject ms").
 		Joins("JOIN subject sub ON sub.id = ms.subject_id").
-		Where("ms.major_id = ? AND ms.year = ? AND ms.semester = ? AND ms.is_active = ?",
-			class.MajorID, class.Year, class.Semester, true).
+		Where("ms.major_id = ? AND ms.year = ? AND ms.semester = ? AND ms.is_active = ? AND ms.generation_id = ? AND ms.programme_id = ?",
+			class.MajorID, class.Year, class.Semester, true, class.GenerationID, class.ProgrammeID).
 		Select(`
 			sub.id AS id,
 			sub.code AS code,

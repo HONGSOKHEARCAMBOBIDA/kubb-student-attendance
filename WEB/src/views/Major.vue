@@ -16,6 +16,8 @@ import {
   toggleMajorSubject,
   removeMajorSubject,
   getSubject,
+  getGeneration,
+  getProgramme,
 } from "../api/services.js";
 import { useUserDataStore } from "../stores/user_data.js";
 import AppSelect from "../../components/AppSelect.vue";
@@ -33,6 +35,29 @@ const formRef = ref();
 const dialogVisible = ref(false);
 const isEditMode = ref(false);
 const editingId = ref(null);
+
+const generations = ref([]);
+const programmes = ref([]);
+async function fetchLookups(){
+  try {
+    const [generationRes,programmRes] = await Promise.all([
+      getGeneration(),
+      getProgramme()
+    ]);
+    generations.value = (generationRes.data.data || []).map((c) => ({
+      label: c.name_kh,
+      value: c.id,
+      raw: c,
+    }));
+    programmes.value = (programmRes.data.data || []).map((c) => ({
+      label: c.name,
+      value: c.id,
+      raw: c,
+    }));
+  }catch (e) {
+    notify.error(e.response?.data?.error || "");
+  }
+}
 
 const pagination = reactive({
   page: 1,
@@ -175,6 +200,8 @@ const subjectPagination = reactive({
 const subjectFormRef = ref();
 const defaultSubjectForm = () => ({
   subject_id: null,
+  generation_id: null,
+  programme_id: null,
   year: null,
   semester: null,
 });
@@ -182,6 +209,8 @@ const subjectForm = reactive(defaultSubjectForm());
 
 const subjectRules = {
   subject_id: [{ required: true, message: "សូមជ្រើសរើសមុខវិជ្ជា", trigger: "change" }],
+  generation_id: [{ required: true, message: "សូមជ្រើសរើសជំនាន់", trigger: "change" }],
+  programme_id: [{ required: true, message: "សូមជ្រើសរើសកម្មវិធីសិក្សា", trigger: "change" }],
   year: [{ required: true, message: "សូមបញ្ចូលឆ្នាំ", trigger: "blur" }],
   semester: [{ required: true, message: "សូមបញ្ចូលឆមាស", trigger: "blur" }],
 };
@@ -298,6 +327,7 @@ async function handleRemoveSubject(row) {
 }
 
 onMounted(() => {
+  fetchLookups()
   fetchMajor();
 });
 onUnmounted(() => clearTimeout(searchTimer));
@@ -428,8 +458,9 @@ onUnmounted(() => clearTimeout(searchTimer));
         class="add-subject-form"
       >
         <div class="form-row">
-          <el-form-item label="មុខវិជ្ជា" prop="subject_id" class="grow">
             <AppSelect
+          label="មុខវិជ្ជា"
+          prop="subject_id"
           v-model="subjectForm.subject_id"
           :options="subjectOptions"
           placeholder="ជ្រើសរើសមុខវិជ្ជា"
@@ -439,7 +470,6 @@ onUnmounted(() => clearTimeout(searchTimer));
           :remote-method="searchSubjects"
           clearable
         />
-          </el-form-item>
           <AppInput
             label="ឆ្នាំ"
             prop="year"
@@ -454,8 +484,25 @@ onUnmounted(() => clearTimeout(searchTimer));
             type="number"
             size="large"
           />
-        </div>
-
+              <AppSelect
+          v-model="subjectForm.generation_id"
+          :options="generations"
+          placeholder="ជ្រើសរើសជំនាន់"
+          label="ជំនាន់"
+          size="large"
+          filterable
+          clearable
+        />
+        <AppSelect
+          v-model="subjectForm.programme_id"
+          :options="programmes"
+          placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
+          label="កម្មវិធីសិក្សា"
+          size="large"
+          filterable
+          clearable
+        />
+        <el-form-item label="បន្ថែមមុខវិជ្ជា" prop="" class="grow">
         <AppButton
           type="primary"
           :loading="addingSubject"
@@ -463,6 +510,10 @@ onUnmounted(() => clearTimeout(searchTimer));
         >
           បន្ថែមមុខវិជ្ជា
         </AppButton>
+        </el-form-item>
+        </div>
+
+        
       </el-form>
 
       <AppTable
@@ -479,6 +530,8 @@ onUnmounted(() => clearTimeout(searchTimer));
         :columns="[
           { label: 'លេខកូដ', prop: 'subject_code', minWidth: 100 },
           { label: 'ឈ្មោះ', slot: 'subject_name_kh', minWidth: 160 },
+          { label: 'ជំនាន់', prop: 'generation_name', minWidth: 160 },
+          { label: 'កម្មវិធីសិក្សា', prop: 'programme_name', minWidth: 160 },
           { label: 'ម៉ោងក្រេឌីត', prop: 'credit_hour', width: 100 },
           { label: 'ឆ្នាំ', slot: 'year', width: 80 },
           { label: 'ឆមាស', prop: 'semester', width: 80 },
@@ -528,7 +581,7 @@ onUnmounted(() => clearTimeout(searchTimer));
 }
 .form-row {
   display: flex;
-  gap: 16px;
+  gap: 20px;
 }
 .form-row .el-form-item {
   flex: 1;

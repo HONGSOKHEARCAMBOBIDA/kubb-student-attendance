@@ -150,25 +150,14 @@ func (s *majorService) AddSubject(ctx context.Context, majorID int, input reques
 			return apperror.New(apperror.CodeInternal, "failed to fetch subject", nil)
 		}
 
-		var count int64
-		if err := tx.Model(&model.MajorSubject{}).
-			Where("major_id = ? AND subject_id = ? AND year = ? AND semester = ?",
-				majorID, input.SubjectID, input.Year, input.Semester).
-			Count(&count).Error; err != nil {
-			return apperror.New(apperror.CodeInternal, "failed to check existing subject", nil)
-		}
-		if count > 0 {
-			// If your apperror package doesn't have CodeConflict yet, swap
-			// this for CodeInternal/CodeBadRequest, whichever fits your codes.
-			return apperror.New(apperror.CodeConflict, "subject already added to this major for that year/semester", nil)
-		}
-
 		newdata := model.MajorSubject{
-			MajorID:   majorID,
-			SubjectID: input.SubjectID,
-			Year:      input.Year,
-			Semester:  input.Semester,
-			IsActive:  true,
+			MajorID:      majorID,
+			GenerationID: input.GenerationID,
+			ProgrammeID:  input.ProgrammeID,
+			SubjectID:    input.SubjectID,
+			Year:         input.Year,
+			Semester:     input.Semester,
+			IsActive:     true,
 		}
 		if err := tx.Create(&newdata).Error; err != nil {
 			return apperror.New(apperror.CodeInternal, "failed to add subject to major", nil)
@@ -188,6 +177,8 @@ func (s *majorService) GetSubjects(ctx context.Context, majorID int, pf request.
 	base := func() *gorm.DB {
 		return s.db.WithContext(ctx).
 			Table("major_subject ms").
+			Joins("LEFT JOIN generation g ON g.id = ms.generation_id").
+			Joins("LEFT JOIN programmes p ON p.id = ms.programme_id").
 			Joins("JOIN subject s ON s.id = ms.subject_id").
 			Where("ms.major_id = ?", majorID)
 	}
@@ -212,9 +203,11 @@ func (s *majorService) GetSubjects(ctx context.Context, majorID int, pf request.
 		s.credit_hour AS credit_hour,
 		ms.year AS year,
 		ms.semester AS semester,
-		ms.is_active AS is_active
+		ms.is_active AS is_active,
+		g.name_kh AS generation_name,
+		p.name AS programme_name
 	`)
-	dataQuery = dataQuery.Order("id ASC")
+	dataQuery = dataQuery.Order("p.id ASC,ms.year ASC,ms.semester ASC,ms.id ASC")
 	if err := dataQuery.Offset(offset).Limit(pf.PageSize).Scan(&data).Error; err != nil {
 		return nil, nil, fmt.Errorf("fetch major subject: %w", err)
 	}
@@ -235,6 +228,8 @@ func (s *majorService) UpdateSubject(ctx context.Context, majorSubjectID int, in
 		}
 		data.Year = input.Year
 		data.Semester = input.Semester
+		data.GenerationID = input.GenerationID
+		data.ProgrammeID = input.ProgrammeID
 		if err := tx.Save(&data).Error; err != nil {
 			return apperror.New(apperror.CodeInternal, "failed to update major subject", nil)
 		}

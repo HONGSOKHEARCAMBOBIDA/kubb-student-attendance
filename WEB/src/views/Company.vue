@@ -1,3 +1,4 @@
+
 <template>
   <div>
 <AppFilterBar
@@ -114,8 +115,8 @@
           { prop: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
           { prop: 'major_name', label: 'ជំនាញ', minWidth: 110 },
           { prop: 'shift_name', label: 'វេន', width: 100 },
-          { prop: 'generation_name', label: 'ជំនាន់', width: 110 },
-          { prop: 'programme_name', label: 'កម្មវិធីសិក្សា', minWidth: 130 },
+          { slot: 'generation_name', label: 'ជំនាន់', width: 110 },
+          { slot: 'programme_name', label: 'កម្មវិធីសិក្សា', minWidth: 130 },
           { prop: 'year', label: 'ឆ្នាំ', width: 90 },
           { prop: 'semester', label: 'ឆមាស', width: 90 },
           { prop: 'group', label: 'ក្រុម', width: 90 },
@@ -127,6 +128,12 @@
           { label: 'សិស្សសរុប', slot: 'total', width: 100 },
         ]"
       >
+      <template #generation_name="{row}">
+        <el-text style="color: red;">{{ row.generation_name }}</el-text>
+      </template>
+          <template #programme_name="{row}">
+        <el-text style="color: red;">{{ row.programme_name }}</el-text>
+      </template>
         <template #outsize="{ row }">
           <el-tag :type="row.can_scan_outsize ? 'success' : 'danger'">
             {{ row.can_scan_outsize ? "បាន" : "មិនបាន" }}
