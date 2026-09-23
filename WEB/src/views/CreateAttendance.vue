@@ -69,6 +69,14 @@
       </el-form-item>
 
       <el-alert v-if="draftError" :title="draftError" type="error" show-icon :closable="false" />
+      <el-alert v-if="draftError" :title="draftError" type="error" show-icon :closable="false" />
+<el-alert
+  v-else-if="isBeforeSchedule"
+  :title="scheduleWaitMessage"
+  type="error"
+  show-icon
+  :closable="false"
+/>
     </el-form>
   </el-card>
 </template>
@@ -100,7 +108,37 @@ const draftLoading = ref(false);
 const draftError = ref("");
 
 const defaultcompanyid = computed(() => userDataStore.classid || null);
-const isButtonDisabled = computed(() => !draft.value || !!draftError.value);
+
+const scheduledDateTime = computed(() => {
+  const t = draft.value?.scheduled_time;
+
+  if (!t) return null;
+
+  const [start] = t.split("-");
+  const [h, m] = start.split(":").map(Number);
+
+  const d = new Date();
+  d.setHours(h || 0, m || 0, 0, 0);
+
+  return d;
+});
+
+const isBeforeSchedule = computed(() => {
+  return !!scheduledDateTime.value && now.value < scheduledDateTime.value;
+});
+
+const scheduleWaitMessage = computed(() => {
+  if (!isBeforeSchedule.value || !scheduledDateTime.value) return "";
+  const timeStr = scheduledDateTime.value.toLocaleTimeString("km-KH", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `មិនទាន់ដល់ម៉ោងកំណត់ទេ សូមរង់ចាំដល់ម៉ោង ${timeStr}`;
+});
+
+const isButtonDisabled = computed(
+  () => !draft.value || !!draftError.value || isBeforeSchedule.value
+);
 
 function selectCompany(id) {
   attendForm.company_id = id;

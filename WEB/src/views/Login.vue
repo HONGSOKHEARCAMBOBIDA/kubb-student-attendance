@@ -10,7 +10,7 @@
         label-position="top"
       >
         <AppInput
-          v-model="form.code"
+          v-model.trim="form.code"
           label="លេខកូដ"
           prop="code"
           placeholder="បញ្ចូលលេខកូដ"
@@ -20,7 +20,7 @@
         />
 
         <AppInput
-          v-model="form.password"
+          v-model.trim="form.password"
           label="ពាក្យសម្ងាត់"
           prop="password"
           type="password"

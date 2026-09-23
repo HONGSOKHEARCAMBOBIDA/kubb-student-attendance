@@ -246,6 +246,7 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 	var record model.AttendanceRecord
 	// var attendanceID uint
 	// var justCompleted bool
+	checkdate := helper.FormatDate(classSchedule.ScheduleDate)
 
 	txErr := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var attendance model.Attendance
@@ -260,7 +261,7 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 				ClassID:         input.CompanyID,
 				ClassScheduleID: classSchedule.ID,
 				SubjectID:       int(classSchedule.SubjectID),
-				CheckDate:       classSchedule.ScheduleDate,
+				CheckDate:       checkdate,
 				Status:          "LEARNING",
 				LeaveRequestID:  nil,
 				VerifyBy:        nil,

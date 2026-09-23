@@ -48,7 +48,7 @@
       <AppTable expandable :data="classes" :loading="loading" show-index v-model:current-page="page"
         v-model:page-size="pageSize" :total="total" @page-change="fetchClasses" actions-width="300px" :columns="[
           { prop: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
-          { prop: 'major_name', label: 'ជំនាញ', minWidth: 110 },
+          { slot: 'major_name', label: 'ជំនាញ', minWidth: 110 },
           { prop: 'shift_name', label: 'វេន', width: 100 },
           { slot: 'generation_name', label: 'ជំនាន់', width: 200 },
           { slot: 'programme_name', label: 'កម្មវិធីសិក្សា', minWidth: 130 },
@@ -62,6 +62,9 @@
           { label: 'ស្ថានភាព', slot: 'status', width: 100 },
           { label: 'សិស្សសរុប', slot: 'total', width: 100 },
         ]">
+        <template #major_name="{ row }">
+          <el-text style="color: red;">{{ row.major_name }}</el-text>
+        </template>
         <template #generation_name="{ row }">
           <el-text style="color: red;">{{ row.generation_name }} | {{ row.generation_start }}-{{ row.generation_end
           }}</el-text>

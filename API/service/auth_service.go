@@ -290,6 +290,7 @@ func (s *authservice) Register(ctx context.Context, input request.RegisterReques
 					NameEN:   n.NameEN,
 					Gender:   n.Gender,
 					Code:     n.Code,
+					RoleID:   5,
 					Password: password,
 				})
 			}

@@ -202,7 +202,7 @@
           >
             <div class="icon-box">
               <el-icon :size="23">
-                <Collection />
+                <Edit />
               </el-icon>
             </div>
 
@@ -247,7 +247,7 @@
           >
             <div class="icon-box">
               <el-icon :size="23">
-                <Collection />
+                <Clock />
               </el-icon>
             </div>
 
@@ -269,7 +269,7 @@
           >
             <div class="icon-box">
               <el-icon :size="23">
-                <Collection />
+                <User />
               </el-icon>
             </div>
 
