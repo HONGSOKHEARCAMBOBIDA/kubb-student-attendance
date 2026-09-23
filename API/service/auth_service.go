@@ -29,11 +29,14 @@ type AuthService interface {
 	Login(input request.AuthRequest, c *gin.Context) (*response.AuthResponse, error)
 	RefreshToken(refreshToken string, c *gin.Context) (*response.AuthResponse, error)
 	Register(ctx context.Context, input request.RegisterRequest, c *gin.Context, userID int) error
+	RegisterMain(ctx context.Context, input request.UserInput) error
 	ToggleUserStatus(ctx context.Context, id int, userID int) error
 	UpdateUser(ctx context.Context, input request.UserRequestUpdate, id int) error
 	GetRole(ctx context.Context, id int) ([]model.Role, error)
 	GetUserData(ctx context.Context, id int) (response.UserDataResponse, error)
 	CreateUserClass(ctx context.Context, input request.UserClass, c *gin.Context, userID int) error
+	UpdateUserClass(ctx context.Context, id int, input request.UserClassUpdateStatus) error
+	GetUserNotStudent(ctx context.Context) ([]response.UserResponseNotStudent, error)
 }
 
 type authservice struct {
@@ -54,6 +57,33 @@ var requiredPermissions = []string{
 	"add.role.has.permission", "add.leave.request", "edit.leave.request",
 	"edit.status.leave.request", "delete.leave.request", "add.subject", "edit.subject",
 	"add.Major", "edit.Major",
+}
+
+func (s *authservice) RegisterMain(ctx context.Context, input request.UserInput) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	password := utils.HasPassword("kubb")
+
+	roleID := input.RoleID
+	if roleID == 0 {
+		roleID = 5
+	}
+
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newdata := model.User{
+			NameKH:   input.NameKH,
+			NameEN:   input.NameEN,
+			Gender:   input.Gender,
+			Code:     input.Code,
+			Password: password,
+			RoleID:   roleID,
+		}
+		if err := tx.Create(&newdata).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to create user", nil)
+		}
+		return nil
+	})
+	return err
 }
 
 func (s *authservice) Login(input request.AuthRequest, c *gin.Context) (*response.AuthResponse, error) {
@@ -260,7 +290,6 @@ func (s *authservice) Register(ctx context.Context, input request.RegisterReques
 					NameEN:   n.NameEN,
 					Gender:   n.Gender,
 					Code:     n.Code,
-					RoleID:   5,
 					Password: password,
 				})
 			}
@@ -274,6 +303,7 @@ func (s *authservice) Register(ctx context.Context, input request.RegisterReques
 				newUserClass = append(newUserClass, model.UserClass{
 					UserID:  int64(u.ID),
 					ClassID: int64(input.ClassID),
+					Status:  model.UserClassStatusSTUDY,
 				})
 			}
 
@@ -297,6 +327,7 @@ func (s *authservice) CreateUserClass(ctx context.Context, input request.UserCla
 				newdata = append(newdata, model.UserClass{
 					UserID:  n.UserID,
 					ClassID: input.ClassID,
+					Status:  model.UserClassStatusSTUDY,
 				})
 			}
 
@@ -368,6 +399,9 @@ func (s *authservice) UpdateUser(ctx context.Context, input request.UserRequestU
 	if input.Code != nil {
 		updates["code"] = *input.Code
 	}
+	if input.RoleID != nil {
+		updates["role_id"] = *input.RoleID
+	}
 	tx := s.db.WithContext(ctx).Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -435,6 +469,26 @@ func (s *authservice) GetRole(ctx context.Context, id int) ([]model.Role, error)
 	return role, nil
 }
 
+func (s *authservice) GetUserNotStudent(ctx context.Context) ([]response.UserResponseNotStudent, error) {
+	var data []response.UserResponseNotStudent
+	q := s.db.WithContext(ctx).Table("user u").
+		Select(`
+		u.id AS id,
+		u.name_kh AS name_kh,
+		u.name_en AS name_en,
+		u.gender AS gender,
+		u.code AS code,
+		r.id AS role_id,
+		r.display_name AS role_name
+	`).
+		Joins("LEFT JOIN role r ON r.id = u.role_id")
+	q = q.Where("r.level > ?", 1)
+	if err := q.Scan(&data).Error; err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 func (s *authservice) GetUserData(ctx context.Context, id int) (response.UserDataResponse, error) {
 	var userdata response.UserDataResponse
 
@@ -466,10 +520,9 @@ func (s *authservice) GetUserData(ctx context.Context, id int) (response.UserDat
 	if result.Error != nil {
 		return userdata, fmt.Errorf("failed to get user classes: %w", result.Error)
 	}
-	if result.RowsAffected == 0 {
-		return userdata, fmt.Errorf("no active class found for user %d", id)
+	if result.RowsAffected > 0 {
+		userdata.ClassID = int(classID)
 	}
-	userdata.ClassID = int(classID)
 
 	var permissions []model.Permission
 	if err := s.db.WithContext(ctx).
@@ -564,4 +617,24 @@ func (s *authservice) Logout(ctx context.Context, userID int) error {
 		return fmt.Errorf("failed to delete sessions for user %d: %w", userID, result.Error)
 	}
 	return nil
+}
+
+func (s *authservice) UpdateUserClass(ctx context.Context, id int, input request.UserClassUpdateStatus) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var data model.UserClass
+		if err := tx.Where("id = ?", id).First(&data).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return apperror.New(apperror.CodeNotFound, "classcurriculumn not found", nil)
+			}
+			return apperror.New(apperror.CodeInternal, "failed to fetch classcurriculumn", nil)
+		}
+		data.Status = input.Status
+		if err := tx.Save(&data).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to update student", nil)
+		}
+		return nil
+	})
+	return err
 }

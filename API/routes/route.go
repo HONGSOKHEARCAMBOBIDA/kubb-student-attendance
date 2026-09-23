@@ -36,6 +36,8 @@ func SetupRoutes(r *gin.Engine) {
 		// Company
 		auth.GET(route.ViewMajor, middleware.PermissionMiddleware(permission.ViewMajor), companycontroller.GetMajor)
 		auth.GET(route.ViewShift, middleware.PermissionMiddleware(permission.ViewShift), companycontroller.GetShift)
+		auth.POST(route.AddShift, middleware.PermissionMiddleware(permission.AddShift), companycontroller.CreateShift)
+		auth.PUT(route.EditShift, middleware.PermissionMiddleware(permission.EditShift), companycontroller.UpdateShift)
 		auth.GET(route.ViewGeneration, middleware.PermissionMiddleware(permission.ViewGeneration), companycontroller.GetGeneration)
 		auth.GET(route.ViewProgramme, middleware.PermissionMiddleware(permission.ViewProgramme), companycontroller.GetProgramme)
 		auth.POST(route.AddCompany, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.CreateClass)
@@ -49,11 +51,14 @@ func SetupRoutes(r *gin.Engine) {
 		// User
 		auth.POST(route.AddUserClass, middleware.PermissionMiddleware(permission.AddUser), authcontroller.CreateUserClass)
 		auth.POST(route.AddUser, middleware.PermissionMiddleware(permission.AddUser), authcontroller.Register)
+		auth.POST(route.AddUserMain, middleware.PermissionMiddleware(permission.AddUser), authcontroller.RegisterMain)
 		auth.POST(route.AddUserExcell, middleware.PermissionMiddleware(permission.AddUser), authcontroller.RegisterFromExcel)
 		auth.PUT(route.ToggleUserStatus, middleware.PermissionMiddleware(permission.EditUser), authcontroller.ToggleUserStatus)
 		auth.PUT(route.EditUser, middleware.PermissionMiddleware(permission.EditUser), authcontroller.UpdateUser)
 		auth.GET(route.ViewRole, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetRole)
 		auth.GET(route.ViewUserData, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetUserData)
+		auth.PUT(route.UpdateUserClass, middleware.PermissionMiddleware(permission.EditCompany), authcontroller.UpdateUserClass)
+		auth.GET(route.ViewUser, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetUserNotStudent)
 		//auth.DELETE(route.DeleteUser, middleware.PermissionMiddleware(permission.EditUser), authcontroller.DeleteUser)
 
 		// Shift

@@ -18,13 +18,7 @@
 
       <template #add>
         <AppButton v-if="candadd" type="primary" @click="openCreate">
-          បន្ថែមសិស្ស
-        </AppButton>
-      </template>
-
-      <template #actions>
-        <AppButton v-if="candadd" type="success" icon="Upload" @click="openImport">
-          នាំចូលពី Excel
+          បន្ថែម
         </AppButton>
       </template>
     </AppFilterBar>
@@ -35,14 +29,12 @@
           { prop: 'name_kh', label: 'ឈ្មោះខ្មែរ', minWidth: 130 },
           { prop: 'name_en', label: 'ឈ្មោះឡាតាំង', minWidth: 130 },
           { prop: 'code', label: 'កូដ', minWidth: 110 },
-          { prop: 'gender_string', label: 'ភេទ', minWidth: 90 },
+          { slot: 'gender', label: 'ភេទ', minWidth: 90 },
           { prop: 'role_name', label: 'តួនាទី', minWidth: 110 },
-          { label: 'ស្ថានភាព', slot: 'status', width: 100 },
+        
         ]" actionsWidth="140">
-        <template #status="{ row }">
-          <el-text :style="{ color: row.is_active ? 'black' : 'red' }">
-            {{ row.is_active ? "កំពុងធ្វើការ" : "ឈប់ធ្វើការ" }}
-          </el-text>
+        <template #gender="{row}">
+          <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
         </template>
 
         <template #actions="{ row }" v-if="canedit">
@@ -84,7 +76,7 @@
             It only shows up here on edit, where a dedicated update endpoint
             can change it.
           -->
-          <el-col :xs="24" :sm="12" v-if="isEdit">
+          <el-col >
             <el-form-item label="តួនាទី" prop="role_id">
               <el-select v-model="createForm.role_id" placeholder="ជ្រើសតួនាទី" clearable size="large"
                 style="width: 100%">
@@ -105,49 +97,7 @@
       </template>
     </AppDialog>
 
-    <!-- Excel import dialog -->
-    <AppDialog v-model="importDialog" title="នាំចូលសិស្សពី Excel" width="900px" @closed="resetImport">
-      <el-upload drag :auto-upload="false" :show-file-list="false" accept=".xlsx,.xls" :on-change="handleFilePicked">
-        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-        <div class="el-upload__text">
-          អូសឯកសារមកទីនេះ ឬ <em>ចុចដើម្បីជ្រើសរើសឯកសារ</em>
-        </div>
-        <template #tip>
-          <div class="el-upload__tip">
-            Column ដែលត្រូវការ (ជួរទី ១): <b>name_kh, name_en, gender, code</b> —
-            gender អាចជា 1/2 ឬ ប្រុស/ស្រី
-          </div>
-        </template>
-      </el-upload>
 
-      <el-table v-if="previewRows.length" :data="previewRows" size="small" stripe border style="margin-top: 16px"
-        max-height="360">
-        <el-table-column type="index" width="50" label="#" />
-        <el-table-column prop="name_kh" label="ឈ្មោះខ្មែរ" />
-        <el-table-column prop="name_en" label="ឈ្មោះឡាតាំង" />
-        <el-table-column prop="code" label="កូដ" />
-        <el-table-column label="ភេទ" width="90">
-          <template #default="{ row }">{{ row.gender === 1 ? "ប្រុស" : row.gender === 2 ? "ស្រី" : "?" }}</template>
-        </el-table-column>
-        <el-table-column label="ស្ថានភាព" width="110">
-          <template #default="{ row }">
-            <el-tag :type="row._valid ? 'success' : 'danger'" size="small">
-              {{ row._valid ? "OK" : "ខ្វះទិន្នន័យ" }}
-            </el-tag>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <template #footer>
-        <AppButton @click="importDialog = false" size="large" :block="false" type="warning">
-          បោះបង់
-        </AppButton>
-        <AppButton @click="handleImportSubmit" type="primary" :loading="importing" size="large" :block="false"
-          :disabled="!previewRows.length">
-          នាំចូល ({{ validRowCount }})
-        </AppButton>
-      </template>
-    </AppDialog>
   </div>
 </template>
 
@@ -162,7 +112,7 @@ import {
   updateUser,
   toggleUserStatus,
   getrole,
-  registerUsers,
+  registerUsersMain,
   registerUsersExcel,
 } from "../api/services";
 import { watch } from "vue";
@@ -289,16 +239,13 @@ async function handleSave() {
       // Creating goes through the same Register endpoint the bulk-import
       // uses, just with a single-element array — this matches
       // RegisterRequest{ users: []UserInput } on the backend exactly.
-      await registerUsers({
-        users: [
-          {
-            name_kh: createForm.name_kh,
-            name_en: createForm.name_en,
-            code: createForm.code,
-            gender: createForm.gender,
-          },
-        ],
-      });
+    await registerUsersMain({
+      name_kh: createForm.name_kh,
+      name_en: createForm.name_en,
+      code: createForm.code,
+      gender: createForm.gender,
+      role_id: createForm.role_id,
+    });
       ElMessage.success("បង្កេីតសិស្សបានជោគជ័យ");
     }
     createDialog.value = false;
@@ -325,83 +272,7 @@ async function toggleStatus(row) {
   }
 }
 
-/* ---------------- Excel import ---------------- */
 
-function openImport() {
-  resetImport();
-  importDialog.value = true;
-}
-
-function resetImport() {
-  previewRows.value = [];
-  pickedFile.value = null;
-}
-
-function normalizeGender(val) {
-  if (val === 1 || val === 2) return val;
-  const s = String(val || "").trim();
-  if (s === "1" || s === "ប្រុស" || /^m(ale)?$/i.test(s)) return 1;
-  if (s === "2" || s === "ស្រី" || /^f(emale)?$/i.test(s)) return 2;
-  return null;
-}
-
-// Client-side parse is only for an instant preview so the user can catch
-// mistakes before uploading. The authoritative parse happens on the
-// server (see registerUsersExcel / the Go excelize handler) so there is
-// a single source of truth for validation.
-function handleFilePicked(uploadFile) {
-  const file = uploadFile.raw;
-  pickedFile.value = file;
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const wb = XLSX.read(e.target.result, { type: "array" });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-
-    previewRows.value = rows.map((r) => {
-      const name_kh = String(r.name_kh ?? r["ឈ្មោះខ្មែរ"] ?? "").trim();
-      const name_en = String(r.name_en ?? r["ឈ្មោះឡាតាំង"] ?? "").trim();
-      const code = String(r.code ?? r["កូដ"] ?? "").trim();
-      const gender = normalizeGender(r.gender ?? r["ភេទ"]);
-      return {
-        name_kh,
-        name_en,
-        code,
-        gender,
-        _valid: !!(name_kh && name_en && code && gender),
-      };
-    });
-
-    if (!previewRows.value.length) {
-      ElMessage.warning("រកមិនឃើញទិន្នន័យក្នុងឯកសារនេះទេ");
-    }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-async function handleImportSubmit() {
-  if (!pickedFile.value) return;
-  if (validRowCount.value === 0) {
-    ElMessage.warning("គ្មានជួរដេលត្រឹមត្រូវសម្រាប់នាំចូលទេ");
-    return;
-  }
-
-  importing.value = true;
-  try {
-    const formData = new FormData();
-    formData.append("file", pickedFile.value);
-    const res = await registerUsersExcel(formData);
-    const created = res.data?.created ?? validRowCount.value;
-    ElMessage.success(`នាំចូលសិស្សបានជោគជ័យ (${created})`);
-    importDialog.value = false;
-    fetchUsers();
-  } catch (e) {
-    ElMessage.error(e.response?.data?.message || e.response?.data?.error || "Failed to import file");
-  } finally {
-    importing.value = false;
-  }
-}
 
 onMounted(() => {
   fetchUsers();

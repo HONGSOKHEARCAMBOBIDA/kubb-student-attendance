@@ -8,6 +8,8 @@ export const refreshToken = (data) => api.post('/refresh',{}, { withCredentials:
 // Company
 export const getMajor = () => api.get('/view.Major')
 export const getShift = () => api.get('/view.Shift')
+export const addShift = (data) => api.post('/add.shift',data)
+export const editShift = (id,data) => api.put(`/edit.shift/${id}`,data)
 export const getGeneration = () => api.get('/view.Generation')
 export const addGeneration = (data) => api.post('/add.Generation',data)
 export const editGeneration = (id,data) => api.put(`/update.Generation/${id}`,data)
@@ -25,6 +27,7 @@ export const viewcompanyscan = () => api.get(`/view.company.scan`)
 // User
 export const getUsers = (params) => api.get('/view.user', { params })
 export const registerUsers = (data) => api.post('/add.user', data)
+export const registerUsersMain = (data) => api.post('/add.user.main', data)
 export const registerUsersExcel = (formData) =>
   api.post("add.user.excell", formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -40,6 +43,8 @@ export const getuserapprove = () => api.get(`/view.user.approve`)
 export const verifyuser = (id) => api.put(`verify.user/${id}`)
 export const logoutUser = () => api.post('/logout')
 export const adduserclass = (data) => api.post('/add.user.class',data)
+export const editUserClass = (id,data) => api.put(`/update.user.class/${id}`,data)
+
 
 // Shift
 export const createShift = (data) => api.post('/add.shift', data)

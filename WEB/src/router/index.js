@@ -194,6 +194,12 @@ const routes = [
         component: () => import("../views/Generation.vue"),
         meta: { title: "Generation",showInNav: false }, // no showInNav -> hidden from sidebar
       },
+      {
+        path: "Shift",
+        name: "Shift",
+        component: () => import("../views/Shift.vue"),
+        meta: { title: "Shift",showInNav: false }, // no showInNav -> hidden from sidebar
+      },
     ],
   },
 ];

@@ -28,6 +28,7 @@ const (
 
 	// User
 	AddUser          = "add.user"
+	AddUserMain      = "add.user.main"
 	AddUserClass     = "add.user.class"
 	AddUserExcell    = "add.user.excell"
 	ViewUser         = "view.user"
@@ -41,7 +42,7 @@ const (
 	VerifyUser       = "verify.user/:id"
 
 	// Shift
-	EditShift = "edit.shift"
+	EditShift = "edit.shift/:id"
 	AddShift  = "add.shift"
 
 	// Attendance
@@ -118,4 +119,6 @@ const (
 	GetClassAvailableSubjects = "class/:id/schedule/subjects"
 	CreateClassSchedule       = "class/:id/schedule"
 	ToggleClassSchedule       = "class-schedule/:id/toggle"
+
+	UpdateUserClass = "update.user.class/:id"
 )

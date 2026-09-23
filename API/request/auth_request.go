@@ -19,6 +19,7 @@ type UserInput struct {
 	NameEN string `json:"name_en" gorm:"column:name_en"`
 	Gender int    `json:"gender" gorm:"column:gender"`
 	Code   string `json:"code" gorm:"column:code"`
+	RoleID int    `json:"role_id"`
 }
 
 type RefreshTokenRequest struct {
@@ -34,4 +35,5 @@ type UserRequestUpdate struct {
 	NameEN *string `json:"name_en" gorm:"column:name_en"`
 	Gender *int    `json:"gender" gorm:"column:gender"`
 	Code   *string `json:"code" gorm:"column:code"`
+	RoleID *int    `json:"role_id"`
 }

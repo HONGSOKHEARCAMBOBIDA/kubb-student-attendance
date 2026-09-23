@@ -36,6 +36,19 @@ func (cr *CompanyController) CreateGeneration(c *gin.Context) {
 	share.ResponseSuccess(c, http.StatusOK, "company created")
 }
 
+func (cr *CompanyController) CreateShift(c *gin.Context) {
+	var input request.ShiftRequestCreate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.CreateShift(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "company created")
+}
+
 func (cr *CompanyController) UpdateGeneration(c *gin.Context) {
 	idparam := c.Param("id")
 	id, err := strconv.Atoi(idparam)
@@ -53,6 +66,25 @@ func (cr *CompanyController) UpdateGeneration(c *gin.Context) {
 		return
 	}
 	share.ResponseSuccess(c, http.StatusOK, "company Updated")
+}
+
+func (cr *CompanyController) UpdateShift(c *gin.Context) {
+	idparam := c.Param("id")
+	id, err := strconv.Atoi(idparam)
+	if err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	var input request.ShiftRequestUpdate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateShift(c, id, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "company Updat")
 }
 
 func (cr *CompanyController) ToggleGeneration(c *gin.Context) {

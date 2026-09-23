@@ -63,4 +63,7 @@ const (
 
 	AddMajor  = "add.Major"
 	EditMajor = "edit.Major"
+
+	EditShift = "edit.shift"
+	AddShift  = "add.shift"
 )

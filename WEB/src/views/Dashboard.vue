@@ -240,7 +240,50 @@
               <ArrowRight />
             </el-icon>
           </div>
+           <div
+          v-if="adminLevel"
+            class="action-btn"
+            @click="$router.push('/Shift')"
+          >
+            <div class="icon-box">
+              <el-icon :size="23">
+                <Collection />
+              </el-icon>
+            </div>
 
+            <div class="action-content">
+              <span class="action-title">ម៉ោងសិក្សា</span>
+              <span class="action-description">
+                ម៉ោងសិក្សា
+              </span>
+            </div>
+
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </div>
+                <div
+          v-if="adminLevel"
+            class="action-btn"
+            @click="$router.push('/users')"
+          >
+            <div class="icon-box">
+              <el-icon :size="23">
+                <Collection />
+              </el-icon>
+            </div>
+
+            <div class="action-content">
+              <span class="action-title">អ្នកប្រើប្រាស់</span>
+              <span class="action-description">
+                អ្នកប្រើប្រាស់
+              </span>
+            </div>
+
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </div>
         </div>
       </el-card>
     </div>

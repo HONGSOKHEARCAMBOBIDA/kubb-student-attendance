@@ -78,6 +78,19 @@ func (cr *AuthController) Register(c *gin.Context) {
 	share.ResponseSuccess(c, http.StatusOK, "user create")
 }
 
+func (cr *AuthController) RegisterMain(c *gin.Context) {
+	var input request.UserInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.RegisterMain(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "user create")
+}
+
 func (cr *AuthController) CreateUserClass(c *gin.Context) {
 	userID, ok := helper.GetUserID(c)
 	if !ok {
@@ -270,6 +283,34 @@ func (cr *AuthController) GetUserData(c *gin.Context) {
 		return
 	}
 	data, err := cr.service.GetUserData(c, userlog)
+	if err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr *AuthController) UpdateUserClass(c *gin.Context) {
+	idparam := c.Param("id")
+	id, err := strconv.Atoi(idparam)
+	if err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	var input request.UserClassUpdateStatus
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateUserClass(c, id, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "company Updated")
+}
+
+func (cr *AuthController) GetUserNotStudent(c *gin.Context) {
+	data, err := cr.service.GetUserNotStudent(c)
 	if err != nil {
 		share.ResponseError(c, http.StatusInternalServerError, err.Error())
 		return

@@ -26,6 +26,8 @@ type CompanyService interface {
 	ShowManageCompany(ctx context.Context, id int) ([]helper.ManageCompany, error)
 	GetMajor(ctx context.Context) ([]model.Major, error)
 	GetShift(ctx context.Context) ([]model.Shift, error)
+	CreateShift(ctx context.Context, input request.ShiftRequestCreate) error
+	UpdateShift(ctx context.Context, id int, input request.ShiftRequestUpdate) error
 	GetGeneration(ctx context.Context) ([]model.Generation, error)
 	CreateGeneration(ctx context.Context, input request.GenerationRequestCreate) error
 	UpdateGeneration(ctx context.Context, id int, input request.GenerationRequestUpdate) error
@@ -43,6 +45,26 @@ func NewCompanyService() CompanyService {
 	}
 }
 
+func (s *companyservice) CreateShift(ctx context.Context, input request.ShiftRequestCreate) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newdata := model.Shift{
+			Name:     input.Name,
+			Session1: input.Session1,
+			Session2: input.Session2,
+			Session3: input.Session3,
+			Session4: input.Session4,
+			Session5: input.Session5,
+		}
+		if err := tx.Create(&newdata).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
+}
+
 func (s *companyservice) CreateGeneration(ctx context.Context, input request.GenerationRequestCreate) error {
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
 	defer cancel()
@@ -57,6 +79,31 @@ func (s *companyservice) CreateGeneration(ctx context.Context, input request.Gen
 		}
 		if err := tx.Create(&newdata).Error; err != nil {
 			return err
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *companyservice) UpdateShift(ctx context.Context, id int, input request.ShiftRequestUpdate) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var data model.Shift
+		if err := tx.Where("id = ?", id).First(&data).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return apperror.New(apperror.CodeNotFound, "classcurriculumn not found", nil)
+			}
+			return apperror.New(apperror.CodeInternal, "failed to fetch classcurriculumn", nil)
+		}
+		data.Name = input.Name
+		data.Session1 = input.Session1
+		data.Session2 = input.Session2
+		data.Session3 = input.Session3
+		data.Session4 = input.Session4
+		data.Session5 = input.Session5
+		if err := tx.Save(&data).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to update product", nil)
 		}
 		return nil
 	})
@@ -244,7 +291,9 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		u.name_en AS name_en,
 		u.gender AS gender,
 		u.code AS code,
-		uc.class_id AS class_id
+		uc.class_id AS class_id,
+		uc.status AS status,
+		uc.id AS user_class_id
 	`).Scan(&students).Error; err != nil {
 		return nil, nil, err
 	}
