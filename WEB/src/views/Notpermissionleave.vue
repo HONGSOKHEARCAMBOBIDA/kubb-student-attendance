@@ -28,7 +28,7 @@
           value-format="YYYY-MM-DD"
           size="large"
           style="width: 100%"
-          :clearable="false"
+          clearable="false"
         />
       </template>
 

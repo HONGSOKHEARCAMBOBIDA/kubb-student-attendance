@@ -244,10 +244,11 @@ func (s *leaveRequestService) AddNotPermission(ctx context.Context, input reques
 				}
 				return err
 			}
+			checkDate := helper.FormatDate(classSchedule.ScheduleDate)
 			// guard against duplicate processing for the same user/date
 			var count int64
 			if err := tx.Model(&model.Attendance{}).
-				Where("user_id = ? AND class_id = ? AND check_date = ? AND status = ?", n.UserID, n.ClassID, classSchedule.ScheduleDate, model.AttendanceStatusLeave).
+				Where("user_id = ? AND class_id = ? AND check_date = ?", n.UserID, n.ClassID, classSchedule.ScheduleDate).
 				Count(&count).Error; err != nil {
 				return apperror.New(apperror.CodeInternal, "failed to check existing attendance", nil)
 			}
@@ -318,7 +319,7 @@ func (s *leaveRequestService) AddNotPermission(ctx context.Context, input reques
 					ClassID:         n.ClassID,
 					ClassScheduleID: classSchedule.ID,
 					SubjectID:       classSchedule.Subject.ID,
-					CheckDate:       classSchedule.ScheduleDate,
+					CheckDate:       checkDate,
 					Status:          "LEAVE NOT PERMISSION",
 					LeaveRequestID:  nil,
 					VerifyBy:        nil,

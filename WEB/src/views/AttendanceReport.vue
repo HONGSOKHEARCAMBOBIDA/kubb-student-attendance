@@ -91,7 +91,7 @@
                 {{ formatDate(g.date) }}
                 <!-- {{ g.date }} -->
               </th>
-              <th colspan="3" rowspan="2">សរុ​ប</th>
+              <th colspan="4" rowspan="2">សរុ​ប</th>
             </tr>
             <tr>
               <th
@@ -113,6 +113,7 @@
               <th>អត់ច្បាប់</th>
               <th>មានច្បាប់</th>
               <th>ពិន្ទុ</th>
+              <th>ស្ថានភាព</th>
             </tr>
           </thead>
           <tbody>
@@ -141,7 +142,10 @@
               <td>{{ row.absent_count }}</td>
               <td>{{ row.permission_count }}</td>
               <td>
-                {{ 10 - row.absent_count * 1 - row.permission_count * 0.5 }}
+                {{ getScore(row) }}
+              </td>
+              <td>
+                {{ getScore(row) < 0 ? "ដកសិទ្ធប្រឡង" : "មានសិទ្ធប្រឡង" }}
               </td>
             </tr>
           </tbody>
@@ -170,6 +174,10 @@ const classes = ref([]);
 const report = reactive({ columns: [], rows: [] });
 const subjectOptions = ref([]);
 const subjectsLoading = ref(false);
+
+const getScore = (row) => {
+  return 10 - row.absent_count * 1 - row.permission_count * 0.5
+}
 
 const filters = reactive({
   name: "",

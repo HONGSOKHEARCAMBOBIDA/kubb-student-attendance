@@ -129,8 +129,8 @@ func (s *classScheduleService) Create(ctx context.Context, classID int, input re
 		// this class.
 		var dup int64
 		if err := tx.Model(&model.ClassSchedule{}).
-			Where("class_id = ? AND subject_id = ? AND day_of_week = ?",
-				classID, input.SubjectID, input.DayOfWeek).
+			Where("class_id = ? AND subject_id = ? AND schedule_date = ?",
+				classID, input.SubjectID, input.ScheduleDate).
 			Count(&dup).Error; err != nil {
 			return apperror.New(apperror.CodeInternal, "failed to check existing schedule", nil)
 		}

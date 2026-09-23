@@ -49,7 +49,7 @@
           <b>{{ pageTitle }}</b>
         </div>
 
-        <el-dropdown @command="handleCommand" v-if="adminLevel">
+        <el-dropdown @command="handleCommand">
           <div class="avatar-row">
             <el-avatar
               
