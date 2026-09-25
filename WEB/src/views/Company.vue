@@ -107,7 +107,7 @@
         v-model:page-size="pageSize"
         :total="total"
         @page-change="fetchClasses"
-        actions-width="300px"
+        actions-width="350px"
         :columns="[
           { prop: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
           { slot: 'major_name', label: 'ជំនាញ', minWidth: 110 },
@@ -227,16 +227,38 @@
             >
             </AppButton>
           </el-tooltip>
+             <el-tooltip content="បញ្ចូលពិន្ទុ" placement="top">
+            <AppButton
+              v-if="adminLevel"
+              :disabled="row.is_active === false"
+              size="small"
+              icon="CopyDocument"
+              type="success"
+              circle
+              @click="scorecopy(row)"
+            >
+            </AppButton>
+          </el-tooltip>
         </template>
 
         <template #expand="{ row: students }">
-          <el-divider content-position="left">
-            <AppInput
-              v-model.trim="studentSearch[students.id]"
-              placeholder="ស្វែងរកសិស្ស (ឈ្មោះ ឬ កូដ)"
-              clearable
-            />
-          </el-divider>
+<el-divider content-position="left">
+  <el-row :gutter="20">
+    <el-col :span="12">
+      <AppInput
+        v-model.trim="studentSearch[students.id]"
+        placeholder="ស្វែងរកសិស្ស (ឈ្មោះ ឬ កូដ)"
+        clearable
+      />
+    </el-col>
+
+    <el-col :span="12" style="text-align: right">
+      <AppButton type="primary">
+        បញ្ចូលពិន្ទុ
+      </AppButton>
+    </el-col>
+  </el-row>
+</el-divider>
           <AppTable
             show-index
             :data="filteredStudents(students)"
@@ -820,6 +842,18 @@
         </AppButton>
       </template>
     </AppDialog>
+
+    <AppDialog
+    v-model="copyscoreDialog"
+    title="បញ្ចូលពិន្ទុសិស្ស"
+    width="70%"
+    >
+   <el-table :data="copyscorestudent" size="small" border max-height="320">
+            <el-table-column prop="name_kh" label="ឈ្មោះខ្មែរ" />
+            <el-table-column prop="name_en" label="ឈ្មោះឡាតាំង" />
+            <el-table-column prop="code" label="អត្តលេខ" width="100" />
+          </el-table>  
+    </AppDialog>
   </div>
 </template>
 
@@ -1068,6 +1102,13 @@ const editId = ref(null);
 const formRef = ref();
 const telegramFormRef = ref();
 
+const copyscoreDialog = ref(false)
+const copyscorestudent = ref([])
+function scorecopy(row){
+  copyscorestudent.value = (row.students || []).map((s)=>({...s}))
+  copyscoreDialog.value = true
+}
+
 const copyDialog = ref(false);
 const copying = ref(false);
 const copySourceClass = ref(null);
@@ -1140,6 +1181,10 @@ const studentcolumn = [
   { slot: "gender", label: "ភេទ", minwidth: 100 },
   { prop: "code", label: "អត្តលេខ", minwidth: 100 },
   { slot: "status", label: "ស្ថានភាព", minwidth: 100 },
+  { prop: "attendance", label: "វត្តមាននិស្សិត", width: 100 },
+  { prop: "research", label: "កិច្ចការស្រាវជ្រាវ", width: 150 },
+  { prop: "midterm", label: "ប្រឡងពាក់កណ្តាលឆមាស", width: 200 },
+   { prop: "final", label: "ប្រឡងបញ្ចប់ឆមាស", width: 150 },
 ];
 
 const classType = [
