@@ -1,52 +1,114 @@
 <template>
   <div>
-    <AppFilterBar :fields="[
-      { slot: 'name', span: 4 },
-      { slot: 'major', span: 4 },
-      { slot: 'shift', span: 4 },
-      { slot: 'generation', span: 4 },
-      { slot: 'programm', span: 4 },
-    ]">
+    <AppFilterBar
+      :fields="[
+        { slot: 'name', span: 4 },
+        { slot: 'major', span: 4 },
+        { slot: 'shift', span: 4 },
+        { slot: 'generation', span: 4 },
+        { slot: 'programm', span: 4 },
+      ]"
+    >
       <template #name>
-        <el-input v-model.trim="filters.name" placeholder="ស្វែងរកតាមឈ្មោះថ្នាក់" clearable size="large" />
+        <el-input
+          v-model.trim="filters.name"
+          placeholder="ស្វែងរកតាមឈ្មោះថ្នាក់"
+          clearable
+          size="large"
+        />
       </template>
 
       <template #major>
-        <el-select v-model="filters.major_id" placeholder="ជំនាញ" clearable filterable size="large">
-          <el-option v-for="item in majors" :key="item.id" :label="item.name_kh" :value="item.id" />
+        <el-select
+          v-model="filters.major_id"
+          placeholder="ជំនាញ"
+          clearable
+          filterable
+          size="large"
+        >
+          <el-option
+            v-for="item in majors"
+            :key="item.id"
+            :label="item.name_kh"
+            :value="item.id"
+          />
         </el-select>
       </template>
 
       <template #shift>
-        <el-select v-model="filters.shift_id" placeholder="វេន" clearable size="large">
-          <el-option v-for="item in shifts" :key="item.id" :label="item.name" :value="item.id" />
+        <el-select
+          v-model="filters.shift_id"
+          placeholder="វេន"
+          clearable
+          size="large"
+        >
+          <el-option
+            v-for="item in shifts"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
         </el-select>
       </template>
 
       <template #generation>
-        <el-select v-model="filters.generation_id" placeholder="ជំនាន់" clearable filterable size="large">
-          <el-option v-for="item in generations" :key="item.id" :label="item.name_kh" :value="item.id" />
+        <el-select
+          v-model="filters.generation_id"
+          placeholder="ជំនាន់"
+          clearable
+          filterable
+          size="large"
+        >
+          <el-option
+            v-for="item in generations"
+            :key="item.id"
+            :label="item.name_kh"
+            :value="item.id"
+          />
         </el-select>
       </template>
 
       <template #programm>
-        <el-select v-model="filters.programme_id" placeholder="កម្មវិធីសិក្សា" clearable filterable size="large">
-          <el-option v-for="item in programmes" :key="item.id" :label="item.name" :value="item.id" />
+        <el-select
+          v-model="filters.programme_id"
+          placeholder="កម្មវិធីសិក្សា"
+          clearable
+          filterable
+          size="large"
+        >
+          <el-option
+            v-for="item in programmes"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
         </el-select>
       </template>
 
       <template #actions>
-        <AppButton v-if="canAddClass" type="primary" @click="openCreate" :block="false">
+        <AppButton
+          v-if="canAddClass"
+          type="primary"
+          @click="openCreate"
+          :block="false"
+        >
           បន្ថែមថ្នាក់
         </AppButton>
       </template>
     </AppFilterBar>
 
-
-
     <el-card class="table-card">
-      <AppTable expandable :data="classes" :loading="loading" show-index v-model:current-page="page"
-        v-model:page-size="pageSize" :total="total" @page-change="fetchClasses" actions-width="300px" :columns="[
+      <AppTable
+        expandable
+        :data="classes"
+        :loading="loading"
+        show-index
+        v-model:current-page="page"
+        v-model:page-size="pageSize"
+        :total="total"
+        @page-change="fetchClasses"
+        actions-width="300px"
+        :columns="[
           { prop: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
           { slot: 'major_name', label: 'ជំនាញ', minWidth: 110 },
           { prop: 'shift_name', label: 'វេន', width: 100 },
@@ -61,16 +123,20 @@
           { label: 'អាចស្កែនក្រៅតំបន់', slot: 'outsize', width: 150 },
           { label: 'ស្ថានភាព', slot: 'status', width: 100 },
           { label: 'សិស្សសរុប', slot: 'total', width: 100 },
-        ]">
+        ]"
+      >
         <template #major_name="{ row }">
-          <el-text style="color: red;">{{ row.major_name }}</el-text>
+          <el-text style="color: red">{{ row.major_name }}</el-text>
         </template>
         <template #generation_name="{ row }">
-          <el-text style="color: red;">{{ row.generation_name }} | {{ row.generation_start }}-{{ row.generation_end
-          }}</el-text>
+          <el-text style="color: red"
+            >{{ row.generation_name }} | {{ row.generation_start }}-{{
+              row.generation_end
+            }}</el-text
+          >
         </template>
         <template #programme_name="{ row }">
-          <el-text style="color: red;">{{ row.programme_name }}</el-text>
+          <el-text style="color: red">{{ row.programme_name }}</el-text>
         </template>
         <template #outsize="{ row }">
           <el-tag :type="row.can_scan_outsize ? 'success' : 'danger'">
@@ -88,130 +154,279 @@
         </template>
 
         <template #type="{ row }">
-          <el-text>{{ row.type === 'onclass' ? "ផ្ទាល់" : "អនឡាញ" }}</el-text>
+          <el-text>{{ row.type === "onclass" ? "ផ្ទាល់" : "អនឡាញ" }}</el-text>
         </template>
 
         <template #actions="{ row }">
           <el-tooltip content="កែប្រែ" placement="top">
-            <AppButton :disabled="row.is_active === false" v-if="canEditClass" size="small" icon="Edit" type="warning"
-              circle @click="openEdit(row)">
+            <AppButton
+              :disabled="row.is_active === false"
+              v-if="canEditClass"
+              size="small"
+              icon="Edit"
+              type="warning"
+              circle
+              @click="openEdit(row)"
+            >
             </AppButton>
           </el-tooltip>
-          <AppButton :disabled="row.is_active === false" v-if="canEditClass" size="small" icon="Promotion"
-            type="primary" circle @click="openEditTelegram(row)">
+          <AppButton
+            :disabled="row.is_active === false"
+            v-if="canEditClass"
+            size="small"
+            icon="Promotion"
+            type="primary"
+            circle
+            @click="openEditTelegram(row)"
+          >
           </AppButton>
           <el-tooltip content="បិទ/បើក ថ្នាក់" placement="top">
-            <AppButton v-if="canEditClass" size="small" icon="Switch" :type="row.is_active ? 'danger' : 'success'"
-              circle @click="handleToggleStatus(row)">
+            <AppButton
+              v-if="canEditClass"
+              size="small"
+              icon="Switch"
+              :type="row.is_active ? 'danger' : 'success'"
+              circle
+              @click="handleToggleStatus(row)"
+            >
             </AppButton>
           </el-tooltip>
           <el-tooltip content="បញ្ជូលសិស្សតាមExcell" placement="top">
-            <AppButton v-if="adminLevel" :disabled="row.is_active === false" size="small" icon="Download" type="success"
-              circle @click="openImport(row)">
+            <AppButton
+              v-if="adminLevel"
+              :disabled="row.is_active === false"
+              size="small"
+              icon="Download"
+              type="success"
+              circle
+              @click="openImport(row)"
+            >
             </AppButton>
           </el-tooltip>
           <el-tooltip content="Copy ទិន្ន័យសិស្សទៅថ្នាក់ផ្សេង" placement="top">
-            <AppButton v-if="adminLevel" :disabled="row.is_active === false" size="small" icon="CopyDocument"
-              type="primary" circle @click="openCopy(row)">
+            <AppButton
+              v-if="adminLevel"
+              :disabled="row.is_active === false"
+              size="small"
+              icon="CopyDocument"
+              type="primary"
+              circle
+              @click="openCopy(row)"
+            >
             </AppButton>
           </el-tooltip>
           <el-tooltip content="កាលវិភាគ" placement="top">
-            <AppButton v-if="adminLevel" :disabled="row.is_active === false" size="small" icon="Calendar" type="primary"
-              circle @click="openSchedule(row)">
+            <AppButton
+              v-if="adminLevel"
+              :disabled="row.is_active === false"
+              size="small"
+              icon="Calendar"
+              type="primary"
+              circle
+              @click="openSchedule(row)"
+            >
             </AppButton>
           </el-tooltip>
         </template>
 
         <template #expand="{ row: students }">
           <el-divider content-position="left">
-
-            <AppInput v-model.trim="studentSearch[students.id]" placeholder="ស្វែងរកសិស្ស (ឈ្មោះ ឬ កូដ)" clearable />
+            <AppInput
+              v-model.trim="studentSearch[students.id]"
+              placeholder="ស្វែងរកសិស្ស (ឈ្មោះ ឬ កូដ)"
+              clearable
+            />
           </el-divider>
-          <AppTable show-index :data="filteredStudents(students)" :columns="studentcolumn" :show-pagination="false">
+          <AppTable
+            show-index
+            :data="filteredStudents(students)"
+            :columns="studentcolumn"
+            :show-pagination="false"
+          >
             <template #gender="{ row: students }">
-              <el-text>{{ students.gender === '1' ? 'ប្រុស' : 'ស្រី' }}</el-text>
+              <el-text>{{
+                students.gender === "1" ? "ប្រុស" : "ស្រី"
+              }}</el-text>
             </template>
             <template #status="{ row: students }">
-              <el-tooltip content="ចុចដើម្បីផ្លាស់ប្តូរស្ថានភាព" placement="top">
-                <el-tag :type="statusTagType(students.status)" size="large" style="cursor: pointer"
-                  @click="canEditClass && openUserClassStatusEditor(students)">
+              <el-tooltip
+                content="ចុចដើម្បីផ្លាស់ប្តូរស្ថានភាព"
+                placement="top"
+              >
+                <el-tag
+                  :type="statusTagType(students.status)"
+                  size="large"
+                  style="cursor: pointer"
+                  @click="canEditClass && openUserClassStatusEditor(students)"
+                >
                   {{ getUserClassStatusLabel(students.status) }}
                 </el-tag>
               </el-tooltip>
             </template>
-            <template #actions="{ row: student }">
-              <el-tooltip content="កែប្រែ" placement="top">
-                <AppButton v-if="canEditClass" size="small" icon="Edit" type="warning" circle
-                  @click="openEditStudent(student)">
-                </AppButton>
-              </el-tooltip>
-            </template>
+      <template #actions="{ row: student }">
+  <el-tooltip content="បញ្ចូលពិន្ទុ" placement="top">
+    <AppButton
+      size="small"
+      icon="EditPen"
+      type="primary"
+      circle
+      @click="openScoreDialog(students, student)"
+    />
+  </el-tooltip>
+
+  <el-tooltip content="កែប្រែសិស្ស" placement="top">
+    <AppButton
+      v-if="canEditClass"
+      size="small"
+      icon="Edit"
+      type="warning"
+      circle
+      @click="openEditStudent(student)"
+    />
+  </el-tooltip>
+</template>
           </AppTable>
         </template>
       </AppTable>
     </el-card>
 
-    <AppDialog v-model="dialogVisible" :title="isEdit ? 'កែប្រែថ្នាក់' : 'បន្ថែមថ្នាក់'" width="640px">
+    <AppDialog
+      v-model="dialogVisible"
+      :title="isEdit ? 'កែប្រែថ្នាក់' : 'បន្ថែមថ្នាក់'"
+      width="640px"
+    >
       <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
         <el-form-item label="ឈ្មោះថ្នាក់" prop="name">
-          <el-input v-model.trim="form.name" size="large" placeholder="បញ្ចូលឈ្មោះថ្នាក់" />
+          <el-input
+            v-model.trim="form.name"
+            size="large"
+            placeholder="បញ្ចូលឈ្មោះថ្នាក់"
+          />
         </el-form-item>
 
         <div class="form-row">
           <el-form-item label="ជំនាញ" prop="major_id">
-            <el-select v-model="form.major_id" size="large" placeholder="ជ្រើសរើសជំនាញ">
-              <el-option v-for="item in majors" :key="item.id" :label="item.name_kh" :value="item.id" />
+            <el-select
+              v-model="form.major_id"
+              size="large"
+              placeholder="ជ្រើសរើសជំនាញ"
+            >
+              <el-option
+                v-for="item in majors"
+                :key="item.id"
+                :label="item.name_kh"
+                :value="item.id"
+              />
             </el-select>
           </el-form-item>
           <el-form-item label="វេន" prop="shift_id">
-            <el-select v-model="form.shift_id" size="large" placeholder="ជ្រើសរើសវេន">
-              <el-option v-for="item in shifts" :key="item.id" :label="item.name" :value="item.id" />
+            <el-select
+              v-model="form.shift_id"
+              size="large"
+              placeholder="ជ្រើសរើសវេន"
+            >
+              <el-option
+                v-for="item in shifts"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              />
             </el-select>
           </el-form-item>
         </div>
 
         <div class="form-row">
           <el-form-item label="ជំនាន់" prop="generation_id">
-            <el-select v-model="form.generation_id" size="large" placeholder="ជ្រើសរើសជំនាន់">
-              <el-option v-for="item in generations" :key="item.id" :label="item.name_kh" :value="item.id" />
+            <el-select
+              v-model="form.generation_id"
+              size="large"
+              placeholder="ជ្រើសរើសជំនាន់"
+            >
+              <el-option
+                v-for="item in generations"
+                :key="item.id"
+                :label="item.name_kh"
+                :value="item.id"
+              />
             </el-select>
           </el-form-item>
           <el-form-item label="កម្មវិធីសិក្សា" prop="programme_id">
-            <el-select v-model="form.programme_id" size="large" placeholder="ជ្រើសរើសកម្មវិធីសិក្សា">
-              <el-option v-for="item in programmes" :key="item.id" :label="item.name" :value="item.id" />
+            <el-select
+              v-model="form.programme_id"
+              size="large"
+              placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
+            >
+              <el-option
+                v-for="item in programmes"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              />
             </el-select>
           </el-form-item>
         </div>
 
         <div class="form-row">
           <el-form-item label="ឆ្នាំ" prop="year">
-            <el-input type="number" v-model.number="form.year" size="large" placeholder="e.g. 2026" />
+            <el-input
+              type="number"
+              v-model.number="form.year"
+              size="large"
+              placeholder="e.g. 2026"
+            />
           </el-form-item>
           <el-form-item label="ឆមាស" prop="semester">
-            <el-input type="number" v-model.number="form.semester" size="large" placeholder="e.g. 1" />
+            <el-input
+              type="number"
+              v-model.number="form.semester"
+              size="large"
+              placeholder="e.g. 1"
+            />
           </el-form-item>
         </div>
 
         <div class="form-row">
           <el-form-item label="ក្រុម" prop="group">
-            <el-input type="number" v-model.number="form.group" size="large" placeholder="e.g. A" />
+            <el-input
+              type="number"
+              v-model.number="form.group"
+              size="large"
+              placeholder="e.g. A"
+            />
           </el-form-item>
           <el-form-item label="Term" prop="term">
-            <el-input type="number" v-model.number="form.term" size="large" placeholder="e.g. 1" />
+            <el-input
+              type="number"
+              v-model.number="form.term"
+              size="large"
+              placeholder="e.g. 1"
+            />
           </el-form-item>
-          <AppSelect size="large" v-model="form.type" :options="classType" label="ប្រភេទថ្នាក់"
-            placeholder="ប្រភេទថ្នាក់">
-
+          <AppSelect
+            size="large"
+            v-model="form.type"
+            :options="classType"
+            label="ប្រភេទថ្នាក់"
+            placeholder="ប្រភេទថ្នាក់"
+          >
           </AppSelect>
         </div>
 
         <el-form-item label="Map Link">
-          <el-input v-model.trim="form.map_link" size="large" placeholder="https://maps.google.com/..." />
+          <el-input
+            v-model.trim="form.map_link"
+            size="large"
+            placeholder="https://maps.google.com/..."
+          />
         </el-form-item>
 
         <div class="form-row">
           <el-form-item label="ចម្ងាយអាចស្កែនបាន (ម៉េត្រ)" prop="radius">
-            <el-input v-model.trim="form.radius" placeholder="e.g. 100" size="large" />
+            <el-input
+              v-model.trim="form.radius"
+              placeholder="e.g. 100"
+              size="large"
+            />
           </el-form-item>
           <el-form-item label="អាចស្កែនក្រៅតំបន់" prop="can_scan_outsize">
             <el-radio-group v-model="form.can_scan_outsize" size="large">
@@ -223,62 +438,115 @@
       </el-form>
 
       <template #footer>
-        <AppButton @click="dialogVisible = false" size="large" :block="false" type="warning">
+        <AppButton
+          @click="dialogVisible = false"
+          size="large"
+          :block="false"
+          type="warning"
+        >
           បោះបង់
         </AppButton>
-        <AppButton @click="handleSave" type="primary" :loading="saving" size="large" :block="false">
+        <AppButton
+          @click="handleSave"
+          type="primary"
+          :loading="saving"
+          size="large"
+          :block="false"
+        >
           {{ isEdit ? "កែប្រែ" : "បង្កើត" }}
         </AppButton>
       </template>
     </AppDialog>
 
-    <AppDialog v-model="dialogTelegramVisible" title="កែប្រែ Telegram" width="600px">
+    <AppDialog
+      v-model="dialogTelegramVisible"
+      title="កែប្រែ Telegram"
+      width="600px"
+    >
       <el-form :model="telegramForm" ref="telegramFormRef" label-position="top">
         <el-divider />
         <p class="section-label">Telegram</p>
         <div class="form-row">
           <el-form-item label="Bot Token" prop="bot_token">
-            <el-input v-model="telegramForm.bot_token" placeholder="Telegram bot token" size="large" />
+            <el-input
+              v-model="telegramForm.bot_token"
+              placeholder="Telegram bot token"
+              size="large"
+            />
           </el-form-item>
           <el-form-item label="Group Link" prop="group_link">
-            <el-input v-model="telegramForm.group_link" placeholder="Telegram group chat ID" size="large" />
+            <el-input
+              v-model="telegramForm.group_link"
+              placeholder="Telegram group chat ID"
+              size="large"
+            />
           </el-form-item>
         </div>
       </el-form>
 
       <template #footer>
-        <AppButton @click="dialogTelegramVisible = false" size="large" :block="false">
+        <AppButton
+          @click="dialogTelegramVisible = false"
+          size="large"
+          :block="false"
+        >
           ថតក្រោយ
         </AppButton>
-        <AppButton type="primary" :loading="saving" @click="handleUpdateTelegram" size="large" :block="false">
+        <AppButton
+          type="primary"
+          :loading="saving"
+          @click="handleUpdateTelegram"
+          size="large"
+          :block="false"
+        >
           កែប្រែ
         </AppButton>
       </template>
     </AppDialog>
 
-    <AppDialog v-model="importDialog" :title="`បញ្ចូលសិស្សតាម Excel — ${importClassName}`" width="900px"
-      @closed="resetImport">
-      <el-upload drag :auto-upload="false" :show-file-list="false" accept=".xlsx,.xls" :on-change="handleFilePicked">
+    <AppDialog
+      v-model="importDialog"
+      :title="`បញ្ចូលសិស្សតាម Excel — ${importClassName}`"
+      width="900px"
+      @closed="resetImport"
+    >
+      <el-upload
+        drag
+        :auto-upload="false"
+        :show-file-list="false"
+        accept=".xlsx,.xls"
+        :on-change="handleFilePicked"
+      >
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
         <div class="el-upload__text">
           អូសឯកសារមកទីនេះ ឬ <em>ចុចដើម្បីជ្រើសរើសឯកសារ</em>
         </div>
         <template #tip>
           <div class="el-upload__tip">
-            Column ដែលត្រូវការ (ជួរទី ១): <b>name_kh, name_en, gender, code</b> —
-            gender អាចជា 1/2 ឬ ប្រុស/ស្រី
+            Column ដែលត្រូវការ (ជួរទី ១):
+            <b>name_kh, name_en, gender, code</b> — gender អាចជា 1/2 ឬ
+            ប្រុស/ស្រី
           </div>
         </template>
       </el-upload>
 
-      <el-table v-if="previewRows.length" :data="previewRows" size="small" stripe border style="margin-top: 16px"
-        max-height="360">
+      <el-table
+        v-if="previewRows.length"
+        :data="previewRows"
+        size="small"
+        stripe
+        border
+        style="margin-top: 16px"
+        max-height="360"
+      >
         <el-table-column type="index" width="50" label="#" />
         <el-table-column prop="name_kh" label="ឈ្មោះខ្មែរ" />
         <el-table-column prop="name_en" label="ឈ្មោះឡាតាំង" />
         <el-table-column prop="code" label="កូដ" />
         <el-table-column label="ភេទ" width="90">
-          <template #default="{ row }">{{ row.gender === 1 ? "ប្រុស" : row.gender === 2 ? "ស្រី" : "?" }}</template>
+          <template #default="{ row }">{{
+            row.gender === 1 ? "ប្រុស" : row.gender === 2 ? "ស្រី" : "?"
+          }}</template>
         </el-table-column>
         <el-table-column label="ស្ថានភាព" width="110">
           <template #default="{ row }">
@@ -290,27 +558,56 @@
       </el-table>
 
       <template #footer>
-        <AppButton @click="importDialog = false" size="large" :block="false" type="warning">
+        <AppButton
+          @click="importDialog = false"
+          size="large"
+          :block="false"
+          type="warning"
+        >
           បោះបង់
         </AppButton>
-        <AppButton @click="handleImportSubmit" type="primary" :loading="importing" size="large" :block="false"
-          :disabled="!previewRows.length">
+        <AppButton
+          @click="handleImportSubmit"
+          type="primary"
+          :loading="importing"
+          size="large"
+          :block="false"
+          :disabled="!previewRows.length"
+        >
           នាំចូល ({{ validRowCount }})
         </AppButton>
       </template>
     </AppDialog>
 
-    <AppDialog v-model="copyDialog" :title="`Copy សិស្សពី ${copySourceClass?.name || ''}`" width="700px">
+    <AppDialog
+      v-model="copyDialog"
+      :title="`Copy សិស្សពី ${copySourceClass?.name || ''}`"
+      width="700px"
+    >
       <el-form label-position="top">
         <el-form-item label="ថ្នាក់គោលដៅ" required>
-          <el-select v-model="copyTargetClassId" placeholder="ជ្រើសរើសថ្នាក់" filterable size="large"
-            style="width: 100%">
-            <el-option v-for="c in copyTargetOptions" :key="c.id" :label="c.name" :value="c.id" />
+          <el-select
+            v-model="copyTargetClassId"
+            placeholder="ជ្រើសរើសថ្នាក់"
+            filterable
+            size="large"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="c in copyTargetOptions"
+              :key="c.id"
+              :label="c.name"
+              :value="c.id"
+            />
           </el-select>
         </el-form-item>
 
         <el-form-item label="ជ្រើសរើសសិស្ស">
-          <el-checkbox v-model="copySelectAll" @change="handleCopySelectAll" style="margin-bottom: 8px">
+          <el-checkbox
+            v-model="copySelectAll"
+            @change="handleCopySelectAll"
+            style="margin-bottom: 8px"
+          >
             ជ្រើសរើសទាំងអស់
           </el-checkbox>
           <el-table :data="copyStudents" size="small" border max-height="320">
@@ -327,11 +624,22 @@
       </el-form>
 
       <template #footer>
-        <AppButton @click="copyDialog = false" size="large" :block="false" type="warning">
+        <AppButton
+          @click="copyDialog = false"
+          size="large"
+          :block="false"
+          type="warning"
+        >
           បោះបង់
         </AppButton>
-        <AppButton @click="handleCopySubmit" type="primary" :loading="copying" size="large" :block="false"
-          :disabled="!copyTargetClassId || !copySelectedCount">
+        <AppButton
+          @click="handleCopySubmit"
+          type="primary"
+          :loading="copying"
+          size="large"
+          :block="false"
+          :disabled="!copyTargetClassId || !copySelectedCount"
+        >
           Copy ({{ copySelectedCount }})
         </AppButton>
       </template>
@@ -358,28 +666,157 @@
       </el-form>
 
       <template #footer>
-        <AppButton @click="studentDialogVisible = false" size="large" :block="false" type="warning">
+        <AppButton
+          @click="studentDialogVisible = false"
+          size="large"
+          :block="false"
+          type="warning"
+        >
           បោះបង់
         </AppButton>
-        <AppButton @click="handleSaveStudent" type="primary" :loading="studentSaving" size="large" :block="false">
+        <AppButton
+          @click="handleSaveStudent"
+          type="primary"
+          :loading="studentSaving"
+          size="large"
+          :block="false"
+        >
           កែប្រែ
         </AppButton>
       </template>
     </AppDialog>
-    <AppDialog v-model="userClassStatusDialogVisible" title="ផ្លាស់ប្តូរស្ថានភាពសិស្ស" width="420px">
+    <AppDialog
+      v-model="userClassStatusDialogVisible"
+      title="ផ្លាស់ប្តូរស្ថានភាពសិស្ស"
+      width="420px"
+    >
       <el-form label-position="top">
-        <AppSelect v-model="userClassStatusForm.status" size="large" :options="userClassStatus">
-
+        <AppSelect
+          v-model="userClassStatusForm.status"
+          size="large"
+          :options="userClassStatus"
+        >
         </AppSelect>
       </el-form>
 
       <template #footer>
-        <AppButton @click="userClassStatusDialogVisible = false" size="large" :block="false" type="warning">
+        <AppButton
+          @click="userClassStatusDialogVisible = false"
+          size="large"
+          :block="false"
+          type="warning"
+        >
           បោះបង់
         </AppButton>
-        <AppButton @click="handleUpdateUserClassStatus" type="primary" :loading="userClassStatusSaving" size="large"
-          :block="false">
+        <AppButton
+          @click="handleUpdateUserClassStatus"
+          type="primary"
+          :loading="userClassStatusSaving"
+          size="large"
+          :block="false"
+        >
           កែប្រែ
+        </AppButton>
+      </template>
+    </AppDialog>
+
+    <AppDialog v-model="scoreDialogVisible" title="បញ្ចូលពិន្ទុ" width="900px">
+      <el-form label-position="top">
+        <div class="form-row">
+          <el-form-item label="ថ្នាក់">
+            <el-input
+              :model-value="scoreForm.class_name"
+              disabled
+              size="large"
+            />
+          </el-form-item>
+
+          <el-form-item label="សិស្ស">
+            <el-input
+              :model-value="scoreForm.student_name"
+              disabled
+              size="large"
+            />
+          </el-form-item>
+        </div>
+
+        <div class="form-row">
+          
+
+          <AppSelect
+          v-model="scoreForm.subject_id"
+          :options="subjects"
+          label="មុខវិជ្ជា"
+          placeholder="ជ្រើសរើសមុខវិជ្ជា"
+          size="large"
+          >
+
+          </AppSelect>
+
+          <el-form-item label="ឆ្នាំ" required>
+            <el-input
+              v-model.number="scoreForm.year"
+              type="number"
+              size="large"
+            />
+          </el-form-item>
+
+          <el-form-item label="ឆមាស" required>
+            <el-input
+              v-model.number="scoreForm.semester"
+              type="number"
+              size="large"
+            />
+          </el-form-item>
+        </div>
+
+        <el-divider content-position="left"> ពិន្ទុតាមផ្នែក </el-divider>
+
+        <el-table :data="scoreForm.details" border stripe size="default">
+          <el-table-column type="index" label="#" width="60" />
+
+          <el-table-column
+            prop="grade_component_name"
+            label="ផ្នែកពិន្ទុ"
+            min-width="220"
+          />
+
+          <el-table-column prop="max_score" label="ពិន្ទុអតិបរមា" width="130" />
+
+          <el-table-column label="ពិន្ទុ" width="180">
+            <template #default="{ row }">
+              <el-input-number
+                v-model="row.score"
+                :min="0"
+                :max="row.max_score || 100"
+                :precision="2"
+                :step="0.5"
+                size="large"
+                style="width: 100%"
+              />
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-form>
+
+      <template #footer>
+        <AppButton
+          @click="scoreDialogVisible = false"
+          size="large"
+          :block="false"
+          type="warning"
+        >
+          បោះបង់
+        </AppButton>
+
+        <AppButton
+          @click="handleCreateScore"
+          type="primary"
+          :loading="scoreSaving"
+          size="large"
+          :block="false"
+        >
+          រក្សាទុកពិន្ទុ
         </AppButton>
       </template>
     </AppDialog>
@@ -403,7 +840,10 @@ import {
   getProgramme,
   adduserclass,
   updateUser,
-  editUserClass
+  editUserClass,
+  getGradecomponent,
+  addScore,
+  getClassAvailableSubjects
 } from "../api/services";
 import AppTable from "../../components/AppTable.vue";
 import AppButton from "../../components/AppButton.vue";
@@ -425,10 +865,138 @@ function openSchedule(row) {
   scheduleDialog.value = true;
 }
 
+const scoreDialogVisible = ref(false);
+const scoreSaving = ref(false);
+
+const subjects = ref([]);
+const gradeComponents = ref([]);
+
+async function fetchSubjectOptions(classID) {
+  try {
+    const res = await getClassAvailableSubjects(classID);
+    subjects.value = (res.data.data || []).map((s) => ({
+      label: `${s.code} — ${s.name_kh}`,
+      value: s.id,
+    }));
+  } catch (e) {
+    notify.error(e.response?.data?.error || "Failed to load subjects");
+  } finally {
+    
+  }
+}
+
+const scoreForm = reactive({
+  class_id: null,
+  class_name: "",
+
+  user_id: null,
+  student_name: "",
+
+  major_id: null,
+  generation_id: null,
+  programme_id: null,
+
+  subject_id: null,
+  year: null,
+  semester: null,
+
+  details: [],
+});
+
+async function fetchGradeComponents() {
+  try {
+    const res = await getGradecomponent();
+
+    gradeComponents.value = res.data.data || [];
+    console.log(gradeComponents.value)
+  } catch (e) {
+    notify.error(
+      e.response?.data?.error || "មិនអាចទាញយក Grade Component បានទេ",
+    );
+  }
+}
+
+function openScoreDialog(classRow, student) {
+  scoreForm.class_id = classRow.id;
+  scoreForm.class_name = classRow.name;
+
+  scoreForm.user_id = student.id;
+  scoreForm.student_name = `${student.name_kh} (${student.code})`;
+
+  scoreForm.major_id = classRow.major_id;
+  scoreForm.generation_id = classRow.generation_id;
+  scoreForm.programme_id = classRow.programme_id;
+
+  scoreForm.subject_id = null;
+  scoreForm.year = classRow.year;
+  scoreForm.semester = classRow.semester;
+
+  scoreForm.details = gradeComponents.value.map((item) => ({
+    grade_component_id: item.ID,
+    grade_component_name: item.Name,
+    max_score: Number(item.WeightPercentage || 100),
+    score: 0,
+  }));
+  fetchSubjectOptions(classRow.id)
+  scoreDialogVisible.value = true;
+}
+
+async function handleCreateScore() {
+  if (!scoreForm.class_id) {
+    notify.error("មិនមានថ្នាក់");
+    return;
+  }
+
+  if (!scoreForm.user_id) {
+    notify.error("មិនមានសិស្ស");
+    return;
+  }
+
+  if (!scoreForm.subject_id) {
+    notify.error("សូមជ្រើសរើសមុខវិជ្ជា");
+    return;
+  }
+
+  scoreSaving.value = true;
+
+  try {
+    const payload = {
+      class_id: scoreForm.class_id,
+      major_id: scoreForm.major_id,
+      generation_id: scoreForm.generation_id,
+      programme_id: scoreForm.programme_id,
+      subject_id: scoreForm.subject_id,
+      year: scoreForm.year,
+      semester: scoreForm.semester,
+
+      students: [
+        {
+          user_id: scoreForm.user_id,
+
+          details: scoreForm.details.map((item) => ({
+            grade_component_id: item.grade_component_id,
+            score: Number(item.score || 0),
+          })),
+        },
+      ],
+    };
+
+    await addScore(payload);
+
+    notify.success("បញ្ចូលពិន្ទុបានជោគជ័យ");
+
+    scoreDialogVisible.value = false;
+  } catch (e) {
+    notify.error(e.response?.data?.error || "បញ្ចូលពិន្ទុមិនបានជោគជ័យ");
+  } finally {
+    scoreSaving.value = false;
+  }
+}
+
 const studentDialogVisible = ref(false);
 const studentFormRef = ref();
 const studentSaving = ref(false);
-const editStudentId = ref(null)
+const editStudentId = ref(null);
 const studentForm = reactive({
   name_kh: "",
   name_en: "",
@@ -439,9 +1007,8 @@ function openEditStudent(row) {
   editStudentId.value = row.id;
   studentForm.name_kh = row.name_kh || "";
   studentForm.name_en = row.name_en || "";
-  studentForm.gender = row.gender !== undefined && row.gender !== null
-    ? Number(row.gender)
-    : null;
+  studentForm.gender =
+    row.gender !== undefined && row.gender !== null ? Number(row.gender) : null;
   studentForm.code = row.code || "";
   studentDialogVisible.value = true;
 }
@@ -508,8 +1075,7 @@ const copyTargetClassId = ref(null);
 const copyStudents = ref([]);
 const copySelectAll = ref(true);
 
-
-const adminLevel = computed(() => userDataStore.level === 7)
+const adminLevel = computed(() => userDataStore.level === 7);
 
 const copyTargetOptions = computed(() =>
   classes.value.filter((c) => c.id !== copySourceClass.value?.id),
@@ -579,18 +1145,18 @@ const studentcolumn = [
 const classType = [
   { value: "onclass", label: "ផ្ទាល់" },
   { value: "online", label: "អនឡាញ" },
-]
+];
 
 const userClassStatus = [
   { value: "STUDY", label: "កំពុងសិក្សា" },
   { value: "SUSPEND", label: "ព្យួរការសិក្សា" },
   { value: "TRANSFER", label: "ដូរ/ផ្ទេរជំនាញ" },
   { value: "DROPPED", label: "បោះបង់ការសិក្សា" },
-]
+];
 
 const getUserClassStatusLabel = (status) => {
-  return userClassStatus.find(item => item.value === status)?.label || status
-}
+  return userClassStatus.find((item) => item.value === status)?.label || status;
+};
 const userClassStatusDialogVisible = ref(false);
 const userClassStatusSaving = ref(false);
 const userClassStatusForm = reactive({
@@ -696,7 +1262,7 @@ async function fetchClasses() {
     });
     classes.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;
-    console.log(classes.value)
+    console.log(classes.value);
   } catch (e) {
     notify.error(e.response?.data?.error || "");
   } finally {
@@ -706,12 +1272,9 @@ async function fetchClasses() {
 
 async function fetchLookups() {
   try {
-    const [majorRes, shiftRes, generationRes, programmeRes] = await Promise.all([
-      getMajor(),
-      getShift(),
-      getGeneration(),
-      getProgramme(),
-    ]);
+    const [majorRes, shiftRes, generationRes, programmeRes] = await Promise.all(
+      [getMajor(), getShift(), getGeneration(), getProgramme()],
+    );
     majors.value = majorRes.data.data || [];
     shifts.value = shiftRes.data.data || [];
     generations.value = generationRes.data.data || [];
@@ -787,7 +1350,7 @@ async function handleSave() {
         semester: form.semester,
         group: form.group,
         term: form.term,
-        can_scan_outsize: form.can_scan_outsize
+        can_scan_outsize: form.can_scan_outsize,
       };
       await updateClass(editId.value, payload);
       notify.success("កែប្រែបានជោគជ័យ");
@@ -926,7 +1489,7 @@ watch(
   () => {
     page.value = 1;
     debounce(() => fetchClasses());
-  }
+  },
 );
 
 watch(
@@ -939,12 +1502,13 @@ watch(
   () => {
     page.value = 1;
     fetchClasses();
-  }
+  },
 );
 
 onMounted(() => {
   fetchClasses();
   fetchLookups();
+  fetchGradeComponents();
 });
 </script>
 

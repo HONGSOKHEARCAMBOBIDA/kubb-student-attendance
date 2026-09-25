@@ -127,3 +127,8 @@ export const getClassSchedule = (classId) => api.get(`/class/${classId}/schedule
 export const getClassAvailableSubjects = (classId) =>api.get(`/class/${classId}/schedule/subjects`);
 export const createClassSchedule = (classId, data) =>api.post(`/class/${classId}/schedule`, data);
 export const toggleClassSchedule = (id) => api.patch(`/class-schedule/${id}/toggle`);
+
+// score
+export const getGradecomponent = () =>  api.get('/view.grade.component')
+export const addScore = (data) =>  api.post('/add.score',data)
+export const viewScore = (params) =>  api.get('/view.score',{params})

@@ -22,6 +22,7 @@ func SetupRoutes(r *gin.Engine) {
 	subjectcontroller := controller.NewSubjectController()
 	majorcontroller := controller.NewMajorController()
 	classschedulecontroller := controller.NewClassScheduleController()
+	scorecontroller := controller.NewScoreController()
 	r.Static("/clientimage", "./public/clientimage")
 	public := r.Group("/")
 	public.Use(middleware.APIKeyAuth())
@@ -118,5 +119,10 @@ func SetupRoutes(r *gin.Engine) {
 		auth.GET(route.GetClassAvailableSubjects, middleware.PermissionMiddleware(permission.Viewsubject), classschedulecontroller.GetAvailableSubjects)
 		auth.POST(route.CreateClassSchedule, middleware.PermissionMiddleware(permission.AddCompany), classschedulecontroller.Create)
 		auth.PATCH(route.ToggleClassSchedule, middleware.PermissionMiddleware(permission.Editsubject), classschedulecontroller.Toggle)
+
+		// Score
+		auth.GET(route.ViewGradeComponent, middleware.PermissionMiddleware(permission.ViewGradeComponent), scorecontroller.GetGradeComponent)
+		auth.POST(route.AddScore, middleware.PermissionMiddleware(permission.AddScore), scorecontroller.CreateScore)
+		//auth.PUT(route.EditScore,middleware.PermissionMiddleware(permission.EditScore),scorecontroller.EditScore)
 	}
 }

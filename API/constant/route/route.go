@@ -121,4 +121,9 @@ const (
 	ToggleClassSchedule       = "class-schedule/:id/toggle"
 
 	UpdateUserClass = "update.user.class/:id"
+
+	ViewGradeComponent = "view.grade.component"
+	AddScore           = "add.score"
+	ViewScore          = "view.score"
+	EditScore          = "edit.score/:id"
 )

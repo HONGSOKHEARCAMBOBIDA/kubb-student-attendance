@@ -66,4 +66,9 @@ const (
 
 	EditShift = "edit.shift"
 	AddShift  = "add.shift"
+
+	ViewGradeComponent = "view.grade.component"
+	AddScore           = "add.score"
+	ViewScore          = "view.score"
+	EditScore          = "edit.score"
 )
