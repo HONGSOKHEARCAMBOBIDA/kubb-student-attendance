@@ -1,18 +1,8 @@
 <template>
-  <AppDialog
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    :title="`បញ្ចូលសិស្សតាម Excel — ${className} ${generationName}`"
-    width="900px"
-    @closed="resetImport"
-  >
-    <el-upload
-      drag
-      :auto-upload="false"
-      :show-file-list="false"
-      accept=".xlsx,.xls"
-      :on-change="handleFilePicked"
-    >
+  <AppDialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)"
+    :title="`បញ្ចូលសិស្សតាម Excel — ${className} ${programmeName} ${generationName} ឆ្នាំ${yearName} ឆមាស${semesterName} ជំនាញ${majorName}`"
+    width="60%" @closed="resetImport">
+    <el-upload drag :auto-upload="false" :show-file-list="false" accept=".xlsx,.xls" :on-change="handleFilePicked">
       <el-icon class="el-icon--upload"><upload-filled /></el-icon>
       <div class="el-upload__text">
         អូសឯកសារមកទីនេះ ឬ <em>ចុចដើម្បីជ្រើសរើសឯកសារ</em>
@@ -23,47 +13,32 @@
         </div>
       </template>
     </el-upload>
+    <AppTable v-if="previewRows.length" :data="previewRows" show-index :show-pagination="false" :columns="[
+      { prop: 'name_kh', label: 'ឈ្មោះខ្មែរ', minwidth: 80 },
+      { prop: 'name_en', label: 'ឈ្មោះឡាតាំង', minwidth: 80 },
+      { prop: 'code', label: 'អត្តលេខ', minwidth: 80 },
+      { slot: 'gender', label: 'ភេទ', minwidth: 80 },
+      { slot: '_valid', label: 'ស្ថានភាព', minwidth: 80 },
+    ]">
+      <template #gender="{ row }">
+        <el-text>{{ row.gender === 1 ? "ប្រុស" : row.gender === 2 ? "ស្រី" : "?" }}</el-text>
+      </template>
+      <template #_valid="{ row }">
+        <el-tag :type="row._valid ? 'success' : 'danger'" size="small">
+          {{ row._valid ? "OK" : "ខ្វះទិន្នន័យ" }}
+        </el-tag>
+      </template>
+    </AppTable>
 
-    <el-table
-      v-if="previewRows.length"
-      :data="previewRows"
-      size="small"
-      stripe
-      border
-      style="margin-top: 16px"
-      max-height="360"
-    >
-      <el-table-column type="index" width="50" label="#" />
-      <el-table-column prop="name_kh" label="ឈ្មោះខ្មែរ" />
-      <el-table-column prop="name_en" label="ឈ្មោះឡាតាំង" />
-      <el-table-column prop="code" label="កូដ" />
-      <el-table-column label="ភេទ" width="90">
-        <template #default="{ row }">{{
-          row.gender === 1 ? "ប្រុស" : row.gender === 2 ? "ស្រី" : "?"
-        }}</template>
-      </el-table-column>
-      <el-table-column label="ស្ថានភាព" width="110">
-        <template #default="{ row }">
-          <el-tag :type="row._valid ? 'success' : 'danger'" size="small">
-            {{ row._valid ? "OK" : "ខ្វះទិន្នន័យ" }}
-          </el-tag>
-        </template>
-      </el-table-column>
-    </el-table>
+
 
     <template #footer>
       <AppButton @click="$emit('update:modelValue', false)" size="large" :block="false" type="warning">
         បោះបង់
       </AppButton>
-      <AppButton
-        @click="handleImportSubmit"
-        type="primary"
-        :loading="importing"
-        size="large"
-        :block="false"
-        :disabled="!previewRows.length"
-      >
-        នាំចូល ({{ validRowCount }})
+      <AppButton @click="handleImportSubmit" type="primary" :loading="importing" size="large" :block="false"
+        :disabled="!previewRows.length">
+        បញ្ចូលសិស្ស ({{ validRowCount }}) នាក់
       </AppButton>
     </template>
   </AppDialog>
@@ -76,12 +51,17 @@ import { registerUsersExcel } from "../src/api/services.js";
 import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
 import { useNotification } from "../composables/useNotification.js";
+import AppTable from "./AppTable.vue";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   classId: { type: [Number, String], default: null },
   className: { type: String, default: "" },
-  generationName: {type: String, default: ""}
+  generationName: { type: String, default: "" },
+  programmeName: { type: String, default: "" },
+  yearName: { type: String, default: "" },
+  semesterName: { type: String, default: "" },
+  majorName: { type: String, default: "" }
 });
 const emit = defineEmits(["update:modelValue", "saved"]);
 
@@ -96,6 +76,8 @@ function resetImport() {
   previewRows.value = [];
   pickedFile.value = null;
 }
+
+
 
 function normalizeGender(val) {
   if (val === 1 || val === 2) return val;
@@ -120,7 +102,7 @@ function handleFilePicked(uploadFile) {
     previewRows.value = rows.map((r) => {
       const name_kh = String(r.name_kh ?? r["ឈ្មោះខ្មែរ"] ?? "").trim();
       const name_en = String(r.name_en ?? r["ឈ្មោះឡាតាំង"] ?? "").trim();
-      const code = String(r.code ?? r["កូដ"] ?? "").trim();
+      const code = String(r.code ?? r["អត្តលេខ"] ?? "").trim();
       const gender = normalizeGender(r.gender ?? r["ភេទ"]);
       return {
         name_kh,

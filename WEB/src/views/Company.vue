@@ -81,6 +81,10 @@
       :class-id="importClassId"
       :class-name="importClassName"
       :generation-name="importGenerationName"
+      :programme-name="importProgrammeName"
+      :year-name="importYearName"
+      :semester-name="importSemesterName"
+      :major-name="importMajorName"
       @saved="fetchClasses"
     />
 
@@ -296,10 +300,18 @@ const importDialog = ref(false);
 const importClassId = ref(null);
 const importClassName = ref("");
 const importGenerationName = ref("")
+const importProgrammeName = ref("")
+const importYearName = ref("")
+const importSemesterName = ref("")
+const importMajorName = ref("")
 function openImport(row) {
   importClassId.value = row.id;
   importClassName.value = row.name;
   importGenerationName.value = row.generation_name;
+  importProgrammeName.value = row.programme_name;
+  importYearName.value = row.year;
+  importSemesterName.value = row.semester;
+  importMajorName.value = row.major_name;
   importDialog.value = true;
 }
 

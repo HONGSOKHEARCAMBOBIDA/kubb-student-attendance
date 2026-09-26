@@ -3,7 +3,7 @@
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     :title="`Copy សិស្សពី ${sourceClass?.name || ''}`"
-    width="700px"
+    width="60%"
   >
     <el-form label-position="top">
       <el-form-item label="ថ្នាក់គោលដៅ" required>
@@ -59,6 +59,7 @@ import { adduserclass } from "../src/api/services.js";
 import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
 import { useNotification } from "../composables/useNotification.js";
+import AppSelect from "./AppSelect.vue";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
