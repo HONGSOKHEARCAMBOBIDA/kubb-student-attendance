@@ -7,5 +7,6 @@ func CurrentDate() string {
 }
 
 func CurrentTime() string {
-	return time.Now().Format("15:04:05")
+	loc, _ := time.LoadLocation("Asia/Phnom_Penh")
+	return time.Now().In(loc).Format("15:04:05")
 }
