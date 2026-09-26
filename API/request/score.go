@@ -21,3 +21,19 @@ type CreateScoreDetailRequest struct {
 	GradeComponentID uint64  `json:"grade_component_id" binding:"required"`
 	Score            float64 `json:"score" binding:"gte=0"`
 }
+
+type ImportScoreExcelRequest struct {
+	ClassID      int64 `form:"class_id" binding:"required"`
+	SubjectID    int64 `form:"subject_id" binding:"required"`
+	MajorID      int64 `form:"major_id" binding:"required"`
+	GenerationID int64 `form:"generation_id" binding:"required"`
+	ProgrammeID  int64 `form:"programme_id" binding:"required"`
+	Year         uint8 `form:"year" binding:"required"`
+	Semester     uint8 `form:"semester" binding:"required"`
+}
+
+type ImportScoreResult struct {
+	Imported int      `json:"imported"`
+	Skipped  int      `json:"skipped"`
+	Errors   []string `json:"errors"`
+}

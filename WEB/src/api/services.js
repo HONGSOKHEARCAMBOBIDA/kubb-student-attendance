@@ -131,4 +131,8 @@ export const toggleClassSchedule = (id) => api.patch(`/class-schedule/${id}/togg
 // score
 export const getGradecomponent = () =>  api.get('/view.grade.component')
 export const addScore = (data) =>  api.post('/add.score',data)
-export const viewScore = (params) =>  api.get('/view.score',{params})
+export const getScore = (params) =>  api.get('/view.score',{params})
+export const importScoreExcel = (formData) =>
+  api.post("/add.score.from.excell", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });

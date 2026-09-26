@@ -123,6 +123,8 @@ func SetupRoutes(r *gin.Engine) {
 		// Score
 		auth.GET(route.ViewGradeComponent, middleware.PermissionMiddleware(permission.ViewGradeComponent), scorecontroller.GetGradeComponent)
 		auth.POST(route.AddScore, middleware.PermissionMiddleware(permission.AddScore), scorecontroller.CreateScore)
+		auth.POST(route.AddScoreFromExcel, middleware.PermissionMiddleware(permission.AddScore), scorecontroller.ImportScoreExcel)
+		auth.GET(route.ViewScore, middleware.PermissionMiddleware(permission.ViewScore), scorecontroller.GetScore)
 		//auth.PUT(route.EditScore,middleware.PermissionMiddleware(permission.EditScore),scorecontroller.EditScore)
 	}
 }

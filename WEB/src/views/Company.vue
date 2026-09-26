@@ -107,7 +107,7 @@
         v-model:page-size="pageSize"
         :total="total"
         @page-change="fetchClasses"
-        actions-width="350px"
+        actions-width="400px"
         :columns="[
           { prop: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
           { slot: 'major_name', label: 'ជំនាញ', minWidth: 110 },
@@ -227,18 +227,30 @@
             >
             </AppButton>
           </el-tooltip>
-             <el-tooltip content="បញ្ចូលពិន្ទុ" placement="top">
-            <AppButton
-              v-if="adminLevel"
-              :disabled="row.is_active === false"
-              size="small"
-              icon="CopyDocument"
-              type="success"
-              circle
-              @click="scorecopy(row)"
-            >
-            </AppButton>
-          </el-tooltip>
+            <el-tooltip content="បញ្ចូលពិន្ទុតាម Excel" placement="top">
+  <AppButton
+    v-if="adminLevel"
+    :disabled="row.is_active === false"
+    size="small"
+    icon="UploadFilled"
+    type="warning"
+    circle
+    @click="openScoreImport(row)"
+  >
+  </AppButton>
+</el-tooltip>
+<el-tooltip content="មើលពិន្ទុ" placement="top">
+  <AppButton
+    :disabled="row.is_active === false"
+    v-if="adminLevel"
+    size="small"
+    icon="View"
+    type="info"
+    circle
+    @click="openScoreView(row)"
+  >
+  </AppButton>
+</el-tooltip>
         </template>
 
         <template #expand="{ row: students }">
@@ -252,11 +264,6 @@
       />
     </el-col>
 
-    <el-col :span="12" style="text-align: right">
-      <AppButton type="primary">
-        បញ្ចូលពិន្ទុ
-      </AppButton>
-    </el-col>
   </el-row>
 </el-divider>
           <AppTable
@@ -842,18 +849,94 @@
         </AppButton>
       </template>
     </AppDialog>
+<AppDialog
+  v-model="scoreImportDialog"
+  :title="`នាំចូលពិន្ទុតាម Excel — ${scoreImportClassName}`"
+  width="600px"
+  @closed="resetScoreImport"
+>
+  <el-form label-position="top">
+    <AppSelect
+      v-model="scoreImportForm.subject_id"
+      :options="scoreImportSubjects"
+      label="មុខវិជ្ជា"
+      placeholder="ជ្រើសរើសមុខវិជ្ជា"
+      size="large"
+    />
+    <div class="form-row">
+      <el-form-item label="ឆ្នាំ" required>
+        <el-input v-model.number="scoreImportForm.year" type="number" size="large" />
+      </el-form-item>
+      <el-form-item label="ឆមាស" required>
+        <el-input v-model.number="scoreImportForm.semester" type="number" size="large" />
+      </el-form-item>
+    </div>
+  </el-form>
 
-    <AppDialog
-    v-model="copyscoreDialog"
-    title="បញ្ចូលពិន្ទុសិស្ស"
-    width="70%"
+  <el-upload
+    drag
+    :auto-upload="false"
+    :show-file-list="true"
+    :limit="1"
+    accept=".xlsx,.xls"
+    :on-change="(f) => (scoreImportFile = f.raw)"
+    :on-remove="() => (scoreImportFile = null)"
+  >
+    <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+    <div class="el-upload__text">
+      អូសឯកសារមកទីនេះ ឬ <em>ចុចដើម្បីជ្រើសរើសឯកសារ</em>
+    </div>
+    <template #tip>
+      <div class="el-upload__tip">
+        Column ដែលត្រូវការ: <b>អត្តលេខ</b> + column មួយៗសម្រាប់ផ្នែកពិន្ទុ
+      </div>
+    </template>
+  </el-upload>
+
+  <template #footer>
+    <AppButton @click="scoreImportDialog = false" size="large" :block="false" type="warning">
+      បោះបង់
+    </AppButton>
+    <AppButton
+      @click="handleScoreImportSubmit"
+      type="primary"
+      :loading="scoreImporting"
+      size="large"
+      :block="false"
+      :disabled="!scoreImportFile || !scoreImportForm.subject_id"
     >
-   <el-table :data="copyscorestudent" size="small" border max-height="320">
-            <el-table-column prop="name_kh" label="ឈ្មោះខ្មែរ" />
-            <el-table-column prop="name_en" label="ឈ្មោះឡាតាំង" />
-            <el-table-column prop="code" label="អត្តលេខ" width="100" />
-          </el-table>  
-    </AppDialog>
+      នាំចូល
+    </AppButton>
+  </template>
+</AppDialog>
+
+<AppDialog
+  v-model="scoreViewDialog"
+  :title="`ពិន្ទុថ្នាក់ — ${scoreViewClassName}`"
+  width="75%"
+>
+  <div class="form-row">
+    <AppSelect
+      v-model="scoreViewFilters.subject_id"
+      :options="scoreViewSubjects"
+      label="មុខវិជ្ជា"
+      placeholder="ជ្រើសរើសមុខវិជ្ជា (ទាំងអស់)"
+      clearable
+      size="large"
+      @change="() => { scoreViewPage = 1; fetchScoreView(); }"
+    />
+    <AppInput v-model.trim="scoreViewFilters.name" label="ស្វែងរកឈ្មោះ/អត្តលេខ" placeholder="ឈ្មោះ ឬ អត្តលេខ" clearable size="large" @input="debouncedFetchScoreView"></AppInput>
+ 
+  </div>
+
+  <AppTable :data="scoreViewData" v-loading="scoreViewLoading" :columns="scorecolumn" show-index :show-pagination="false">
+    <template #gender="{row}">
+      <el-text>{{ row.gender === 1 ? 'ប្រុស' : 'ស្រី' }}</el-text>
+    </template>
+  </AppTable>
+
+
+</AppDialog>
   </div>
 </template>
 
@@ -877,7 +960,9 @@ import {
   editUserClass,
   getGradecomponent,
   addScore,
-  getClassAvailableSubjects
+  getClassAvailableSubjects,
+  importScoreExcel,
+  getScore
 } from "../api/services";
 import AppTable from "../../components/AppTable.vue";
 import AppButton from "../../components/AppButton.vue";
@@ -918,6 +1003,161 @@ async function fetchSubjectOptions(classID) {
     
   }
 }
+
+// score
+const scoreImportDialog = ref(false);
+const scoreImporting = ref(false);
+const scoreImportFile = ref(null);
+const scoreImportClassId = ref(null);
+const scoreImportClassName = ref("");
+const scoreImportClassRow = ref(null);
+const scoreImportSubjects = ref([]);
+
+const scoreImportForm = reactive({
+  subject_id: null,
+  year: null,
+  semester: null,
+});
+
+async function openScoreImport(row) {
+  scoreImportClassId.value = row.id;
+  scoreImportClassName.value = row.name;
+  scoreImportClassRow.value = row;
+  scoreImportFile.value = null;
+  scoreImportForm.subject_id = null;
+  scoreImportForm.year = row.year;
+  scoreImportForm.semester = row.semester;
+
+  try {
+    const res = await getClassAvailableSubjects(row.id);
+    scoreImportSubjects.value = (res.data.data || []).map((s) => ({
+      label: `${s.code} — ${s.name_kh}`,
+      value: s.id,
+    }));
+  } catch (e) {
+    notify.error(e.response?.data?.error || "Failed to load subjects");
+  }
+
+  scoreImportDialog.value = true;
+}
+
+function resetScoreImport() {
+  scoreImportFile.value = null;
+}
+
+async function handleScoreImportSubmit() {
+  if (!scoreImportFile.value || !scoreImportForm.subject_id) return;
+
+  const row = scoreImportClassRow.value;
+  const formData = new FormData();
+  formData.append("file", scoreImportFile.value);
+  formData.append("class_id", scoreImportClassId.value);
+  formData.append("subject_id", scoreImportForm.subject_id);
+  formData.append("major_id", row.major_id);
+  formData.append("generation_id", row.generation_id);
+  formData.append("programme_id", row.programme_id);
+  formData.append("year", scoreImportForm.year);
+  formData.append("semester", scoreImportForm.semester);
+
+  scoreImporting.value = true;
+  try {
+    const res = await importScoreExcel(formData);
+    const data = res.data?.data;
+    notify.success(`នាំចូល៖ ${data?.imported ?? 0} ជោគជ័យ, ${data?.skipped ?? 0} រំលង`);
+    if (data?.errors?.length) console.warn("Import errors:", data.errors);
+    scoreImportDialog.value = false;
+    fetchClasses();
+  } catch (e) {
+    notify.error(e.response?.data?.error || "នាំចូលពិន្ទុមិនបានជោគជ័យ");
+  } finally {
+    scoreImporting.value = false;
+  }
+}
+
+// view score
+
+const scoreViewDialog = ref(false);
+const scoreViewLoading = ref(false);
+const scoreViewData = ref([]);
+const scoreViewClassRow = ref(null);
+const scoreViewClassName = ref("");
+const scoreViewSubjects = ref([]);
+const scoreViewPage = ref(1);
+const scoreViewPageSize = ref(10);
+const scoreViewTotal = ref(0);
+const scoreViewFilters = reactive({ subject_id: null, name: "" });
+const scorecolumn = [
+  { prop: "name_kh", label: "ឈ្មោះខ្មែរ", minwidth: 100 },
+  { slot: "gender", label: "ភេទ", width: 70 },
+  { prop: "code", label: "អត្តលេខ", width: 100 },
+   { prop: "ProgrammeName", label: "កម្រិត", width: 100 },
+   { prop: "GenerationName", label: "ជំនាន់", width: 100 },
+   { prop: "MajorName", label: "ជំនាញ", minwidth: 100 },
+    { prop: "SubjectName", label: "មុខវិជ្ជា", minwidth: 100 },
+    { prop: "attendance", label: "វត្តមាននិស្សិត", minwidth: 100 },
+    { prop: "research", label: "កិច្ចការស្រាវជ្រាវ", minwidth: 100 },
+    { prop: "midterm", label: "ប្រឡងពាក់កណ្តាលឆមាស", minwidth: 150 },
+    { prop: "final", label: "ប្រឡងបញ្ចប់ឆមាស", minwidth: 150 },
+];
+
+let scoreViewDebounce = null;
+function debouncedFetchScoreView() {
+  clearTimeout(scoreViewDebounce);
+  scoreViewDebounce = setTimeout(() => {
+    scoreViewPage.value = 1;
+    fetchScoreView();
+  }, 400);
+}
+
+async function openScoreView(row) {
+  scoreViewClassRow.value = row;
+  scoreViewClassName.value = row.name;
+  scoreViewFilters.subject_id = null;
+  scoreViewFilters.name = "";
+  scoreViewPage.value = 1;
+  scoreViewDialog.value = true;
+
+  try {
+    const res = await getClassAvailableSubjects(row.id);
+    scoreViewSubjects.value = (res.data.data || []).map((s) => ({
+      label: `${s.code} — ${s.name_kh}`,
+      value: s.id,
+    }));
+  } catch (e) {
+    notify.error(e.response?.data?.error || "Failed to load subjects");
+  }
+
+  fetchScoreView();
+}
+
+async function fetchScoreView() {
+  const row = scoreViewClassRow.value;
+  if (!row) return;
+
+  scoreViewLoading.value = true;
+  try {
+    const res = await getScore({
+      page: scoreViewPage.value,
+      page_size: scoreViewPageSize.value,
+      class_id: row.id,               // class's own primary key = score.class_id
+      generation_id: row.generation_id,
+      major_id: row.major_id,
+      programme_id: row.programme_id,
+      year: row.year,
+      semester: row.semester,
+      subject_id: scoreViewFilters.subject_id || undefined,
+      name: scoreViewFilters.name || undefined,
+    });
+    scoreViewData.value = res.data.data || [];
+    scoreViewTotal.value = res.data.pagination?.totalCount || 0;
+    console.log(scoreViewData.value)
+  } catch (e) {
+    notify.error(e.response?.data?.error || "មិនអាចទាញយកពិន្ទុបានទេ");
+  } finally {
+    scoreViewLoading.value = false;
+  }
+}
+
 
 const scoreForm = reactive({
   class_id: null,
@@ -1102,13 +1342,6 @@ const editId = ref(null);
 const formRef = ref();
 const telegramFormRef = ref();
 
-const copyscoreDialog = ref(false)
-const copyscorestudent = ref([])
-function scorecopy(row){
-  copyscorestudent.value = (row.students || []).map((s)=>({...s}))
-  copyscoreDialog.value = true
-}
-
 const copyDialog = ref(false);
 const copying = ref(false);
 const copySourceClass = ref(null);
@@ -1181,10 +1414,6 @@ const studentcolumn = [
   { slot: "gender", label: "ភេទ", minwidth: 100 },
   { prop: "code", label: "អត្តលេខ", minwidth: 100 },
   { slot: "status", label: "ស្ថានភាព", minwidth: 100 },
-  { prop: "attendance", label: "វត្តមាននិស្សិត", width: 100 },
-  { prop: "research", label: "កិច្ចការស្រាវជ្រាវ", width: 150 },
-  { prop: "midterm", label: "ប្រឡងពាក់កណ្តាលឆមាស", width: 200 },
-   { prop: "final", label: "ប្រឡងបញ្ចប់ឆមាស", width: 150 },
 ];
 
 const classType = [

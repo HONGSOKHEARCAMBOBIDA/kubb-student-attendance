@@ -124,6 +124,7 @@ const (
 
 	ViewGradeComponent = "view.grade.component"
 	AddScore           = "add.score"
+	AddScoreFromExcel  = "add.score.from.excell"
 	ViewScore          = "view.score"
 	EditScore          = "edit.score/:id"
 )
