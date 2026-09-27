@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"mime/multipart"
 	"mysql/config"
@@ -20,6 +21,7 @@ import (
 type ScoreService interface {
 	GetGradeComponent(ctx context.Context) ([]model.GradeComponent, error)
 	CreateScore(ctx context.Context, input request.CreateScoreRequest) error
+	UpdateScore(ctx context.Context, input request.UpdateScoreRequest) error
 	ImportScoreFromExcell(ctx context.Context, req request.ImportScoreExcelRequest, file multipart.File) (*request.ImportScoreResult, error)
 	GetScore(ctx context.Context, userID int, pf request.Pagination, filter map[string]string) ([]response.ScoreResponse, *model.PaginationMetadata, error)
 }
@@ -32,6 +34,13 @@ func NewScoreService() ScoreService {
 		db: config.DB,
 	}
 }
+
+const (
+	gradeComponentAttendance = "វត្តមាននិស្សិត"
+	gradeComponentResearch   = "កិច្ចការស្រាវជ្រាវ"
+	gradeComponentMidterm    = "ប្រឡងពាក់កណ្តាលឆមាស"
+	gradeComponentFinal      = "ប្រឡងបញ្ចប់ឆមាស"
+)
 
 func (s *scoreservice) GetGradeComponent(ctx context.Context) ([]model.GradeComponent, error) {
 	var data []model.GradeComponent
@@ -81,6 +90,57 @@ func (s *scoreservice) CreateScore(ctx context.Context, input request.CreateScor
 		return nil
 	})
 	return err
+}
+
+func (s *scoreservice) UpdateScore(ctx context.Context, input request.UpdateScoreRequest) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var score model.Score
+		if err := tx.First(&score, input.ScoreID).Error; err != nil {
+			return fmt.Errorf("score not found: %w", err)
+		}
+
+		updates := map[string]float64{
+			gradeComponentAttendance: input.Attendance,
+			gradeComponentResearch:   input.Research,
+			gradeComponentMidterm:    input.Midterm,
+			gradeComponentFinal:      input.Final,
+		}
+
+		for name, val := range updates {
+			var gc model.GradeComponent
+			if err := tx.Where("name = ?", name).First(&gc).Error; err != nil {
+				return fmt.Errorf("grade component '%s' not found: %w", name, err)
+			}
+
+			var detail model.ScoreDetail
+			err := tx.Where("score_id = ? AND grade_component_id = ?", input.ScoreID, gc.ID).
+				First(&detail).Error
+
+			switch {
+			case err == nil:
+				detail.Score = val
+				if err := tx.Save(&detail).Error; err != nil {
+					return err
+				}
+			case errors.Is(err, gorm.ErrRecordNotFound):
+				newDetail := model.ScoreDetail{
+					ScoreID:          input.ScoreID,
+					GradeComponentID: gc.ID,
+					Score:            val,
+				}
+				if err := tx.Create(&newDetail).Error; err != nil {
+					return err
+				}
+			default:
+				return err
+			}
+		}
+
+		return nil
+	})
 }
 
 const excelCodeHeaderKH = "អត្តលេខ"
@@ -278,6 +338,8 @@ func (s *scoreservice) GetScore(ctx context.Context, userID int, pf request.Pagi
 		Select(`
 		s.id AS id,
 		u.id AS user_id,
+		s.year AS year,
+		s.semester AS semester,
 		u.name_kh AS name_kh,
 		u.name_en AS name_en,
 		u.code AS code,
@@ -355,6 +417,12 @@ func (s *scoreservice) GetScore(ctx context.Context, userID int, pf request.Pagi
 			data[idx].Final = r.Score
 		}
 	}
+	for i := range data {
+		data[i].Total = data[i].Attendance + data[i].Research + data[i].Midterm + data[i].Final
+	}
+
+	helper.CalculateRank(data)
+
 	return data, helper.BuildPaginationMeta(pf, totalCount), nil
 
 }

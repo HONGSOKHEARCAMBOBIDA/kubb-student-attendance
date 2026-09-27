@@ -37,3 +37,11 @@ type ImportScoreResult struct {
 	Skipped  int      `json:"skipped"`
 	Errors   []string `json:"errors"`
 }
+
+type UpdateScoreRequest struct {
+	ScoreID    int64   `json:"score_id" binding:"required"`
+	Attendance float64 `json:"attendance"`
+	Research   float64 `json:"research"`
+	Midterm    float64 `json:"midterm"`
+	Final      float64 `json:"final"`
+}

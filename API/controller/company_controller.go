@@ -101,6 +101,14 @@ func (cr *CompanyController) ToggleGeneration(c *gin.Context) {
 	share.ResponseSuccess(c, http.StatusOK, "status company changed")
 }
 
+func (cr *CompanyController) GetClassNoPagination(c *gin.Context) {
+	data, err := cr.service.GetClassNoPagination(c)
+	if err != nil {
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
 func (cr *CompanyController) GetMajor(c *gin.Context) {
 	data, err := cr.service.GetMajor(c)
 	if err != nil {

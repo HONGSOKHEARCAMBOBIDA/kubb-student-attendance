@@ -35,6 +35,19 @@ func (cr *ScoreController) CreateScore(c *gin.Context) {
 	share.ResponseSuccess(c, http.StatusOK, "score created")
 }
 
+func (cr *ScoreController) UpdateScore(c *gin.Context) {
+	var input request.UpdateScoreRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateScore(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "score created")
+}
+
 func (cr *ScoreController) GetGradeComponent(c *gin.Context) {
 	data, err := cr.service.GetGradeComponent(c)
 	if err != nil {

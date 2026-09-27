@@ -17,6 +17,7 @@ import (
 
 type CompanyService interface {
 	//GetCompanyColor(userID int) (response.CompanyColor, error)
+	GetClassNoPagination(ctx context.Context) ([]response.ClassNoPaginationResponse, error)
 	GetClass(id int, ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.ClassResponse, *model.PaginationMetadata, error)
 	GetClassScan(ctx context.Context, id int) ([]response.ClassScanResponse, error)
 	CreateClass(ctx context.Context, input request.ClassRequestCreate) error
@@ -136,6 +137,14 @@ func (s *companyservice) UpdateGeneration(ctx context.Context, id int, input req
 
 func (s *companyservice) ToggleGeneration(ctx context.Context, id int) error {
 	return utils.ToggleStatus[model.Generation](ctx, s.db, id)
+}
+
+func (s *companyservice) GetClassNoPagination(ctx context.Context) ([]response.ClassNoPaginationResponse, error) {
+	var data []response.ClassNoPaginationResponse
+	if err := s.db.WithContext(ctx).Table("class c").Where("c.is_active = ?", true).Order("c.id DESC").Find(&data).Error; err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func (s *companyservice) GetMajor(ctx context.Context) ([]model.Major, error) {

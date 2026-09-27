@@ -6,17 +6,16 @@
     width="60%"
   >
     <el-form label-position="top">
-      <el-form-item label="ថ្នាក់គោលដៅ" required>
-        <el-select
-          v-model="copyTargetClassId"
-          placeholder="ជ្រើសរើសថ្នាក់"
-          filterable
-          size="large"
-          style="width: 100%"
-        >
-          <el-option v-for="c in targetOptions" :key="c.id" :label="c.name" :value="c.id" />
-        </el-select>
-      </el-form-item>
+      <AppSelect
+      v-model="copyTargetClassId"
+      label="ថ្នាក់គោលដៅ"
+      placeholder="ជ្រើសរើសថ្នាក់"
+      filterable
+      :options="targetOptions"
+      size="large"
+      >
+
+      </AppSelect>
 
       <el-form-item label="ជ្រើសរើសសិស្ស">
         <el-checkbox v-model="copySelectAll" @change="handleCopySelectAll" style="margin-bottom: 8px">

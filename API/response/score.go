@@ -19,11 +19,15 @@ type ScoreResponse struct {
 	MajorName      string `gorm:"column:major_name;not null"`
 	SubjectID      int64  `gorm:"column:subject_id;not null"`
 	SubjectName    string `gorm:"column:subject_name;not null"`
+	YearName       int    `json:"year" gorm:"column:year"`
+	Semester       int    `json:"semester"`
 
 	Attendance float64 `json:"attendance"`
 	Research   float64 `json:"research"`
 	Midterm    float64 `json:"midterm"`
 	Final      float64 `json:"final"`
+	Total      float64 `json:"total"`
+	Rank       int     `json:"rank"`
 }
 
 type ScoreDetailResponse struct {

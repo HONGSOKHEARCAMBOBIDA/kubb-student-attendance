@@ -126,6 +126,7 @@ import {
   getGeneration,
   getProgramme,
   getGradecomponent,
+  getclassnopagination
 } from "../api/services";
 import AppButton from "../../components/AppButton.vue";
 import AppFilterBar from "../../components/AppFilterBar.vue";
@@ -151,6 +152,7 @@ const userDataStore = useUserDataStore();
 /* ---------------- lookups & list ---------------- */
 
 const classes = ref([]);
+const classnopagination = ref([])
 const majors = ref([]);
 const shifts = ref([]);
 const generations = ref([]);
@@ -197,11 +199,12 @@ async function fetchClasses() {
 
 async function fetchLookups() {
   try {
-    const [majorRes, shiftRes, generationRes, programmeRes] = await Promise.all([
+    const [majorRes, shiftRes, generationRes, programmeRes,classnopaginationRef] = await Promise.all([
       getMajor(),
       getShift(),
       getGeneration(),
       getProgramme(),
+      getclassnopagination()
     ]);
     majors.value = (majorRes.data.data || []).map((s)=> ({
       label: `${s.name_kh}`,
@@ -217,6 +220,10 @@ async function fetchLookups() {
     }))
     programmes.value = (programmeRes.data.data || []).map((s)=> ({
       label: `${s.name}`,
+      value: s.id
+    }))
+    classnopagination.value = (classnopaginationRef.data.data || []).map((s)=> ({
+      label: `${s.name} - ${s.type}`,
       value: s.id
     }))
   } catch (e) {
@@ -319,7 +326,7 @@ function openImport(row) {
 
 const copyDialog = ref(false);
 const copySourceClass = ref(null);
-const copyTargetOptions = computed(() => classes.value.filter((c) => c.id !== copySourceClass.value?.id));
+const copyTargetOptions = computed(() => classnopagination.value.filter((c) => c.value !== copySourceClass.value?.id));
 
 function openCopy(row) {
   copySourceClass.value = row;

@@ -215,9 +215,7 @@ watch(
       </template>
     </AppTable>
 
-    <template #footer>
-      <AppButton @click="visible = false">បិទ</AppButton>
-    </template>
+
   </AppDialog>
 </template>
 

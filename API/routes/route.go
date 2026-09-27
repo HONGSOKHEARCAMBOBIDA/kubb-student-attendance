@@ -35,6 +35,7 @@ func SetupRoutes(r *gin.Engine) {
 	auth.Use(middleware.AuthMiddleware())
 	{
 		// Company
+		auth.GET(route.ViewClassNoPagination, middleware.PermissionMiddleware(permission.ViewCompany), companycontroller.GetClassNoPagination)
 		auth.GET(route.ViewMajor, middleware.PermissionMiddleware(permission.ViewMajor), companycontroller.GetMajor)
 		auth.GET(route.ViewShift, middleware.PermissionMiddleware(permission.ViewShift), companycontroller.GetShift)
 		auth.POST(route.AddShift, middleware.PermissionMiddleware(permission.AddShift), companycontroller.CreateShift)
@@ -125,6 +126,6 @@ func SetupRoutes(r *gin.Engine) {
 		auth.POST(route.AddScore, middleware.PermissionMiddleware(permission.AddScore), scorecontroller.CreateScore)
 		auth.POST(route.AddScoreFromExcel, middleware.PermissionMiddleware(permission.AddScore), scorecontroller.ImportScoreExcel)
 		auth.GET(route.ViewScore, middleware.PermissionMiddleware(permission.ViewScore), scorecontroller.GetScore)
-		//auth.PUT(route.EditScore,middleware.PermissionMiddleware(permission.EditScore),scorecontroller.EditScore)
+		auth.PUT(route.EditScore, middleware.PermissionMiddleware(permission.EditScore), scorecontroller.UpdateScore)
 	}
 }

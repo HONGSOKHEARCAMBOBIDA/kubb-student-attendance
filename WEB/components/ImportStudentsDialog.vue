@@ -23,11 +23,11 @@
       <template #gender="{ row }">
         <el-text>{{ row.gender === 1 ? "ប្រុស" : row.gender === 2 ? "ស្រី" : "?" }}</el-text>
       </template>
-      <template #_valid="{ row }">
-        <el-tag :type="row._valid ? 'success' : 'danger'" size="small">
-          {{ row._valid ? "OK" : "ខ្វះទិន្នន័យ" }}
-        </el-tag>
-      </template>
+<template #_valid="{ row }">
+  <el-tag :type="row._valid ? 'success' : 'danger'" size="small">
+    {{ row._valid ? "OK" : row._duplicate ? "អត្តលេខស្ទួន" : "ខ្វះទិន្នន័យ" }}
+  </el-tag>
+</template>
     </AppTable>
 
 
@@ -94,28 +94,29 @@ function handleFilePicked(uploadFile) {
   pickedFile.value = file;
 
   const reader = new FileReader();
+  // FileReader គឺជា JavaScript API សម្រាប់ អាន file ពី computer របស់ User។
   reader.onload = (e) => {
     const wb = XLSX.read(e.target.result, { type: "array" });
     const sheet = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-    previewRows.value = rows.map((r) => {
-      const name_kh = String(r.name_kh ?? r["ឈ្មោះខ្មែរ"] ?? "").trim();
-      const name_en = String(r.name_en ?? r["ឈ្មោះឡាតាំង"] ?? "").trim();
-      const code = String(r.code ?? r["អត្តលេខ"] ?? "").trim();
-      const gender = normalizeGender(r.gender ?? r["ភេទ"]);
-      return {
-        name_kh,
-        name_en,
-        code,
-        gender,
-        _valid: !!(name_kh && name_en && code && gender),
-      };
+    const mapped = rows.map((r) => ({
+      name_kh: String(r.name_kh ?? r["ឈ្មោះខ្មែរ"] ?? "").trim(),
+      name_en: String(r.name_en ?? r["ឈ្មោះឡាតាំង"] ?? "").trim(),
+      code: String(r.code ?? r["អត្តលេខ"] ?? "").trim(),
+      gender: normalizeGender(r.gender ?? r["ភេទ"]),
+    }));
+
+    const codeCounts = {};
+    mapped.forEach((r) => r.code && (codeCounts[r.code] = (codeCounts[r.code] || 0) + 1));
+
+    previewRows.value = mapped.map((r) => {
+      const _duplicate = r.code && codeCounts[r.code] > 1;
+      const _hasRequired = !!(r.name_kh && r.name_en && r.code && r.gender);
+      return { ...r, _duplicate, _valid: _hasRequired && !_duplicate };
     });
 
-    if (!previewRows.value.length) {
-      notify.error("រកមិនឃើញទិន្នន័យក្នុងឯកសារនេះទេ");
-    }
+    if (!previewRows.value.length) notify.error("រកមិនឃើញទិន្នន័យក្នុងឯកសារនេះទេ");
   };
   reader.readAsArrayBuffer(file);
 }

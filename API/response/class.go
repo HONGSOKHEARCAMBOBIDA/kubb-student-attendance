@@ -33,3 +33,9 @@ type ClassResponse struct {
 	ProgrammeName   string         `json:"programme_name"`
 	UserResponse    []UserResponse `json:"students" gorm:"-"`
 }
+
+type ClassNoPaginationResponse struct {
+	base.ModelBase
+	Name *string         `gorm:"column:name;type:varchar(255)" json:"name"`
+	Type model.ClassType `gorm:"column:type" json:"type"`
+}

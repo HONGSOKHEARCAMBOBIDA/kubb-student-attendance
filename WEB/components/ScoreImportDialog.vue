@@ -2,8 +2,8 @@
   <AppDialog
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
-    :title="`នាំចូលពិន្ទុតាម Excel — ${classRow?.name || ''}`"
-    width="600px"
+    :title="`បញ្ចូលពិន្ទុតាម Excel — ${classRow?.name || ''}`"
+    width="70%"
     @closed="resetForm"
   >
     <el-form label-position="top">
@@ -15,12 +15,8 @@
         size="large"
       />
       <div class="form-row">
-        <el-form-item label="ឆ្នាំ" required>
-          <el-input v-model.number="form.year" type="number" size="large" />
-        </el-form-item>
-        <el-form-item label="ឆមាស" required>
-          <el-input v-model.number="form.semester" type="number" size="large" />
-        </el-form-item>
+        <AppInput label="ឆ្នាំ" v-model.number="form.year" type="number" size="large" disabled></AppInput>
+         <AppInput label="ឆមាស" v-model.number="form.semester" type="number" size="large" disabled></AppInput>
       </div>
     </el-form>
 
@@ -30,7 +26,7 @@
       :show-file-list="true"
       :limit="1"
       accept=".xlsx,.xls"
-      :on-change="(f) => (file = f.raw)"
+      :on-change="handleFilePicked"
       :on-remove="() => (file = null)"
     >
       <el-icon class="el-icon--upload"><upload-filled /></el-icon>
@@ -43,6 +39,17 @@
         </div>
       </template>
     </el-upload>
+
+      <AppTable v-if="previewRows.length" :data="previewRows" show-index :show-pagination="false" :columns="[
+      { prop: 'name', label: 'គោត្តនាម-នាម', minwidth: 80 },
+      { prop: 'gender', label: 'ភេទ', minwidth: 80 },
+      { prop: 'code', label: 'អត្តលេខ', minwidth: 80 },
+      { prop: 'attendance', label: 'វត្តមាននិស្សិត', minwidth: 80 },
+      { prop: 'research', label: 'កិច្ចការស្រាវជ្រាវ', minwidth: 80 },
+      { prop: 'midterm', label: 'ប្រឡងពាក់កណ្តាលឆមាស', minwidth: 80 },
+      { prop: 'final', label: 'ប្រឡងបញ្ចប់ឆមាស', minwidth: 80 },
+    ]">
+    </AppTable>
 
     <template #footer>
       <AppButton @click="$emit('update:modelValue', false)" size="large" :block="false" type="warning">
@@ -69,7 +76,9 @@ import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
 import AppSelect from "./AppSelect.vue";
 import { useNotification } from "../composables/useNotification.js";
-
+import AppInput from "./AppInput.vue";
+import AppTable from "./AppTable.vue";
+import * as XLSX from "xlsx";
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   classRow: { type: Object, default: null },
@@ -80,6 +89,7 @@ const notify = useNotification();
 const importing = ref(false);
 const file = ref(null);
 const subjectOptions = ref([]);
+const previewRows = ref([])
 
 const form = reactive({
   subject_id: null,
@@ -89,6 +99,35 @@ const form = reactive({
 
 function resetForm() {
   file.value = null;
+  previewRows.value = [];
+}
+
+function handleFilePicked(uploadFile) {
+  const rawFile = uploadFile.raw;
+  file.value = rawFile;
+  const reader = new FileReader();
+   reader.onload = (e) => {
+    const wb = XLSX.read(e.target.result, { type: "array" });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+previewRows.value = rows.map((r) => {
+  return {
+    name: r["គោត្តនាម-នាម"] ?? r.name ?? "",
+    gender: r["ភេទ"] ?? r.gender ?? "",
+    code: r["អត្តលេខ"] ?? r.code ?? "",
+    attendance: r["វត្តមាននិស្សិត"] ?? r.attendance ?? "",
+    research: r["កិច្ចការស្រាវជ្រាវ"] ?? r.research ?? "",
+    midterm: r["ប្រឡងពាក់កណ្តាលឆមាស"] ?? r.midterm ?? "",
+    final: r["ប្រឡងបញ្ចប់ឆមាស"] ?? r.final ?? "",
+  };
+});
+
+    if (!previewRows.value.length) {
+      notify.error("រកមិនឃើញទិន្នន័យក្នុងឯកសារនេះទេ");
+    }
+  }; 
+  reader.readAsArrayBuffer(rawFile);
 }
 
 watch(

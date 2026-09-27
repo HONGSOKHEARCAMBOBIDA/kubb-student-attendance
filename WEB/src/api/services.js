@@ -6,6 +6,7 @@ export const loginByQr = (data) => api.post('/loginbyqr', data)
 export const refreshToken = (data) => api.post('/refresh',{}, { withCredentials: true })
 
 // Company
+export const getclassnopagination = () => api.get('/view.class.no.pagination')
 export const getMajor = () => api.get('/view.Major')
 export const getShift = () => api.get('/view.Shift')
 export const addShift = (data) => api.post('/add.shift',data)
@@ -136,3 +137,4 @@ export const importScoreExcel = (formData) =>
   api.post("/add.score.from.excell", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+export const updateScore = (data,id) => api.put(`/edit.score/${id}`,data)
