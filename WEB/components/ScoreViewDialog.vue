@@ -196,40 +196,60 @@ const columns = [
   { slot: "total", label: "ពិន្ទុសរុប", width: 100, align: "center" },
   { slot: "rank", label: "ចំណាត់ថ្នាក់", width: 100, align: "center" },
 ];
+
 const reportSubjects = computed(() => {
-  const map = new Map();
+  const subjects = new Set();
+
   scoreReprotData.value.forEach((row) => {
-    (row.subject_option || []).forEach((opt) => {
-      if (!map.has(opt.SubjectID)) map.set(opt.SubjectID, opt.SubjectName);
+    Object.keys(row.subjects || {}).forEach((subject) => {
+      subjects.add(subject);
     });
   });
-  return Array.from(map, ([id, name]) => ({ id, name }));
+
+  return [...subjects];
 });
+
 const columnReport = computed(() => [
-  { prop: "name_kh", label: "ឈ្មោះខ្មែរ", minwidth: 100 },
-  { slot: "gender", label: "ភេទ", width: 70, align: "center" },
-  { prop: "code", label: "អត្តលេខ", width: 130, align: "center" },
-  { prop: "ProgrammeName", label: "កម្រិត", width: 100, align: "center" },
-  { prop: "GenerationName", label: "ជំនាន់", width: 100, align: "center" },
-  { prop: "MajorName", label: "ជំនាញ", minwidth: 100, align: "center" },
-  { prop: "year", label: "ឆ្នាំ", width: 70, align: "center" },
-  { prop: "semester", label: "ឆមាស", width: 80, align: "center" },
-  ...reportSubjects.value.map((s) => ({
-    prop: `score_${s.id}`,
-    label: s.name,
-    width: 160,
+  {
+    prop: "user_name",
+    label: "ឈ្មោះខ្មែរ",
+    minwidth: 180,
+  },
+  {
+    slot: "gender",
+    label: "ភេទ",
+    minwidth: 70,
+    align: "center",
+  },
+  {
+    prop: "code",
+    label: "អត្តលេខ",
+    minwidth: 130,
+    align: "center",
+  },
+
+  ...reportSubjects.value.map((subject) => ({
+    prop: `subject_${subject}`,
+    label: subject,
+    minwidth: 160,
     align: "center",
   })),
 ]);
+
 const reportTableData = computed(() =>
   scoreReprotData.value.map((row) => {
-    const flat = { ...row };
-    (row.subject_option || []).forEach((opt) => {
-      flat[`score_${opt.SubjectID}`] = opt.total;
+    const data = {
+      ...row,
+    };
+
+    Object.entries(row.subjects || {}).forEach(([subject, score]) => {
+      data[`subject_${subject}`] = score;
     });
-    return flat;
+
+    return data;
   })
 );
+
 let debounceTimer = null;
 function debouncedFetch() {
   clearTimeout(debounceTimer);
@@ -352,7 +372,7 @@ watch(
     }
 
     fetchScoreView();
-    fetchScoreViewReport()
+     fetchScoreViewReport()
   },
 );
 </script>

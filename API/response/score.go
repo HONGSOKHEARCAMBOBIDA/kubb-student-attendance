@@ -49,20 +49,17 @@ type ScoreReportRow struct {
 	Subjects  map[string]float64 `json:"subjects"`
 }
 
-// Header សម្រាប់ជួរឈរនីមួយៗ (subject)
-type SubjectHeader struct {
-	SubjectID   int64  `json:"subject_id"`
-	SubjectName string `json:"subject_name"`
+type ScoreTableRow struct {
+	base.ModelBase
+	UserID int    `json:"user_id"`
+	NameKH string `json:"name_kh" gorm:"column:name_kh"`
+	NameEN string `json:"name_en" gorm:"column:name_en"`
+	Code   string `json:"code" gorm:"column:code"`
+	Gender int    `json:"gender"`
 }
 
-// ជួរដេកនីមួយៗគឺ student ម្នាក់ៗ
-type StudentScoreRow struct {
-	UserID   int64             `json:"user_id"`
-	UserName string            `json:"user_name"`
-	Scores   map[int64]float64 `json:"scores"` // key = subject_id
-}
-
-type ScoreTableResponse struct {
-	Subjects []SubjectHeader   `json:"subjects"`
-	Students []StudentScoreRow `json:"students"`
+type SubjectOptionRaw struct {
+	SubjectID   int     `json:"subject_id"`
+	SubjectName string  `json:"subject_name"`
+	TotalScore  float64 `json:"total_score"`
 }
