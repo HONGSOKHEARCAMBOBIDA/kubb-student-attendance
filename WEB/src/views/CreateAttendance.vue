@@ -69,7 +69,6 @@
       </el-form-item>
 
       <el-alert v-if="draftError" :title="draftError" type="error" show-icon :closable="false" />
-      <el-alert v-if="draftError" :title="draftError" type="error" show-icon :closable="false" />
 <el-alert
   v-else-if="isBeforeSchedule"
   :title="scheduleWaitMessage"

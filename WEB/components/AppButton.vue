@@ -16,6 +16,7 @@
   </el-button>
 </template>
 
+
 <script setup>
 defineProps({
   type: { type: String, default: 'primary' },
@@ -35,18 +36,27 @@ defineEmits(['click'])
   height: 44px;
   font-size: 15px;
   font-weight: 600;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
+
 .app-button--block {
   width: 100%;
 }
+
 .app-button--circle.el-button--small {
   width: 32px;
   height: 32px;
 }
+
 .app-button--circle.el-button--large {
   width: 50px;
   height: 50px;
 }
+
 .app-button--circle {
   width: 44px;
   height: 44px;

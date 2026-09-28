@@ -138,3 +138,4 @@ export const importScoreExcel = (formData) =>
     headers: { "Content-Type": "multipart/form-data" },
   });
 export const updateScore = (data,id) => api.put(`/edit.score/${id}`,data)
+export const getScoreReport = (params) =>  api.get('/view.score.report',{params})

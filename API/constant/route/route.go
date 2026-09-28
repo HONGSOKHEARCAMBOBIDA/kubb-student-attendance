@@ -126,5 +126,6 @@ const (
 	AddScore           = "add.score"
 	AddScoreFromExcel  = "add.score.from.excell"
 	ViewScore          = "view.score"
+	ViewScoreReport    = "view.score.report"
 	EditScore          = "edit.score/:id"
 )

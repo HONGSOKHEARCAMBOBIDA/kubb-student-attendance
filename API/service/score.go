@@ -24,6 +24,7 @@ type ScoreService interface {
 	UpdateScore(ctx context.Context, input request.UpdateScoreRequest) error
 	ImportScoreFromExcell(ctx context.Context, req request.ImportScoreExcelRequest, file multipart.File) (*request.ImportScoreResult, error)
 	GetScore(ctx context.Context, userID int, pf request.Pagination, filter map[string]string) ([]response.ScoreResponse, *model.PaginationMetadata, error)
+	GetScoreReport(ctx context.Context, userID int, pf request.Pagination, filter map[string]string) ([]response.ScoreReportRow, *model.PaginationMetadata, error)
 }
 type scoreservice struct {
 	db *gorm.DB
@@ -425,4 +426,90 @@ func (s *scoreservice) GetScore(ctx context.Context, userID int, pf request.Pagi
 
 	return data, helper.BuildPaginationMeta(pf, totalCount), nil
 
+}
+
+func (s *scoreservice) GetScoreReport(
+	ctx context.Context,
+	userID int,
+	pf request.Pagination,
+	filter map[string]string,
+) ([]response.ScoreReportRow, *model.PaginationMetadata, error) {
+
+	var data []response.ScoreReportRow
+
+	q := s.db.WithContext(ctx).
+		Table("score s").
+		Select(`
+			u.id AS user_id,
+			u.name_kh,
+			u.name_en,
+			u.code,
+			u.gender,
+			c.id AS class_id,
+			c.name AS class_name
+		`).
+		Joins("JOIN user u ON u.id = s.user_id").
+		Joins("JOIN class c ON c.id = s.class_id")
+
+	q = applyCommonFilterScore(q, filter)
+
+	var total int64
+	if err := q.Distinct("s.user_id").Count(&total).Error; err != nil {
+		return nil, nil, err
+	}
+
+	if err := q.
+		Group("u.id, u.name_kh, u.name_en, u.code, u.gender, c.id, c.name").
+		Offset((pf.Page - 1) * pf.PageSize).
+		Limit(pf.PageSize).
+		Scan(&data).Error; err != nil {
+		return nil, nil, err
+	}
+
+	if len(data) == 0 {
+		return data, helper.BuildPaginationMeta(pf, total), nil
+	}
+
+	// Get subject scores
+	type Row struct {
+		UserID int
+		Name   string
+		Score  float64
+	}
+
+	var rows []Row
+
+	ids := make([]int, len(data))
+	for i := range data {
+		ids[i] = data[i].UserID
+		data[i].Subjects = map[string]float64{}
+	}
+
+	err := s.db.WithContext(ctx).
+		Table("score s").
+		Select(`
+			s.user_id,
+			sub.name_kh AS name,
+			SUM(sd.score) AS score
+		`).
+		Joins("JOIN score_detail sd ON sd.score_id = s.id").
+		Joins("JOIN subject sub ON sub.id = s.subject_id").
+		Where("s.user_id IN ?", ids).
+		Group("s.user_id, sub.id, sub.name_kh").
+		Scan(&rows).Error
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, r := range rows {
+		for i := range data {
+			if data[i].UserID == r.UserID {
+				data[i].Subjects[r.Name] = r.Score
+				break
+			}
+		}
+	}
+
+	return data, helper.BuildPaginationMeta(pf, total), nil
 }

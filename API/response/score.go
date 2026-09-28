@@ -37,3 +37,14 @@ type ScoreDetailResponse struct {
 	GradeComponentName string  `json:"grade_component_Name"`
 	Score              float64 `json:"score" gorm:"column:score"`
 }
+
+type ScoreReportRow struct {
+	UserID    int                `json:"user_id"`
+	NameKH    string             `json:"name_kh"`
+	NameEN    string             `json:"name_en"`
+	Code      string             `json:"code"`
+	Gender    int                `json:"gender"`
+	ClassID   int                `json:"class_id"`
+	ClassName string             `json:"class_name"`
+	Subjects  map[string]float64 `json:"subjects"`
+}

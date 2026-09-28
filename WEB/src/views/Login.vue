@@ -2,6 +2,9 @@
 <template>
   <div class="login-page">
     <div class="login-card">
+      <div class="login-logo">
+        <el-image src="/logo.png" alt="University Logo" fit="contain" />
+      </div>
       <el-form
         ref="formRef"
         :model="form"
@@ -11,7 +14,7 @@
       >
         <AppInput
           v-model.trim="form.code"
-          label="លេខកូដ"
+          label="អត្តលេខ"
           prop="code"
           placeholder="បញ្ចូលលេខកូដ"
           prefix-icon="User"
@@ -30,13 +33,13 @@
           @enter="handleLogin"
         />
 
-        <AppButton
-          native-type="submit"
-          :loading="loading"
-          type="primary"
-          block
-        >
-          ចូលប្រព័ន្ធ
+        <AppButton color="#626aef"  native-type="submit" plain :loading="loading" type="primary" block>
+     <span class="login-button-content">
+    <el-icon>
+      <CircleCheck />
+    </el-icon>
+    <span>ចូលប្រព័ន្ធ</span>
+  </span>
         </AppButton>
       </el-form>
     </div>
@@ -68,7 +71,7 @@ const rules = {
   code: [
     {
       required: true,
-      message: "សូមបញ្ចូលលេខកូដ",
+      message: "សូមបញ្ចូលអត្តលេខ",
       trigger: "blur",
     },
   ],
@@ -101,9 +104,7 @@ async function handleLogin() {
     notify.success("ចូលប្រព័ន្ធបានជោគជ័យ");
   } catch (e) {
     if (e?.response) {
-      notify.error(
-        e.response?.data?.message || "ការចូលប្រព័ន្ធបរាជ័យ"
-      );
+      notify.error(e.response?.data?.message || "ការចូលប្រព័ន្ធបរាជ័យ");
     }
   } finally {
     loading.value = false;
@@ -112,6 +113,20 @@ async function handleLogin() {
 </script>
 
 <style scoped>
+.login-button-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.login-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+.login-logo .el-image {
+  width: 100px;
+  height: 100px;
+}
 .login-page {
   min-height: 100vh;
   display: flex;

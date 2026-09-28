@@ -127,7 +127,7 @@
           </div>
 
           <div
-          v-if="adminLevel"
+          
             class="action-btn"
             @click="$router.push('/company')"
           >
@@ -369,9 +369,18 @@ const adminLevel = computed(() => userDataStore.level === 7)
   align-items: center;
   justify-content: center;
 
-  color: #122133;
-  background: #f2f4f7;
-  border-radius: 9px;
+  color: #626aef;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover .icon-box {
+  color: #ffffff;
+  background: #626aef;
+  border-color: #3b82f6;
 }
 
 /* Content */
