@@ -152,3 +152,37 @@ func (cr *ScoreController) GetScoreReport(c *gin.Context) {
 	}
 	share.ResponsePagination(c, 200, data, meta)
 }
+
+func (cr *ScoreController) GetScoreTable(c *gin.Context) {
+	page, pageSize := helper.GetPagination(c)
+	userID, ok := helper.GetUserID(c)
+	if !ok {
+		return
+	}
+	filter := map[string]string{
+		"name":          c.Query("name"),
+		"class_id":      c.Query("class_id"),
+		"generation_id": c.Query("generation_id"),
+		"major_id":      c.Query("major_id"),
+		"programme_id":  c.Query("programme_id"),
+		"subject_id":    c.Query("subject_id"),
+		"code":          c.Query("code"),
+		"year":          c.Query("year"),
+		"semester":      c.Query("semester"),
+	}
+
+	data, err := cr.service.GetScoreTable(c.Request.Context(), userID, request.Pagination{
+		Page:     page,
+		PageSize: pageSize,
+	}, filter)
+
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			share.ResponseError(c, http.StatusGatewayTimeout, err.Error())
+			return
+		}
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.RespondDate(c, 200, data)
+}

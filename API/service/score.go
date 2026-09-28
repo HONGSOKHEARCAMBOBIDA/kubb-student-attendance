@@ -25,6 +25,7 @@ type ScoreService interface {
 	ImportScoreFromExcell(ctx context.Context, req request.ImportScoreExcelRequest, file multipart.File) (*request.ImportScoreResult, error)
 	GetScore(ctx context.Context, userID int, pf request.Pagination, filter map[string]string) ([]response.ScoreResponse, *model.PaginationMetadata, error)
 	GetScoreReport(ctx context.Context, userID int, pf request.Pagination, filter map[string]string) ([]response.ScoreReportRow, *model.PaginationMetadata, error)
+	GetScoreTable(ctx context.Context, userID int, pf request.Pagination, filter map[string]string) (*response.ScoreTableResponse, error)
 }
 type scoreservice struct {
 	db *gorm.DB
@@ -512,4 +513,94 @@ func (s *scoreservice) GetScoreReport(
 	}
 
 	return data, helper.BuildPaginationMeta(pf, total), nil
+}
+
+func (s *scoreservice) GetScoreTable(
+	ctx context.Context,
+	userID int,
+	pf request.Pagination,
+	filter map[string]string) (*response.ScoreTableResponse, error) {
+	var scores []model.Score
+	query := s.db.WithContext(ctx).Table("score s").Find(&scores)
+	query = applyCommonFilterScore(query, filter)
+
+	if len(scores) == 0 {
+		return &response.ScoreTableResponse{}, nil
+	}
+
+	scoreIDs := make([]int64, 0, len(scores))
+	scoreIDToSubject := make(map[int64]int64)
+	scoreIDToUser := make(map[int64]int64)
+	for _, sc := range scores {
+		scoreIDs = append(scoreIDs, int64(sc.ID))
+		scoreIDToSubject[int64(sc.ID)] = sc.SubjectID
+		scoreIDToUser[int64(sc.ID)] = sc.UserID
+	}
+
+	var details []model.ScoreDetail
+	if err := s.db.Where("score_id IN ?", scoreIDs).Find(&details).Error; err != nil {
+		return nil, err
+	}
+
+	// 3. សរុប score_detail តាម score_id (ឧ. sum នៃ component ទាំងអស់)
+	totalByScoreID := make(map[int64]float64)
+	for _, d := range details {
+		totalByScoreID[d.ScoreID] += d.Score
+	}
+
+	// 4. Group តាម user -> subject -> total
+	userSubjectScore := make(map[int64]map[int64]float64)
+	subjectSet := make(map[int64]struct{})
+	for scoreID, total := range totalByScoreID {
+		uid := scoreIDToUser[scoreID]
+		sid := scoreIDToSubject[scoreID]
+		if userSubjectScore[uid] == nil {
+			userSubjectScore[uid] = make(map[int64]float64)
+		}
+		userSubjectScore[uid][sid] += total
+		subjectSet[sid] = struct{}{}
+	}
+
+	// 5. ទាញឈ្មោះ subject (headers)
+	subjectIDs := make([]int64, 0, len(subjectSet))
+	for sid := range subjectSet {
+		subjectIDs = append(subjectIDs, sid)
+	}
+	var subjects []model.Subject
+	if err := s.db.Where("id IN ?", subjectIDs).Find(&subjects).Error; err != nil {
+		return nil, err
+	}
+	subjectHeaders := make([]response.SubjectHeader, 0, len(subjects))
+	for _, sub := range subjects {
+		subjectHeaders = append(subjectHeaders, response.SubjectHeader{
+			SubjectID:   int64(sub.ID),
+			SubjectName: *sub.NameKh,
+		})
+	}
+
+	// 6. ទាញឈ្មោះ user
+	userIDs := make([]int64, 0, len(userSubjectScore))
+	for uid := range userSubjectScore {
+		userIDs = append(userIDs, uid)
+	}
+	var users []model.User
+	if err := s.db.Where("id IN ?", userIDs).Find(&users).Error; err != nil {
+		return nil, err
+	}
+	userNameMap := make(map[int64]string)
+	for _, u := range users {
+		userNameMap[int64(u.ID)] = u.NameKH
+	}
+
+	// 7. បង្កើត response
+	resp := &response.ScoreTableResponse{Subjects: subjectHeaders}
+	for uid, subjScores := range userSubjectScore {
+		resp.Students = append(resp.Students, response.StudentScoreRow{
+			UserID:   uid,
+			UserName: userNameMap[uid],
+			Scores:   subjScores,
+		})
+	}
+
+	return resp, nil
 }
