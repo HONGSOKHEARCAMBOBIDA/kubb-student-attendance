@@ -1,5 +1,6 @@
 <template>
   <el-button
+    color="#626aef"
     v-bind="$attrs"
     :type="type"
     :size="size"

@@ -98,6 +98,7 @@ export const editLeaveRequest = (id,data) => api.put(`/edit.leave.request/${id}`
 export const approveLeaveRequest = (id,data) => api.put(`/approve.leave/${id}`)
 export const deleteLeaveRequest = (id) => api.delete(`/delete.leave.request/${id}`)
 export const addNotPermissionLeave = (data) => api.post('/add.leave.not.permission',data)
+export const getcountleave = () => api.get('/count.leave')
 
 // RoleHasPermission
 export const getrolehaspermission = (id) => api.get(`/view.role.has.permission/${id}`)

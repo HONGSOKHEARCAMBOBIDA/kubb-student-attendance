@@ -25,6 +25,7 @@ type LeaveRequestService interface {
 	VerifyLeaveRequest(ctx context.Context, id int, verifyBy int) error
 	GetNotPermissionLeave(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.NotPermissionLeave, *model.PaginationMetadata, error)
 	AddNotPermission(ctx context.Context, input request.NotPermissionLeaveRequest) error
+	CountLeave(ctx context.Context, id int) (int, error)
 }
 
 type leaveRequestService struct {
@@ -54,6 +55,38 @@ func applyAccessFilterLeaveRequest(query *gorm.DB, db *gorm.DB, role model.Role,
 	}
 
 	return query
+}
+
+func (s *leaveRequestService) CountLeave(ctx context.Context, id int) (int, error) {
+	var total int
+	var user model.User
+
+	if err := s.db.WithContext(ctx).
+		Preload("Role").
+		First(&user, id).Error; err != nil {
+		return 0, err
+	}
+
+	base := func() *gorm.DB {
+		return s.db.WithContext(ctx).
+			Table("leave_request l")
+	}
+
+	applyFilter := func(tx *gorm.DB) *gorm.DB {
+		tx = tx.Where("l.status = ?", model.LeaveStatusPending)
+		return tx
+	}
+
+	query := applyFilter(base()).
+		Select("COUNT(l.id)")
+
+	query = applyAccessFilterLeaveRequest(query, s.db, user.Role, user)
+
+	if err := query.Scan(&total).Error; err != nil {
+		return 0, err
+	}
+
+	return total, nil
 }
 
 func (s *leaveRequestService) GetLeaveRequest(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.LeaveRequestResponse, *model.PaginationMetadata, error) {

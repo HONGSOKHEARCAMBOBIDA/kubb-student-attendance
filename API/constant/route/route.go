@@ -80,6 +80,7 @@ const (
 	ViewLeave     = "view.leave.type"
 	AddLeaveType  = "add.leave.type"
 	EditLeaveType = "edit.leave.type/:id"
+	CountLeave    = "count.leave"
 
 	// LeaveRequest
 	ViewLeaveRequest       = "view.leave.request"

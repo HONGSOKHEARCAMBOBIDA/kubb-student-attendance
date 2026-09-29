@@ -58,27 +58,33 @@
             </el-icon>
           </div>
 
-          <div
-            class="action-btn"
-            @click="$router.push('/leaverequest')"
-          >
-            <div class="icon-box">
-              <el-icon :size="23">
-                <DocumentChecked />
-              </el-icon>
-            </div>
+<div
+  class="action-btn"
+  @click="$router.push('/leaverequest')"
+>
+  <div class="icon-box">
+    <el-badge
+      :value="leaves"
+      :hidden="leaveCount === 0"
+      :max="99"
+    >
+      <el-icon :size="23">
+        <DocumentChecked />
+      </el-icon>
+    </el-badge>
+  </div>
 
-            <div class="action-content">
-              <span class="action-title">សុំច្បាប់</span>
-              <span class="action-description">
-                គ្រប់គ្រងការសុំច្បាប់
-              </span>
-            </div>
+  <div class="action-content">
+    <span class="action-title">សុំច្បាប់</span>
+    <span class="action-description">
+      គ្រប់គ្រងការសុំច្បាប់
+    </span>
+  </div>
 
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
+  <el-icon class="arrow-icon">
+    <ArrowRight />
+  </el-icon>
+</div>
 
           <div
             v-if="adminLevel"
@@ -291,10 +297,23 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed,onMounted,ref } from "vue";
 import { useUserDataStore } from "../stores/user_data";
+import { getcountleave } from "../api/services";
 const userDataStore = useUserDataStore();
 const adminLevel = computed(() => userDataStore.level === 7)
+const leaves = ref([])
+async function fetchCountLeave(){
+  try {
+    const res = await getcountleave();
+    leaves.value = (res.data.data || [])
+  }catch(e){
+
+  }
+}
+onMounted(()=>{
+  fetchCountLeave()
+})
 </script>
 
 <style scoped>
@@ -354,7 +373,7 @@ const adminLevel = computed(() => userDataStore.level === 7)
 }
 
 .action-btn:hover {
-  border-color: #122133;
+  border-color: #3b82f6;
   box-shadow: 0 4px 12px rgba(18, 33, 51, 0.08);
   transform: translateY(-1px);
 }

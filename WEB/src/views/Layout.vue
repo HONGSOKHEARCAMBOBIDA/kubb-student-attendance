@@ -2,7 +2,7 @@
   <div class="layout">
     <aside class="sidebar" :class="{ collapsed }">
       <div class="sidebar-header">
-        <el-icon size="26" color="#050000">
+        <el-icon size="26" color="#626aef">
           <UserFilled />
         </el-icon>
 
@@ -54,7 +54,7 @@
             <el-avatar
               
               :size="32"
-              style="background: #409eff"
+              style="background: #54ca01"
             >
               {{ userName[0]?.toUpperCase() }}
             </el-avatar>

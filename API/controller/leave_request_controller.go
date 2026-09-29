@@ -52,6 +52,18 @@ func (cr *LeaveController) GetLeaveRequest(c *gin.Context) {
 	share.ResponsePagination(c, 200, data, meta)
 }
 
+func (cr *LeaveController) CountLeave(c *gin.Context) {
+	userID, ok := helper.GetUserID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.CountLeave(c, userID)
+	if err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
 func (cr *LeaveController) CreateLeaveRequest(c *gin.Context) {
 	var input request.LeaveRequestCreate
 	if err := c.ShouldBindJSON(&input); err != nil {
