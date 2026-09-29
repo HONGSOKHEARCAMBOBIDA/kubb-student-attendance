@@ -140,7 +140,7 @@ const routes = [
         path: "createattendance",
         name: "CreateAttendance",
         component: () => import("../views/CreateAttendance.vue"),
-        meta: { title: "បង្កេីតវត្តមាន",showInNav: false }, // no showInNav -> hidden from sidebar
+        meta: { title: "ចុះវត្តមាន",showInNav: false }, // no showInNav -> hidden from sidebar
       },
       {
         path: "profile",

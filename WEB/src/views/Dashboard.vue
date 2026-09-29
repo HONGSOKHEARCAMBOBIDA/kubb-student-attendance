@@ -1,4 +1,3 @@
-
 <template>
   <div class="dashboard">
     <div class="dash-grid">
@@ -14,10 +13,7 @@
 
         <div class="action-grid">
 
-          <div
-            class="action-btn"
-            @click="$router.push('/attendance')"
-          >
+          <div class="action-btn" @click="$router.push('/attendance')">
             <div class="icon-box">
               <el-icon :size="23">
                 <Calendar />
@@ -36,10 +32,7 @@
             </el-icon>
           </div>
 
-          <div
-            class="action-btn"
-            @click="$router.push('/AttendanceReport')"
-          >
+          <div class="action-btn" @click="$router.push('/AttendanceReport')">
             <div class="icon-box">
               <el-icon :size="23">
                 <DataAnalysis />
@@ -58,39 +51,28 @@
             </el-icon>
           </div>
 
-<div
-  class="action-btn"
-  @click="$router.push('/leaverequest')"
->
-  <div class="icon-box">
-    <el-badge
-      :value="leaves"
-      :hidden="leaveCount === 0"
-      :max="99"
-    >
-      <el-icon :size="23">
-        <DocumentChecked />
-      </el-icon>
-    </el-badge>
-  </div>
+          <div class="action-btn" @click="$router.push('/leaverequest')">
+            <div class="icon-box">
+              <el-badge :value="leaves" :hidden="leaveCount === 0" :max="99">
+                <el-icon :size="23">
+                  <DocumentChecked />
+                </el-icon>
+              </el-badge>
+            </div>
 
-  <div class="action-content">
-    <span class="action-title">សុំច្បាប់</span>
-    <span class="action-description">
-      គ្រប់គ្រងការសុំច្បាប់
-    </span>
-  </div>
+            <div class="action-content">
+              <span class="action-title">សុំច្បាប់</span>
+              <span class="action-description">
+                គ្រប់គ្រងការសុំច្បាប់
+              </span>
+            </div>
 
-  <el-icon class="arrow-icon">
-    <ArrowRight />
-  </el-icon>
-</div>
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </div>
 
-          <div
-            v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/Notpermissionleave')"
-          >
+          <div v-if="adminLevel" class="action-btn" @click="$router.push('/Notpermissionleave')">
             <div class="icon-box">
               <el-icon :size="23">
                 <CircleClose />
@@ -110,10 +92,7 @@
             </el-icon>
           </div>
 
-          <div
-            class="action-btn"
-            @click="$router.push('/createattendance')"
-          >
+          <div class="action-btn" @click="$router.push('/createattendance')">
             <div class="icon-box">
               <el-icon :size="23">
                 <Camera />
@@ -132,11 +111,7 @@
             </el-icon>
           </div>
 
-          <div
-          
-            class="action-btn"
-            @click="$router.push('/company')"
-          >
+          <div class="action-btn" @click="$router.push('/company')">
             <div class="icon-box">
               <el-icon :size="23">
                 <School />
@@ -155,11 +130,7 @@
             </el-icon>
           </div>
 
-          <div
-          v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/subject')"
-          >
+          <div v-if="adminLevel" class="action-btn" @click="$router.push('/subject')">
             <div class="icon-box">
               <el-icon :size="23">
                 <Reading />
@@ -178,11 +149,7 @@
             </el-icon>
           </div>
 
-          <div
-          v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/Major')"
-          >
+          <div v-if="adminLevel" class="action-btn" @click="$router.push('/Major')">
             <div class="icon-box">
               <el-icon :size="23">
                 <Collection />
@@ -201,11 +168,7 @@
             </el-icon>
           </div>
 
-                    <div
-          v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/AttendanceForUpdate')"
-          >
+          <div v-if="adminLevel" class="action-btn" @click="$router.push('/AttendanceForUpdate')">
             <div class="icon-box">
               <el-icon :size="23">
                 <Edit />
@@ -224,11 +187,7 @@
             </el-icon>
           </div>
 
-           <div
-          v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/Generation')"
-          >
+          <div v-if="adminLevel" class="action-btn" @click="$router.push('/Generation')">
             <div class="icon-box">
               <el-icon :size="23">
                 <Collection />
@@ -246,11 +205,7 @@
               <ArrowRight />
             </el-icon>
           </div>
-           <div
-          v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/Shift')"
-          >
+          <div v-if="adminLevel" class="action-btn" @click="$router.push('/Shift')">
             <div class="icon-box">
               <el-icon :size="23">
                 <Clock />
@@ -268,11 +223,7 @@
               <ArrowRight />
             </el-icon>
           </div>
-                <div
-          v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/users')"
-          >
+          <div v-if="adminLevel" class="action-btn" @click="$router.push('/users')">
             <div class="icon-box">
               <el-icon :size="23">
                 <User />
@@ -297,21 +248,21 @@
 </template>
 
 <script setup>
-import { computed,onMounted,ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useUserDataStore } from "../stores/user_data";
 import { getcountleave } from "../api/services";
 const userDataStore = useUserDataStore();
 const adminLevel = computed(() => userDataStore.level === 7)
 const leaves = ref([])
-async function fetchCountLeave(){
+async function fetchCountLeave() {
   try {
     const res = await getcountleave();
     leaves.value = (res.data.data || [])
-  }catch(e){
+  } catch (e) {
 
   }
 }
-onMounted(()=>{
+onMounted(() => {
   fetchCountLeave()
 })
 </script>
@@ -459,5 +410,4 @@ onMounted(()=>{
     font-size: 10px;
   }
 }
-
 </style>

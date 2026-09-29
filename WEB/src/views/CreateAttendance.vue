@@ -1,43 +1,69 @@
 <template>
   <el-card class="checkin-card">
     <template #header>
-      <div style="display:flex;align-items:center;justify-content:center;gap:8px">
-        <el-text style="color:black;font-size:18px;font-weight:bold">
-          {{ draft?.subject_name ?? "វត្តមាន" }}
-        </el-text>
+      <div style="
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  ">
+        <div class="login-logo">
+          <el-image src="/logo.png" alt="University Logo" fit="contain" />
+        </div>
+
+        <el-tag
+  size="large"
+  :type="draft?.subject_name ? 'success' : 'warning'"
+>
+  {{ draft?.subject_name ?? "វត្តមាន" }}
+</el-tag>
+ 
       </div>
-      <el-row justify="space-between" align="middle">
-        <el-icon color="#409efc" :size="25"><Calendar /></el-icon>
+      <!-- <el-row justify="space-between" align="middle">
+        <el-icon color="#409efc" :size="25">
+          <Calendar />
+        </el-icon>
         <el-text style="color:black;font-size:13px">
-          {{ new Date().toLocaleDateString("km-KH", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) }}
+          {{ new Date().toLocaleDateString("km-KH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+          }}
         </el-text>
         <AppButton type="success" size="small" @click="getLocation()" icon="MapLocation" circle />
-      </el-row>
+      </el-row> -->
     </template>
 
     <el-form :model="attendForm">
       <el-form-item v-if="draft">
-        <div style="display:flex;justify-content:space-between;width:100%;color:#606266;font-size:14px">
-          <el-row justify="space-between" align="middle">
-            <el-icon color="#409efc" :size="25" style="padding-right:5px"><AlarmClock /></el-icon>
-            <el-text tag="b" type="primary">{{ draft.type_string }}</el-text>
-          </el-row>
-          <el-row justify="space-between" align="middle">
-            <el-icon color="brown" :size="25" style="padding-right:5px"><AlarmClock /></el-icon>
-            <el-text style="color:brown">ម៉ោងកំណត់: {{ draft.scheduled_time }}</el-text>
-          </el-row>
-        </div>
+<div class="schedule-section">
+  <div class="section-title">
+    <span>កាលវិភាគ</span>
+  </div>
+
+  <div class="schedule-card">
+    <div class="schedule-icon">
+      <el-icon :size="22">
+        <Sunny />
+      </el-icon>
+    </div>
+
+    <div class="schedule-info">
+      <div class="schedule-time">
+        {{ draft.scheduled_time }}
+      </div>
+
+      <div class="schedule-type">
+        {{ draft.type_string }}
+      </div>
+    </div>
+  </div>
+</div>
+
       </el-form-item>
 
-      <el-form-item v-if="companies.length">
+      <!-- <el-form-item v-if="companies.length">
         <div class="company-list">
-          <div
-            v-for="c in companies"
-            :key="c.id"
-            class="company-card"
-            :class="{ active: attendForm.company_id === c.id }"
-            @click="selectCompany(c.id)"
-          >
+          <div v-for="c in companies" :key="c.id" class="company-card"
+            :class="{ active: attendForm.company_id === c.id }" @click="selectCompany(c.id)">
             <div class="company-left">
               <el-avatar :size="40" :icon="OfficeBuilding" />
               <div class="company-info">
@@ -45,37 +71,55 @@
               </div>
             </div>
             <div class="company-right">
-              <el-icon v-if="attendForm.company_id === c.id" class="selected"><CircleCheckFilled /></el-icon>
-              <el-icon v-else><ArrowRight /></el-icon>
+              <el-icon v-if="attendForm.company_id === c.id" class="selected">
+                <CircleCheckFilled />
+              </el-icon>
+              <el-icon v-else>
+                <ArrowRight />
+              </el-icon>
             </div>
           </div>
         </div>
-      </el-form-item>
+      </el-form-item> -->
 
-      <el-form-item>
-        <el-button
-          type="primary"
-          :loading="loading || draftLoading"
-          :disabled="isButtonDisabled"
-          @click="handleCheckIn"
-          size="large"
-          style="width:100%;height:80px"
-        >
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-            <span style="font-size:22px">ចូល</span>
-            <span style="font-size:13px;opacity:0.95">{{ currentTime }}</span>
-          </div>
-        </el-button>
-      </el-form-item>
+        <div class="action-buttons">
+  <AppButton
+    type="default"
+    native-type="button"
+    plain
+    :loading="loading"
+    :disabled="isBeforeSchedule"
+    @click="$router.push('/leaverequest')"
+    block
+  >
+    <span class="login-button-content">
+      <el-icon>
+        <Eleme />
+      </el-icon>
+      <span>សុំច្បាប់</span>
+    </span>
+  </AppButton>
+
+  <AppButton
+    color="#626aef"
+    native-type="button"
+    plain
+    :loading="loading"
+    :disabled="isBeforeSchedule"
+    @click="handleCheckIn"
+    block
+  >
+    <span class="login-button-content">
+      <el-icon>
+        <CircleCheck />
+      </el-icon>
+      <span>ចុះវត្តមានចូល</span>
+    </span>
+  </AppButton>
+</div>
 
       <el-alert v-if="draftError" :title="draftError" type="error" show-icon :closable="false" />
-<el-alert
-  v-else-if="isBeforeSchedule"
-  :title="scheduleWaitMessage"
-  type="error"
-  show-icon
-  :closable="false"
-/>
+      <el-alert v-else-if="isBeforeSchedule" :title="scheduleWaitMessage" type="error" show-icon :closable="false" />
     </el-form>
   </el-card>
 </template>
@@ -190,14 +234,14 @@ function getLocation() {
   });
 }
 
-function updateTime() {
-  now.value = new Date();
-  currentTime.value = now.value.toLocaleTimeString("km-KH", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-}
+// function updateTime() {
+//   now.value = new Date();
+//   currentTime.value = now.value.toLocaleTimeString("km-KH", {
+//     hour: "2-digit",
+//     minute: "2-digit",
+//     second: "2-digit",
+//   });
+// }
 
 async function handleCheckIn() {
   if (!attendForm.latitude || !attendForm.longitude) {
@@ -222,8 +266,8 @@ async function handleCheckIn() {
 
 let timer;
 onMounted(() => {
-  updateTime();
-  timer = setInterval(updateTime, 1000);
+  // updateTime();
+  // timer = setInterval(updateTime, 1000);
   getLocation();
   fetchDraft();
   fetchCompanies();
@@ -244,14 +288,115 @@ watch(
 </script>
 
 <style scoped>
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.login-button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.login-button-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.schedule-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  font-size: 18px;
+  font-weight: 600;
+  color: #122133;
+}
+
+.section-title .el-icon {
+  font-size: 17px;
+  color: #122133;
+}
+
+.schedule-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 12px 14px;
+
+  background: #f8fafc;
+  border: 1px solid #0862e9;
+  border-radius: 10px;
+}
+
+.schedule-icon {
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #52c41a;
+  background: #f1fbe9;
+  border-radius: 6px;
+}
+
+.schedule-info {
+  min-width: 0;
+  flex-direction: column;
+
+}
+
+.schedule-time {
+  font-size: 14px;
+  font-weight: 600;
+  color: #122133;
+}
+
+.schedule-type {
+  font-size: 12px;
+  color: #7b8794;
+}
+
+.login-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.login-logo .el-image {
+  width: 80px;
+  height: 80px;
+}
+
 .checkin-card {
   border-radius: 6px;
 }
+
 .company-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
+
 .company-card {
   display: flex;
   justify-content: space-between;
@@ -263,32 +408,39 @@ watch(
   cursor: pointer;
   transition: all 0.25s ease;
 }
+
 .company-card:hover {
   border-color: #409eff;
   box-shadow: 0 6px 16px rgba(64, 158, 255, 0.12);
 }
+
 .company-card.active {
   border: 2px solid #409eff;
   background: #f5f9ff;
 }
+
 .company-left {
   display: flex;
   align-items: center;
   gap: 14px;
 }
+
 .company-info {
   display: flex;
   flex-direction: column;
 }
+
 .company-name {
   font-size: 12px;
   font-weight: 600;
   color: #303133;
 }
+
 .company-right {
   font-size: 22px;
   color: #409eff;
 }
+
 .selected {
   color: #409eff;
 }
