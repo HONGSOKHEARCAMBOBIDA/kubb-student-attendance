@@ -205,6 +205,7 @@ const reportSubjects = computed(() => {
       subjects.add(subject);
     });
   });
+  console.log(subjects)
 
   return [...subjects];
 });
@@ -234,6 +235,18 @@ const columnReport = computed(() => [
     minwidth: 160,
     align: "center",
   })),
+  {
+    prop: "total_score",
+    label: "ពិន្ទុសរុប",
+    minwidth: 130,
+    align: "center",
+  },
+  {
+    prop: "rank",
+    label: "ចំណាត់ថ្នាក់",
+    minwidth: 130,
+    align: "center",
+  },
 ]);
 
 const reportTableData = computed(() =>

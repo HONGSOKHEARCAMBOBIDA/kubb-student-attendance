@@ -11,6 +11,7 @@ import (
 	"mysql/request"
 	"mysql/response"
 	"mysql/utils"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -459,10 +460,30 @@ func (s *scoreservice) GetScoreReport(ctx context.Context, filter map[string]str
 }
 
 type UserReport struct {
-	UserName string             `json:"user_name"`
-	Gender   string             `json:"gender"`
-	Code     string             `json:"code"`
-	Subjects map[string]float64 `json:"subjects"`
+	UserName   string             `json:"user_name"`
+	Gender     string             `json:"gender"`
+	Code       string             `json:"code"`
+	TotalScore float64            `json:"total_score"`
+	Rank       int                `json:"rank"`
+	Subjects   map[string]float64 `json:"subjects"`
+}
+
+func calculateRank(data []UserReport) {
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[i].TotalScore > data[j].TotalScore
+	})
+
+	rank := 0
+	lastTotal := -1.0
+
+	for i := range data {
+		if data[i].TotalScore != lastTotal {
+			rank = i + 1
+			lastTotal = data[i].TotalScore
+		}
+
+		data[i].Rank = rank
+	}
 }
 
 func BuildReport(rows []ScoreReportRow) []UserReport {
@@ -481,6 +502,7 @@ func BuildReport(rows []ScoreReportRow) []UserReport {
 			userMap[r.UserID] = ur
 			order = append(order, r.UserID)
 		}
+		ur.TotalScore += r.TotalScore
 		ur.Subjects[r.SubjectName] = r.TotalScore
 	}
 
@@ -488,5 +510,8 @@ func BuildReport(rows []ScoreReportRow) []UserReport {
 	for _, id := range order {
 		result = append(result, *userMap[id])
 	}
+
+	calculateRank(result)
+
 	return result
 }
