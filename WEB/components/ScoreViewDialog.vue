@@ -371,8 +371,8 @@ watch(
       notify.error(e.response?.data?.error || "Failed to load subjects");
     }
 
-    fetchScoreView();
-     fetchScoreViewReport()
+    // fetchScoreView();
+    fetchScoreViewReport()
   },
 );
 </script>
