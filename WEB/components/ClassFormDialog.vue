@@ -6,7 +6,10 @@
     width="640px"
   >
     <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
-      <AppInput label="ឈ្មោះថ្នាក់" prop="name" v-model.trim="form.name" size="large" placeholder="បញ្ចូលឈ្មោះថ្នាក់"></AppInput>
+      <div class="form-row">
+        <AppInput label="ឈ្មោះថ្នាក់" prop="name" v-model.trim="form.name" size="large" placeholder="បញ្ចូលឈ្មោះថ្នាក់"></AppInput>
+        <AppSelect label="កាន់ដោយ"  v-model="form.controlled_by" size="large" placeholder="ជ្រើសរើសអ្នកកាន់ថ្នាក់" :options="users"></AppSelect>
+      </div>
 
       <div class="form-row">
         <AppSelect label="ជំនាញ" prop="major_id" v-model="form.major_id" size="large" placeholder="ជ្រើសរើសជំនាញ" :options="majors"></AppSelect>
@@ -73,6 +76,7 @@ const props = defineProps({
   shifts: { type: Array, default: () => [] },
   generations: { type: Array, default: () => [] },
   programmes: { type: Array, default: () => [] },
+  users: {type: Array, default: () => []}
 });
 const emit = defineEmits(["update:modelValue", "saved"]);
 
@@ -92,6 +96,7 @@ const form = reactive({
   shift_id: null,
   generation_id: null,
   programme_id: null,
+  controlled_by: null,
   year: null,
   semester: null,
   group: null,
@@ -121,6 +126,7 @@ function resetForm() {
   form.shift_id = null;
   form.generation_id = null;
   form.programme_id = null;
+  form.controlled_by = null;
   form.year = "";
   form.semester = "";
   form.group = "";
@@ -144,6 +150,7 @@ watch(
         shift_id: row.shift_id ?? null,
         generation_id: row.generation_id ?? null,
         programme_id: row.programme_id ?? null,
+        controlled_by: row.controlled_by ?? null,
         year: row.year || "",
         semester: row.semester || "",
         group: row.group || "",
@@ -170,6 +177,7 @@ async function handleSave() {
         shift_id: form.shift_id,
         generation_id: form.generation_id,
         programme_id: form.programme_id,
+        controlled_by: form.controlled_by,
         year: form.year,
         semester: form.semester,
         group: form.group,

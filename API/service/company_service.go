@@ -226,7 +226,8 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 			Joins("LEFT JOIN major AS m ON m.id = c.major_id").
 			Joins("LEFT JOIN shift AS sh ON sh.id = c.shift_id").
 			Joins("LEFT JOIN generation AS g ON g.id = c.generation_id").
-			Joins("LEFT JOIN programmes AS p ON p.id = c.programme_id")
+			Joins("LEFT JOIN programmes AS p ON p.id = c.programme_id").
+			Joins("LEFT JOIN user AS u ON u.id = c.controlled_by")
 	}
 	applyFilters := func(tx *gorm.DB) *gorm.DB {
 		if v, ok := filter["name"]; ok && v != "" {
@@ -243,6 +244,9 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		}
 		if v, ok := filter["programme_id"]; ok && v != "" {
 			tx = tx.Where("c.programme_id = ?", v)
+		}
+		if v, ok := filter["controlled_by"]; ok && v != "" {
+			tx = tx.Where("c.controlled_by = ?", v)
 		}
 		return tx
 	}
@@ -279,7 +283,9 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		c.` + "`group`" + ` AS ` + "`group`" + `,
 		c.term AS term,
 		c.programme_id AS programme_id,
-		p.name AS programme_name
+		p.name AS programme_name,
+		u.id AS controlled_by,
+		u.name_kh AS controlled_by_name
 	`)
 	if err := dataQuery.Offset(offset).Limit(pf.PageSize).Order("id DESC").Scan(&data).Error; err != nil {
 		return nil, nil, fmt.Errorf("fetch class: %w", err)
@@ -372,6 +378,7 @@ func (s *companyservice) CreateClass(ctx context.Context, input request.ClassReq
 		Group:          input.Group,
 		Term:           input.Term,
 		ProgrammeID:    input.ProgrammeID,
+		ControlledBy:   input.ControlledBy,
 	}
 
 	if err := tx.WithContext(ctx).
@@ -403,6 +410,7 @@ func (s *companyservice) UpdateClass(ctx context.Context, id int, input request.
 		data.Group = input.Group
 		data.Term = input.Term
 		data.ProgrammeID = input.ProgrammeID
+		data.ControlledBy = input.ControlledBy
 		data.CanScanOutsize = input.CanScanOutsize
 		if err := tx.Save(&data).Error; err != nil {
 			return apperror.New(apperror.CodeInternal, "failed to update product", nil)

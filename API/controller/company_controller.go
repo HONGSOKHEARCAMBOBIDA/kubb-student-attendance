@@ -153,6 +153,7 @@ func (cr CompanyController) GetClass(c *gin.Context) {
 		"shift_id":      c.Query("shift_id"),
 		"generation_id": c.Query("generation_id"),
 		"programme_id":  c.Query("programme_id"),
+		"controlled_by": c.Query("controlled_by"),
 	}
 
 	data, meta, err := cr.service.GetClass(userID, c.Request.Context(), request.Pagination{

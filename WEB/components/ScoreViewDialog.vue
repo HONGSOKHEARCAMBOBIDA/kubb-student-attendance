@@ -36,7 +36,7 @@
             placeholder="ឈ្មោះ ឬ អត្តលេខ"
             clearable
             size="large"
-            @input="debouncedFetch"
+           @input="debouncedFetch"
           />
         </div>
 
@@ -384,7 +384,7 @@ watch(
       notify.error(e.response?.data?.error || "Failed to load subjects");
     }
 
-    // fetchScoreView();
+   //  fetchScoreView();
     fetchScoreViewReport()
   },
 );

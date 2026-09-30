@@ -30,6 +30,7 @@ type ClassRequestCreate struct {
 	Group          int             `gorm:"column:group" json:"group"`
 	Term           int             `gorm:"column:term" json:"term"`
 	ProgrammeID    *int64          `gorm:"column:programme_id" json:"programme_id"`
+	ControlledBy   int             `gorm:"column:controlled_by" json:"controlled_by"`
 }
 
 type ClassRequestUpdate struct {
@@ -46,6 +47,7 @@ type ClassRequestUpdate struct {
 	Group          int             `gorm:"column:group" json:"group"`
 	Term           int             `gorm:"column:term" json:"term"`
 	ProgrammeID    *int64          `gorm:"column:programme_id" json:"programme_id"`
+	ControlledBy   int             `gorm:"column:controlled_by" json:"controlled_by"`
 }
 
 type CompanyRequesUpdate struct {

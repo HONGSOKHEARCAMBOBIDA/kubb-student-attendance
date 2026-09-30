@@ -2,11 +2,12 @@
   <div>
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 4 },
-        { slot: 'major', span: 4 },
-        { slot: 'shift', span: 4 },
-        { slot: 'generation', span: 4 },
-        { slot: 'programm', span: 4 },
+        { slot: 'name', span: 3  },
+        { slot: 'major', span: 3   },
+        { slot: 'shift', span: 3   },
+        { slot: 'generation', span: 3  },
+        { slot: 'programm', span: 3  },
+         {slot: 'controll', span: 3  },
       ]"
     >
       <template #name>
@@ -27,6 +28,10 @@
 
       <template #programm>
         <AppSelect v-model="filters.programme_id" placeholder="កម្មវិធីសិក្សា" clearable size="large" :options="programmes"></AppSelect>
+      </template>
+
+      <template #controll>
+        <AppSelect v-model="filters.controlled_by" placeholder="អ្នកកាន់ថ្នាក់" clearable size="large" :options="users"></AppSelect>
       </template>
 
       <template #actions>
@@ -66,6 +71,7 @@
       :shifts="shifts"
       :generations="generations"
       :programmes="programmes"
+      :users="users"
       @saved="fetchClasses"
     />
 
@@ -126,7 +132,8 @@ import {
   getGeneration,
   getProgramme,
   getGradecomponent,
-  getclassnopagination
+  getclassnopagination,
+  getUsers
 } from "../api/services";
 import AppButton from "../../components/AppButton.vue";
 import AppFilterBar from "../../components/AppFilterBar.vue";
@@ -158,6 +165,7 @@ const shifts = ref([]);
 const generations = ref([]);
 const programmes = ref([]);
 const gradeComponents = ref([]);
+const users = ref([]);
 
 const loading = ref(false);
 const page = ref(1);
@@ -170,6 +178,7 @@ const filters = reactive({
   shift_id: "",
   generation_id: "",
   programme_id: "",
+  controlled_by: "",
 });
 
 const adminLevel = computed(() => userDataStore.level === 7);
@@ -187,9 +196,11 @@ async function fetchClasses() {
       shift_id: filters.shift_id || undefined,
       generation_id: filters.generation_id || undefined,
       programme_id: filters.programme_id || undefined,
+      controlled_by: filters.controlled_by || undefined
     });
     classes.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;
+    console.log(classes.value)
   } catch (e) {
     notify.error(e.response?.data?.error || "");
   } finally {
@@ -199,12 +210,13 @@ async function fetchClasses() {
 
 async function fetchLookups() {
   try {
-    const [majorRes, shiftRes, generationRes, programmeRes,classnopaginationRef] = await Promise.all([
+    const [majorRes, shiftRes, generationRes, programmeRes,classnopaginationRef,userRef] = await Promise.all([
       getMajor(),
       getShift(),
       getGeneration(),
       getProgramme(),
-      getclassnopagination()
+      getclassnopagination(),
+      getUsers()
     ]);
     majors.value = (majorRes.data.data || []).map((s)=> ({
       label: `${s.name_kh}`,
@@ -225,6 +237,10 @@ async function fetchLookups() {
     classnopagination.value = (classnopaginationRef.data.data || []).map((s)=> ({
       label: `${s.name} - ${s.type}`,
       value: s.id
+    }))
+    users.value = (userRef.data.data || []).map((s) => ({
+      label: `${s.name_kh} - ${s.name_en}`,
+      value: s.id   
     }))
   } catch (e) {
     notify.error(e.response?.data?.error || "");
@@ -249,7 +265,7 @@ watch(
 );
 
 watch(
-  [() => filters.major_id, () => filters.shift_id, () => filters.generation_id, () => filters.programme_id],
+  [() => filters.major_id, () => filters.shift_id, () => filters.generation_id, () => filters.programme_id,() => filters.controlled_by],
   () => {
     page.value = 1;
     fetchClasses();

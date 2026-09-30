@@ -4,7 +4,6 @@
       expandable
       :data="classes"
       :loading="loading"
-      show-index
       :current-page="page"
       @update:current-page="$emit('update:page', $event)"
       :page-size="pageSize"
@@ -14,10 +13,9 @@
       actions-width="380px"
       :columns="[
         { prop: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
-        { slot: 'major_name', label: 'ជំនាញ', minWidth: 110 },
-        { prop: 'shift_name', label: 'វេន', width: 100 },
-        { slot: 'generation_name', label: 'ជំនាន់', width: 200 },
-        { slot: 'programme_name', label: 'កម្មវិធីសិក្សា', minWidth: 130 },
+        { slot: 'major_name', label: 'ជំនាញ', Width: 100 },
+        { slot: 'generation_name', label: 'ជំនាន់', width: 260 },
+        { slot: 'programme_name', label: 'កម្មវិធីសិក្សា', Width: 60 },
         { prop: 'year', label: 'ឆ្នាំ', width: 60 },
         { prop: 'semester', label: 'ឆមាស', width: 70 },
         { prop: 'group', label: 'ក្រុម', width: 60 },
@@ -27,13 +25,14 @@
         { label: 'អាចស្កែនក្រៅតំបន់', slot: 'outsize', width: 150 },
         { label: 'ស្ថានភាព', slot: 'status', width: 100 },
         { label: 'សិស្សសរុប', slot: 'total', width: 100 },
+        { label: 'កាន់ដោយ', prop: 'controlled_by_name', minwidth: 100 },
       ]"
     >
       <template #major_name="{ row }">
         <el-text style="color: red">{{ row.major_name }}</el-text>
       </template>
       <template #generation_name="{ row }">
-        <el-text style="color: red">{{ row.generation_name }} | {{ row.generation_start }}-{{ row.generation_end }}</el-text>
+        <el-text style="color: red">{{ row.generation_name }} | {{ row.generation_start }}-{{ row.generation_end }} ({{ row.shift_name }})</el-text>
       </template>
       <template #programme_name="{ row }">
         <el-text style="color: red">{{ row.programme_name }}</el-text>
