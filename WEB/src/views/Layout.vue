@@ -51,20 +51,16 @@
 
         <el-dropdown @command="handleCommand">
           <div class="avatar-row">
-            <el-avatar
+            <!-- <el-avatar
               
               :size="32"
-              style="background: #54ca01"
+              style="background: #626aef"
             >
               {{ userName[0]?.toUpperCase() }}
-            </el-avatar>
+            </el-avatar> -->
 
-            <span
-              class="d-only"
-              style="font-size: 14px"
-            >
-              {{ userName }}
-            </span> | <el-text type="primary">{{ branch_name }}</el-text>
+            
+            <el-text tag="b"  style="font-size: 15px;color:black">{{ userName }}</el-text>
           </div>
 
           <template #dropdown>
@@ -121,7 +117,6 @@ const auth = useAuthStore()
 const userdataStore = useUserDataStore()
 
 const userName = computed(() => userdataStore.name || 'User')
-const branch_name = computed(() => userdataStore.branch_name || '-')
 const adminLevel = computed(() => userdataStore.level === 7)
 const collapsed = ref(false)
 

@@ -1,133 +1,92 @@
 <template>
   <el-card class="checkin-card">
     <template #header>
-      <div style="
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-  ">
-        <div class="login-logo">
-          <el-image src="/logo.png" alt="University Logo" fit="contain" />
-        </div>
-
-        <el-tag
-  size="large"
-  :type="draft?.subject_name ? 'success' : 'warning'"
->
-  {{ draft?.subject_name ?? "វត្តមាន" }}
-</el-tag>
- 
+      <div class="header">
+        <el-image class="logo" src="/logo.png" alt="University Logo" fit="contain" />
+        <el-tag size="large" :type="draft?.subject_name ? 'success' : 'warning'">
+          {{ draft?.subject_name ?? "វត្តមាន" }}
+        </el-tag>
       </div>
-      <!-- <el-row justify="space-between" align="middle">
-        <el-icon color="#409efc" :size="25">
-          <Calendar />
-        </el-icon>
-        <el-text style="color:black;font-size:13px">
-          {{ new Date().toLocaleDateString("km-KH", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
-          }}
-        </el-text>
-        <AppButton type="success" size="small" @click="getLocation()" icon="MapLocation" circle />
-      </el-row> -->
     </template>
 
-    <el-form :model="attendForm">
-      <el-form-item v-if="draft">
-<div class="schedule-section">
-  <div class="section-title">
-    <span>កាលវិភាគ</span>
-  </div>
-
-  <div class="schedule-card">
-    <div class="schedule-icon">
-      <el-icon :size="22">
-        <Sunny />
-      </el-icon>
-    </div>
-
-    <div class="schedule-info">
-      <div class="schedule-time">
-        {{ draft.scheduled_time }}
-      </div>
-
-      <div class="schedule-type">
-        {{ draft.type_string }}
-      </div>
-    </div>
-  </div>
-</div>
-
-      </el-form-item>
-
-      <!-- <el-form-item v-if="companies.length">
-        <div class="company-list">
-          <div v-for="c in companies" :key="c.id" class="company-card"
-            :class="{ active: attendForm.company_id === c.id }" @click="selectCompany(c.id)">
-            <div class="company-left">
-              <el-avatar :size="40" :icon="OfficeBuilding" />
-              <div class="company-info">
-                <div class="company-name">{{ c.name }}</div>
-              </div>
-            </div>
-            <div class="company-right">
-              <el-icon v-if="attendForm.company_id === c.id" class="selected">
-                <CircleCheckFilled />
-              </el-icon>
-              <el-icon v-else>
-                <ArrowRight />
-              </el-icon>
-            </div>
-          </div>
+    <section v-if="draft" class="section">
+      <h3 class="title">កាលវិភាគ</h3>
+      <div class="card schedule">
+        <div class="icon-box">
+          <el-icon :size="22"><Sunny /></el-icon>
         </div>
-      </el-form-item> -->
+        <div>
+          <div class="schedule-time">{{ draft.scheduled_time }}</div>
+          <div class="schedule-type">{{ draft.type_string }}</div>
+        </div>
+      </div>
+    </section>
 
-        <div class="action-buttons">
-  <AppButton
-    type="default"
-    native-type="button"
-    plain
-    :loading="loading"
-    :disabled="isBeforeSchedule"
-    @click="$router.push('/leaverequest')"
-    block
-  >
-    <span class="login-button-content">
-      <el-icon>
-        <Eleme />
-      </el-icon>
-      <span>សុំច្បាប់</span>
-    </span>
-  </AppButton>
+    <section v-if="companies.length" class="section">
+      <div
+        v-for="c in companies"
+        :key="c.id"
+        class="card company"
+        :class="{ active: attendForm.company_id === c.id }"
+        @click="attendForm.company_id = c.id"
+      >
+        <div class="icon-box1">
+          <el-icon :size="22" color="#626aef"><Sunny /></el-icon>
+        </div>
+        <span class="company-name">{{ c.name }}</span>
+        <el-icon class="company-check">
+          <CircleCheckFilled v-if="attendForm.company_id === c.id" />
+          <ArrowRight v-else />
+        </el-icon>
+      </div>
+    </section>
 
-  <AppButton
-    color="#626aef"
-    native-type="button"
-    plain
-    :loading="loading"
-    :disabled="isBeforeSchedule"
-    @click="handleCheckIn"
-    block
-  >
-    <span class="login-button-content">
-      <el-icon>
-        <CircleCheck />
-      </el-icon>
-      <span>ចុះវត្តមានចូល</span>
-    </span>
-  </AppButton>
-</div>
+    <div class="action-buttons">
+      <AppButton
+        type="default"
+        plain
+        block
+        native-type="button"
+        :disabled="isBeforeSchedule"
+        @click="$router.push('/leaverequest')"
+      >
+        <span class="btn-content">
+          <el-icon color="#ffb301"><Eleme /></el-icon>
+          <span>សុំច្បាប់</span>
+        </span>
+      </AppButton>
 
-      <el-alert v-if="draftError" :title="draftError" type="error" show-icon :closable="false" />
-      <el-alert v-else-if="isBeforeSchedule" :title="scheduleWaitMessage" type="error" show-icon :closable="false" />
-    </el-form>
+      <AppButton
+        plain
+        block
+        color="#626aef"
+        native-type="button"
+        :loading="loading"
+        :disabled="isButtonDisabled"
+        @click="handleCheckIn"
+      >
+        <span class="btn-content">
+          <el-icon><CircleCheck /></el-icon>
+          <span>ចុះវត្តមានចូល</span>
+        </span>
+      </AppButton>
+    </div>
+
+    <el-alert v-if="errorMessage" :title="errorMessage" type="warning" show-icon :closable="false" />
   </el-card>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from "vue";
-import { ElMessage, ElNotification } from "element-plus";
-import { Calendar, CircleCheckFilled, ArrowRight, OfficeBuilding } from "@element-plus/icons-vue";
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from "vue";
+import { ElNotification } from "element-plus";
+import {
+  Sunny,
+  Eleme,
+  CircleCheck,
+  CircleCheckFilled,
+  ArrowRight,
+  OfficeBuilding,
+} from "@element-plus/icons-vue";
 import { createAttendance, getAttendanceDraft, viewcompanyscan } from "../api/services";
 import AppButton from "../../components/AppButton.vue";
 import { useUserDataStore } from "../stores/user_data";
@@ -135,8 +94,10 @@ import { useUserDataStore } from "../stores/user_data";
 const userDataStore = useUserDataStore();
 
 const now = ref(new Date());
-const currentTime = ref("");
 const loading = ref(false);
+const companies = ref([]);
+const draft = ref(null);
+const draftError = ref("");
 
 const attendForm = reactive({
   latitude: "",
@@ -145,62 +106,45 @@ const attendForm = reactive({
   company_id: null,
 });
 
-const companies = ref([]);
-const draft = ref(null);
-const draftLoading = ref(false);
-const draftError = ref("");
-
-const defaultcompanyid = computed(() => userDataStore.classid || null);
-
+// Schedule
 const scheduledDateTime = computed(() => {
-  const t = draft.value?.scheduled_time;
-
-  if (!t) return null;
-
-  const [start] = t.split("-");
+  const start = draft.value?.scheduled_time?.split("-")[0];
+  if (!start) return null;
   const [h, m] = start.split(":").map(Number);
-
   const d = new Date();
   d.setHours(h || 0, m || 0, 0, 0);
-
   return d;
 });
 
-const isBeforeSchedule = computed(() => {
-  return !!scheduledDateTime.value && now.value < scheduledDateTime.value;
-});
-
-const scheduleWaitMessage = computed(() => {
-  if (!isBeforeSchedule.value || !scheduledDateTime.value) return "";
-  const timeStr = scheduledDateTime.value.toLocaleTimeString("km-KH", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return `មិនទាន់ដល់ម៉ោងកំណត់ទេ សូមរង់ចាំដល់ម៉ោង ${timeStr}`;
-});
+const isBeforeSchedule = computed(
+  () => !!scheduledDateTime.value && now.value < scheduledDateTime.value
+);
 
 const isButtonDisabled = computed(
   () => !draft.value || !!draftError.value || isBeforeSchedule.value
 );
 
-function selectCompany(id) {
-  attendForm.company_id = id;
-}
+const errorMessage = computed(() => {
+  if (draftError.value) return draftError.value;
+  if (!isBeforeSchedule.value) return "";
+  const time = scheduledDateTime.value.toLocaleTimeString("km-KH", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `មិនទាន់ដល់ម៉ោងកំណត់ទេ សូមរង់ចាំដល់ម៉ោង ${time}`;
+});
 
+// Data
 async function fetchCompanies() {
-  loading.value = true;
   try {
     const res = await viewcompanyscan({});
     companies.value = res.data.data || [];
-  } catch (e) {
-    // ignore, list stays empty
-  } finally {
-    loading.value = false;
+  } catch {
+    // list stays empty
   }
 }
 
 async function fetchDraft() {
-  draftLoading.value = true;
   draftError.value = "";
   draft.value = null;
   try {
@@ -208,25 +152,27 @@ async function fetchDraft() {
     draft.value = res.data.data || null;
   } catch (e) {
     draftError.value = e.response?.data?.message || "គ្មានព័ត៌មានវត្តមាន";
-  } finally {
-    draftLoading.value = false;
   }
+}
+
+function notifyLocationError(message) {
+  ElNotification({ title: "មានបញ្ហាទីតាំង", message, type: "error" });
 }
 
 function getLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      ElNotification({ title: "មានបញ្ហាទីតាំង", message: "Geolocation not supported", type: "error" });
+      notifyLocationError("Geolocation not supported");
       return reject();
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        attendForm.latitude = String(pos.coords.latitude);
-        attendForm.longitude = String(pos.coords.longitude);
+      ({ coords }) => {
+        attendForm.latitude = String(coords.latitude);
+        attendForm.longitude = String(coords.longitude);
         resolve();
       },
       () => {
-        ElNotification({ title: "មានបញ្ហាទីតាំង", message: "ចាប់ទីតាំងមិនបាន", type: "error" });
+        notifyLocationError("ចាប់ទីតាំងមិនបាន");
         reject();
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -234,22 +180,9 @@ function getLocation() {
   });
 }
 
-// function updateTime() {
-//   now.value = new Date();
-//   currentTime.value = now.value.toLocaleTimeString("km-KH", {
-//     hour: "2-digit",
-//     minute: "2-digit",
-//     second: "2-digit",
-//   });
-// }
-
 async function handleCheckIn() {
   if (!attendForm.latitude || !attendForm.longitude) {
-    return ElNotification({
-      title: "មានបញ្ហាទីតាំង",
-      message: "មិនអាចទទួលបានទីតាំង សូមបើកការអនុញ្ញាត GPS",
-      type: "error",
-    });
+    return notifyLocationError("មិនអាចទទួលបានទីតាំង សូមបើកការអនុញ្ញាត GPS");
   }
   loading.value = true;
   try {
@@ -264,105 +197,97 @@ async function handleCheckIn() {
   }
 }
 
-let timer;
-onMounted(() => {
-  // updateTime();
-  // timer = setInterval(updateTime, 1000);
-  getLocation();
-  fetchDraft();
-  fetchCompanies();
-});
-onUnmounted(() => clearInterval(timer));
-
+// Select the user's default company once the list is loaded
 watch(
-  () => [companies.value, defaultcompanyid.value],
+  [companies, () => userDataStore.classid],
   ([list, defaultId]) => {
-    if (!list.length) return;
-    const exists = list.some((c) => c.id === defaultId);
-    if (exists && !attendForm.company_id) {
+    if (!attendForm.company_id && list.some((c) => c.id === defaultId)) {
       attendForm.company_id = defaultId;
     }
   },
   { immediate: true }
 );
+
+let timer;
+onMounted(() => {
+  timer = setInterval(() => (now.value = new Date()), 30000);
+  getLocation().catch(() => {});
+  fetchDraft();
+  fetchCompanies();
+});
+onUnmounted(() => clearInterval(timer));
 </script>
 
 <style scoped>
-
-.action-buttons {
+.checkin-card {
+  border-radius: 6px;
+}
+.action-buttons :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+.header {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-.login-button-content {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 7px;
-}
-
-.login-button-content {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.schedule-section {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
   gap: 8px;
 }
 
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
+.logo {
+  width: 80px;
+  height: 80px;
+}
 
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.title {
+  margin: 0;
   font-size: 18px;
   font-weight: 600;
   color: #122133;
 }
 
-.section-title .el-icon {
-  font-size: 17px;
-  color: #122133;
-}
-
-.schedule-card {
+.card {
   display: flex;
   align-items: center;
   gap: 12px;
-
-  width: 100%;
-  box-sizing: border-box;
-
   padding: 12px 14px;
-
-  background: #f8fafc;
-  border: 1px solid #0862e9;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
+  background: #f8fafc;
 }
 
-.schedule-icon {
-  width: 50px;
-  height: 50px;
-  flex: 0 0 50px;
+/* Schedule */
+.schedule {
+  border-color: #ffffff;
+}
 
+.icon-box {
   display: flex;
   align-items: center;
   justify-content: center;
-
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
   color: #52c41a;
-  background: #f1fbe9;
+  background: #dbf5c5;
   border-radius: 6px;
 }
 
-.schedule-info {
-  min-width: 0;
-  flex-direction: column;
-
+.icon-box1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+  color: #626aef;
+  background: #cbcdf1;
+  border-radius: 6px;
 }
 
 .schedule-time {
@@ -376,72 +301,47 @@ watch(
   color: #7b8794;
 }
 
-.login-logo {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 5px;
-}
-
-.login-logo .el-image {
-  width: 80px;
-  height: 80px;
-}
-
-.checkin-card {
-  border-radius: 6px;
-}
-
-.company-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.company-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 18px;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
+/* Companies */
+.company {
   background: #fff;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.company-card:hover {
+.company:hover {
   border-color: #409eff;
   box-shadow: 0 6px 16px rgba(64, 158, 255, 0.12);
 }
 
-.company-card.active {
-  border: 2px solid #409eff;
+.company.active {
+  border: 2px solid #626aef;
   background: #f5f9ff;
 }
 
-.company-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.company-info {
-  display: flex;
-  flex-direction: column;
-}
-
 .company-name {
+  flex: 1;
   font-size: 12px;
   font-weight: 600;
   color: #303133;
 }
 
-.company-right {
+.company-check {
   font-size: 22px;
   color: #409eff;
 }
 
-.selected {
-  color: #409eff;
+/* Buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.btn-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 </style>
