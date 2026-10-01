@@ -63,7 +63,8 @@ func (s *subjectService) GetWithPagination(ctx context.Context, pf request.Pagin
 	applyFilters := func(tx *gorm.DB) *gorm.DB {
 		if v, ok := filter["name"]; ok && v != "" {
 			tx = tx.Where(
-				"s.name_kh LIKE ? OR s.name_en LIKE ?",
+				"s.name_kh LIKE ? OR s.name_en LIKE ? OR s.code LIKE ?",
+				"%"+v+"%",
 				"%"+v+"%",
 				"%"+v+"%",
 			)

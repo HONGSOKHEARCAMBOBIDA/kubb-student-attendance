@@ -278,8 +278,8 @@ async function handleAddSubject() {
   try {
     await addMajorSubject(activeMajor.value.id, { ...subjectForm });
     notify.success("បន្ថែមមុខវិជ្ជាជោគជ័យ");
-    Object.assign(subjectForm, defaultSubjectForm());
-    subjectFormRef.value.clearValidate();
+    //Object.assign(subjectForm, defaultSubjectForm());
+   // subjectFormRef.value.clearValidate();
     subjectPagination.page = 1;
     await fetchMajorSubjects();
   } catch (e) {
