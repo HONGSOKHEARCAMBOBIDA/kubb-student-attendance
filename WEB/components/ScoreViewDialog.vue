@@ -36,7 +36,7 @@
             placeholder="ឈ្មោះ ឬ អត្តលេខ"
             clearable
             size="large"
-           @input="debouncedFetch"
+            @input="debouncedFetch"
           />
         </div>
 
@@ -71,19 +71,31 @@
           </template>
         </AppTable>
       </template>
-<template #resultfinal>
-  <AppTable
-    :data="reportTableData"
-    v-loading="loading"
-    :columns="columnReport"
-    :show-pagination="false"
-    actions-width="150"
-  >
-    <template #gender="{ row }">
-      <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
-    </template>
-  </AppTable>
-</template>
+      <template #resultfinal>
+        <div class="form-row">
+          <div class="form-row">
+            <AppButton
+              type="primary"
+              icon="Document"
+              :loading="gdocLoading"
+              @click="exportToGoogleDoc"
+            >
+              ទាញយកជា Google Doc
+            </AppButton>
+          </div>
+        </div>
+        <AppTable
+          :data="reportTableData"
+          v-loading="loading"
+          :columns="columnReport"
+          :show-pagination="false"
+          actions-width="150"
+        >
+          <template #gender="{ row }">
+            <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
+          </template>
+        </AppTable>
+      </template>
     </AppTabs>
 
     <el-form label-position="top">
@@ -133,7 +145,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch,computed  } from "vue";
+import { reactive, ref, watch, computed } from "vue";
 // import { getClassAvailableSubjects, getScore } from "../api/services";
 import AppDialog from "./AppDialog.vue";
 import AppTable from "./AppTable.vue";
@@ -143,7 +155,7 @@ import {
   getClassAvailableSubjects,
   getScore,
   updateScore,
-  getScoreReport
+  getScoreReport,
 } from "../src/api/services.js";
 import { useNotification } from "../composables/useNotification.js";
 import AppButton from "./AppButton.vue";
@@ -163,6 +175,7 @@ const page = ref(1);
 const pageSize = ref(200);
 const total = ref(0);
 const filters = reactive({ subject_id: null, name: "" });
+const gdocLoading = ref(false);
 
 const columns = [
   { prop: "name_kh", label: "ឈ្មោះខ្មែរ", minwidth: 100 },
@@ -205,7 +218,7 @@ const reportSubjects = computed(() => {
       subjects.add(subject);
     });
   });
-  console.log(subjects)
+  console.log(subjects);
 
   return [...subjects];
 });
@@ -260,7 +273,7 @@ const reportTableData = computed(() =>
     });
 
     return data;
-  })
+  }),
 );
 
 let debounceTimer = null;
@@ -270,6 +283,52 @@ function debouncedFetch() {
     page.value = 1;
     fetchScoreView();
   }, 400);
+}
+
+async function exportToGoogleDoc() {
+  if (!reportTableData.value.length) {
+    notify.error("មិនមានទិន្នន័យ");
+    return;
+  }
+  // open the tab first so the popup blocker doesn't stop it
+  const win = window.open("", "_blank");
+  gdocLoading.value = true;
+  try {
+    const cols = columnReport.value;
+    const headers = ["ល.រ", ...cols.map((c) => c.label)];
+    const rows = reportTableData.value.map((r, i) => [
+      String(i + 1),
+      ...cols.map((c) => {
+        if (c.slot === "gender") return r.gender === 1 ? "ប្រុស" : "ស្រី";
+        return String(r[c.prop] ?? "");
+      }),
+    ]);
+
+    const c = props.classRow;
+    const title = `លទ្ធផលឆមាស — ${c.name} ${c.programme_name} ${c.generation_name} ឆ្នាំ${c.year} ឆមាស${c.semester} ជំនាញ${c.major_name}`;
+
+    // text/plain avoids a CORS preflight, which Apps Script doesn't handle
+    const res = await fetch(import.meta.env.VITE_GDOC_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        token: import.meta.env.VITE_GDOC_TOKEN,
+        title,
+        headers,
+        rows,
+      }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    win.location.href = data.url;   // user can then File → Download as PDF/Word
+    notify.success("បង្កើត Google Doc បានជោគជ័យ");
+  } catch (e) {
+    win?.close();
+    notify.error(e.message || "មិនអាចបង្កើត Google Doc បានទេ");
+  } finally {
+    gdocLoading.value = false;
+  }
 }
 
 async function fetchScoreView() {
@@ -384,8 +443,8 @@ watch(
       notify.error(e.response?.data?.error || "Failed to load subjects");
     }
 
-   //  fetchScoreView();
-    fetchScoreViewReport()
+    //  fetchScoreView();
+    fetchScoreViewReport();
   },
 );
 </script>
