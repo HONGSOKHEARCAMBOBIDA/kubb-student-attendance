@@ -11,7 +11,7 @@ const (
 	AddGeneration    = "add.Generation"
 	UpdateGeneration = "update.Generation"
 	ViewProgramme    = "view.Programme"
-
+	ViewFaculty      = "view.Faculty"
 	// User
 	AddUser        = "add.user"
 	ViewUser       = "view.user"

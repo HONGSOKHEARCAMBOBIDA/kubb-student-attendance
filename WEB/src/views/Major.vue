@@ -18,6 +18,7 @@ import {
   getSubject,
   getGeneration,
   getProgramme,
+  getFaculty,
 } from "../api/services.js";
 import { useUserDataStore } from "../stores/user_data.js";
 import AppSelect from "../../components/AppSelect.vue";
@@ -38,11 +39,13 @@ const editingId = ref(null);
 
 const generations = ref([]);
 const programmes = ref([]);
+const facultys = ref([])
 async function fetchLookups(){
   try {
-    const [generationRes,programmRes] = await Promise.all([
+    const [generationRes,programmRes,facultyRes] = await Promise.all([
       getGeneration(),
-      getProgramme()
+      getProgramme(),
+      getFaculty()
     ]);
     generations.value = (generationRes.data.data || []).map((c) => ({
       label: c.name_kh,
@@ -50,6 +53,11 @@ async function fetchLookups(){
       raw: c,
     }));
     programmes.value = (programmRes.data.data || []).map((c) => ({
+      label: c.name,
+      value: c.id,
+      raw: c,
+    }));
+    facultys.value = (facultyRes.data.data || []).map((c) => ({
       label: c.name,
       value: c.id,
       raw: c,
@@ -74,6 +82,7 @@ const defaultForm = () => ({
   code: "",
   name_kh: "",
   name_en: "",
+  faculty_id: null
 });
 const form = reactive(defaultForm());
 
@@ -126,6 +135,7 @@ function openEditDialog(row) {
     code: row.code,
     name_kh: row.name_kh,
     name_en: row.name_en,
+    faculty_id: row.faculty_id
   });
   dialogVisible.value = true;
 }
@@ -371,6 +381,7 @@ onUnmounted(() => clearTimeout(searchTimer));
           { label: 'លេខកូដ', prop: 'code', minWidth: 100 },
           { label: 'ឈ្មោះខ្មែរ', prop: 'name_kh', minWidth: 160 },
           { label: 'ឈ្មោះអង់គ្លេស', prop: 'name_en', minWidth: 160 },
+          { label: 'មហាវិទ្យាល័យ', prop: 'faculty_name', minWidth: 160 },
           { label: 'ស្ថានភាព', slot: 'status', width: 120 },
         ]"
       >
@@ -418,6 +429,7 @@ onUnmounted(() => clearTimeout(searchTimer));
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
         <div class="form-row">
           <AppInput label="លេខកូដ" prop="code" v-model="form.code" size="large" />
+          <AppSelect label="មហាវិទ្យាល័យ" v-model="form.faculty_id" size="large" placeholder="មហាវិទ្យាល័យ" :options="facultys"></AppSelect>
         </div>
 
         <div class="form-row">

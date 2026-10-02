@@ -19,6 +19,7 @@ const (
 	UpdateGeneration      = "update.Generation/:id"
 	ToggleGeneration      = "toggle.Generation/:id"
 	ViewProgramme         = "view.Programme"
+	ViewFaculty           = "view.Faculty"
 	EditCompany           = "edit.company/:id"
 	EditTelegram          = "edit.telegram/:id"
 	ViewManageCompany     = "view.manage.company"
@@ -129,4 +130,6 @@ const (
 	ViewScore          = "view.score"
 	ViewScoreReport    = "view.score.report"
 	EditScore          = "edit.score/:id"
+
+	ViewTranscript = "view.transcript/:id"
 )

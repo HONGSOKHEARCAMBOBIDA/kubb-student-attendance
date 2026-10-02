@@ -1,15 +1,17 @@
 package request
 
 type MajorRequestCreate struct {
-	Code   string `json:"code" binding:"required"`
-	NameKh string `json:"name_kh" binding:"required"`
-	NameEn string `json:"name_en" binding:"required"`
+	Code      string `json:"code" binding:"required"`
+	NameKh    string `json:"name_kh" binding:"required"`
+	NameEn    string `json:"name_en" binding:"required"`
+	FacultyID int    `gorm:"column:faculty_id" json:"faculty_id"`
 }
 
 type MajorRequestUpdate struct {
-	Code   string `json:"code" binding:"required"`
-	NameKh string `json:"name_kh" binding:"required"`
-	NameEn string `json:"name_en" binding:"required"`
+	Code      string `json:"code" binding:"required"`
+	NameKh    string `json:"name_kh" binding:"required"`
+	NameEn    string `json:"name_en" binding:"required"`
+	FacultyID int    `gorm:"column:faculty_id" json:"faculty_id"`
 }
 
 // MajorSubjectRequestCreate is used to attach a subject to a major

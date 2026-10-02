@@ -40,6 +40,17 @@
             @click="$emit('edit-student', student)"
           />
         </el-tooltip>
+               <el-tooltip content="Transcript" placement="top">
+  <AppButton
+    v-if="canEditClass"
+    size="small"
+    icon="View"
+    type="success"
+    circle
+    :loading="loadingTranscript"
+    @click="viewTranscript(student)"
+  />
+</el-tooltip>
       </template>
     </AppTable>
   </div>
@@ -50,6 +61,26 @@ import { ref, computed } from "vue";
 import AppTable from "./AppTable.vue";
 import AppButton from "./AppButton.vue";
 import AppInput from "./AppInput.vue";
+import { getTranscript } from "../src/api/services.js";
+const transcriptDialog = ref(false);
+const transcript = ref(null);
+const loadingTranscript = ref(false);
+
+async function viewTranscript(student) {
+  try {
+    loadingTranscript.value = true;
+
+    const res = await getTranscript(student.id);
+
+    transcript.value = res.data.data;
+    transcriptDialog.value = true;
+    console.log(transcript.value)
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loadingTranscript.value = false;
+  }
+}
 
 const props = defineProps({
   classRow: { type: Object, required: true },

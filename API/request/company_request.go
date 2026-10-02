@@ -19,7 +19,7 @@ type CompanyRequestCreate struct {
 type ClassRequestCreate struct {
 	Name           string          `json:"name" bind:"required"`
 	Type           model.ClassType `gorm:"column:type" json:"type"`
-	MapLink        string          `json:"map_link"`
+	MapLink        *string         `json:"map_link"`
 	Radius         string          `json:"radius" bind:"required"`
 	CanScanOutsize bool            `json:"can_scan_outsize" gorm:"column:can_scan_outsize"`
 	MajorID        *int64          `gorm:"column:major_id" json:"major_id"`

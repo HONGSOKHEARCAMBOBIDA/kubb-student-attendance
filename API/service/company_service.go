@@ -34,6 +34,7 @@ type CompanyService interface {
 	UpdateGeneration(ctx context.Context, id int, input request.GenerationRequestUpdate) error
 	ToggleGeneration(ctx context.Context, id int) error
 	GetProgramme(ctx context.Context) ([]model.Programme, error)
+	GetFaculty(ctx context.Context) ([]model.Faculty, error)
 }
 
 type companyservice struct {
@@ -186,6 +187,18 @@ func (s *companyservice) GetGeneration(ctx context.Context) ([]model.Generation,
 
 func (s *companyservice) GetProgramme(ctx context.Context) ([]model.Programme, error) {
 	var data []model.Programme
+
+	if err := s.db.WithContext(ctx).
+		Order("id ASC").
+		Find(&data).Error; err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func (s *companyservice) GetFaculty(ctx context.Context) ([]model.Faculty, error) {
+	var data []model.Faculty
 
 	if err := s.db.WithContext(ctx).
 		Order("id ASC").
@@ -352,20 +365,30 @@ func (s *companyservice) GetClassScan(ctx context.Context, id int) ([]response.C
 }
 
 func (s *companyservice) CreateClass(ctx context.Context, input request.ClassRequestCreate) error {
-	tx := s.db.Begin()
+	tx := s.db.WithContext(ctx).Begin()
 	if tx.Error != nil {
 		return tx.Error
 	}
-	lat, lng, err := utils.ExtractLatLngFromGoogleMapsURL(input.MapLink)
-	if err != nil {
-		return fmt.Errorf("invalid map_link: %w", err)
+
+	var lat, lng *string
+
+	if input.MapLink != nil && *input.MapLink != "" {
+		latitude, longitude, err := utils.ExtractLatLngFromGoogleMapsURL(*input.MapLink)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("invalid map_link: %w", err)
+		}
+
+		lat = &latitude
+		lng = &longitude
 	}
+
 	newClass := model.Class{
 		Name:           &input.Name,
 		Type:           input.Type,
 		IsActive:       true,
-		Latitude:       &lat,
-		Longitude:      &lng,
+		Latitude:       lat,
+		Longitude:      lng,
 		Radius:         input.Radius,
 		BotToken:       nil,
 		GroupChatID:    nil,
@@ -381,11 +404,11 @@ func (s *companyservice) CreateClass(ctx context.Context, input request.ClassReq
 		ControlledBy:   input.ControlledBy,
 	}
 
-	if err := tx.WithContext(ctx).
-		Create(&newClass).Error; err != nil {
+	if err := tx.Create(&newClass).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
+
 	return tx.Commit().Error
 }
 

@@ -44,10 +44,11 @@ func (s *majorService) Create(ctx context.Context, input request.MajorRequestCre
 	defer cancel()
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		newdata := model.Major{
-			Code:     input.Code,
-			NameKh:   input.NameKh,
-			NameEn:   input.NameEn,
-			IsActive: true,
+			Code:      input.Code,
+			NameKh:    input.NameKh,
+			NameEn:    input.NameEn,
+			IsActive:  true,
+			FacultyID: input.FacultyID,
 		}
 		if err := tx.Create(&newdata).Error; err != nil {
 			return err
@@ -92,8 +93,11 @@ func (s *majorService) GetWithPagination(ctx context.Context, pf request.Paginat
 		m.code AS code,
 		m.name_kh AS name_kh,
 		m.name_en AS name_en,
-		m.is_active AS is_active
-	`)
+		m.is_active AS is_active,
+		f.id AS faculty_id,
+		f.name AS faculty_name
+	`).
+		Joins("LEFT JOIN faculties f ON f.id = m.faculty_id")
 	if err := dataQuery.Offset(offset).Limit(pf.PageSize).Scan(&data).Error; err != nil {
 		return nil, nil, fmt.Errorf("fetch major: %w", err)
 	}
@@ -115,6 +119,7 @@ func (s *majorService) Update(ctx context.Context, id int, input request.MajorRe
 		data.Code = input.Code
 		data.NameKh = input.NameKh
 		data.NameEn = input.NameEn
+		data.FacultyID = input.FacultyID
 		if err := tx.Save(&data).Error; err != nil {
 			return apperror.New(apperror.CodeInternal, "failed to update major", nil)
 		}

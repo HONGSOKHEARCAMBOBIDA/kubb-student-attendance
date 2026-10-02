@@ -1,11 +1,13 @@
 package response
 
 type Major struct {
-	ID       int64  `json:"id"`
-	Code     string `json:"code"`
-	NameKh   string `json:"name_kh"`
-	NameEn   string `json:"name_en"`
-	IsActive bool   `json:"is_active"`
+	ID          int64  `json:"id"`
+	Code        string `json:"code"`
+	NameKh      string `json:"name_kh"`
+	NameEn      string `json:"name_en"`
+	IsActive    bool   `json:"is_active"`
+	FacultyID   int    `gorm:"column:faculty_id" json:"faculty_id"`
+	FacultyName string `gorm:"column:faculty_name" json:"faculty_name"`
 }
 
 // MajorSubject is the "flattened" view of one major_subject row joined

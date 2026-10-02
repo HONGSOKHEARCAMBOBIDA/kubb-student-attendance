@@ -16,6 +16,7 @@ export const addGeneration = (data) => api.post('/add.Generation',data)
 export const editGeneration = (id,data) => api.put(`/update.Generation/${id}`,data)
 export const toggleGeneration = (id) => api.put(`/toggle.Generation/${id}`)
 export const getProgramme = () => api.get('/view.Programme')
+export const getFaculty = () => api.get('/view.Faculty')
 export const getClass = (params) => api.get('/view.company', { params })
 export const createClass = (data) => api.post('/add.company', data)
 export const updateClass = (id, data) => api.put(`/edit.company/${id}`, data)
@@ -140,3 +141,5 @@ export const importScoreExcel = (formData) =>
   });
 export const updateScore = (data,id) => api.put(`/edit.score/${id}`,data)
 export const getScoreReport = (params) =>  api.get('/view.score.report',{params})
+
+export const getTranscript = (id) => api.get(`/view.transcript/${id}`)

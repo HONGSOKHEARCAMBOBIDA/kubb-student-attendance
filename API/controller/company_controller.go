@@ -141,6 +141,14 @@ func (cr *CompanyController) GetProgramme(c *gin.Context) {
 	share.RespondDate(c, http.StatusOK, data)
 }
 
+func (cr *CompanyController) GetFaculty(c *gin.Context) {
+	data, err := cr.service.GetFaculty(c)
+	if err != nil {
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
 func (cr CompanyController) GetClass(c *gin.Context) {
 	page, pageSize := helper.GetPagination(c)
 	userID, ok := helper.GetUserID(c)

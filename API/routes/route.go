@@ -23,6 +23,7 @@ func SetupRoutes(r *gin.Engine) {
 	majorcontroller := controller.NewMajorController()
 	classschedulecontroller := controller.NewClassScheduleController()
 	scorecontroller := controller.NewScoreController()
+	transcriptcontroller := controller.NewTranscriptController()
 	r.Static("/clientimage", "./public/clientimage")
 	public := r.Group("/")
 	public.Use(middleware.APIKeyAuth())
@@ -42,6 +43,7 @@ func SetupRoutes(r *gin.Engine) {
 		auth.PUT(route.EditShift, middleware.PermissionMiddleware(permission.EditShift), companycontroller.UpdateShift)
 		auth.GET(route.ViewGeneration, middleware.PermissionMiddleware(permission.ViewGeneration), companycontroller.GetGeneration)
 		auth.GET(route.ViewProgramme, middleware.PermissionMiddleware(permission.ViewProgramme), companycontroller.GetProgramme)
+		auth.GET(route.ViewFaculty, middleware.PermissionMiddleware(permission.ViewFaculty), companycontroller.GetFaculty)
 		auth.POST(route.AddCompany, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.CreateClass)
 		auth.GET(route.ViewCompany, middleware.PermissionMiddleware(permission.ViewCompany), companycontroller.GetClass)
 		auth.PUT(route.EditCompany, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.UpdateClass)
@@ -129,5 +131,7 @@ func SetupRoutes(r *gin.Engine) {
 		auth.GET(route.ViewScore, middleware.PermissionMiddleware(permission.ViewScore), scorecontroller.GetScore)
 		auth.PUT(route.EditScore, middleware.PermissionMiddleware(permission.EditScore), scorecontroller.UpdateScore)
 		auth.GET(route.ViewScoreReport, middleware.PermissionMiddleware(permission.ViewScore), scorecontroller.GetScoreReport)
+
+		auth.GET(route.ViewTranscript, middleware.PermissionMiddleware(permission.ViewUser), transcriptcontroller.Transcript)
 	}
 }
