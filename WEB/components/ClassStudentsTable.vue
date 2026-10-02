@@ -1,5 +1,5 @@
 <template>
-  <div>
+
     <el-divider content-position="left">
       <el-row :gutter="20">
         <el-col :span="12">
@@ -53,7 +53,82 @@
 </el-tooltip>
       </template>
     </AppTable>
-  </div>
+  <AppDialog append-to-body v-model="transcriptDialog" title="Transcript" width="80%">
+  <template v-if="transcript">
+    <!-- Student info -->
+<el-descriptions :column="isMobile ? 1 : 6" border size="small">
+  <!-- Row 1 -->
+  <el-descriptions-item label="ឈ្មោះ" :span="s(3)">
+    {{ transcript.Student.name_kh }} | {{ transcript.Student.name_en }}
+  </el-descriptions-item>
+  <el-descriptions-item label="ភេទ" :span="s(1)">
+    {{ Number(transcript.Student.gender) === 1 ? "ប្រុស" : "ស្រី" }}
+  </el-descriptions-item>
+  <el-descriptions-item label="លេខចុះឈ្មោះ" :span="s(2)">
+    {{ transcript.Student.registration_no }}
+  </el-descriptions-item>
+
+  <!-- Row 2 -->
+  <el-descriptions-item label="សញ្ជាតិ" :span="s(4)">
+    {{ transcript.Student.nationality }}
+    <b v-if="transcript.Student.campus">{{ transcript.Student.campus }}</b>
+  </el-descriptions-item>
+  <el-descriptions-item label="មហាវិទ្យាល័យ" :span="s(2)">
+    {{ transcript.Header.faculty_name }}
+  </el-descriptions-item>
+
+  <!-- Row 3 -->
+  <el-descriptions-item label="ថ្ងៃ-ខែ-ឆ្នាំ កំណើត" :span="s(4)">
+    {{ transcript.Student.date_of_birth }}
+  </el-descriptions-item>
+  <el-descriptions-item label="កម្រិត" :span="s(2)">
+    {{ transcript.Header.degree_title }}
+  </el-descriptions-item>
+
+  <!-- Row 4 -->
+  <el-descriptions-item label="ទីកន្លែងកំណើត" :span="s(4)">
+    {{ transcript.Student.place_of_birth }}
+  </el-descriptions-item>
+  <el-descriptions-item label="ជំនាញ" :span="s(2)">
+    {{ transcript.Header.major_name }}
+  </el-descriptions-item>
+
+  <!-- Row 5 -->
+  <el-descriptions-item label="ឆ្នាំសិក្សា" :span="s(6)">
+    {{ transcript.Header.start_year }} - {{ transcript.Header.end_year }}
+  </el-descriptions-item>
+</el-descriptions>
+
+    <!-- Results grouped by year / semester -->
+    <div v-for="group in groupedResults" :key="group.key" style="margin-top: 20px">
+      <el-divider content-position="left">
+        ឆ្នាំទី {{ group.year }} - ឆមាសទី {{ group.semester }}
+      </el-divider>
+
+      <AppTable
+        show-index
+        :data="group.items"
+        :columns="resultColumns"
+        :show-pagination="false"
+      />
+
+   
+      <el-text tag="b" size="large" style="display: block; text-align: right; margin-top: 8px;">
+  ក្រេឌីតសរុប: {{ group.totalCredits }} | GPA: {{ group.gpa.toFixed(2) }}
+</el-text>
+    </div>
+<el-divider />
+<el-descriptions :column="isMobile ? 1 : 2" border size="small">
+  <el-descriptions-item label="ក្រេឌីតសរុបទាំងអស់">
+    {{ gpax.totalCredits }}
+  </el-descriptions-item>
+  <el-descriptions-item label="GPAX/CGPA">
+    <el-tag type="success" size="large">{{ gpax.gpax.toFixed(2) }}</el-tag>
+  </el-descriptions-item>
+</el-descriptions>
+    <el-empty v-if="!groupedResults.length" description="គ្មានទិន្នន័យ" />
+  </template>
+  </AppDialog>
 </template>
 
 <script setup>
@@ -62,10 +137,23 @@ import AppTable from "./AppTable.vue";
 import AppButton from "./AppButton.vue";
 import AppInput from "./AppInput.vue";
 import { getTranscript } from "../src/api/services.js";
+import AppDialog from "./AppDialog.vue";
 const transcriptDialog = ref(false);
 const transcript = ref(null);
+const isMobile = computed(() => window.innerWidth <= 768);
+const s = (n) => (isMobile.value ? 1 : n);
 const loadingTranscript = ref(false);
-
+const resultColumns = [
+  { prop: "code", label: "កូដ", "min-width": 90 },
+  { prop: "name_kh", label: "មុខវិជ្ជា (ខ្មែរ)", "min-width": 180 },
+  { prop: "name_en", label: "Subject (EN)", "min-width": 180 },
+  { prop: "credits", label: "ក្រេឌីត", width: 90, align: "center" },
+  { prop: "point_sum", label: "ពិន្ទុ", width: 90, align: "center" },
+  { prop: "percent_sum", label: "ភាគរយ", width: 100, align: "center" },
+  { prop: "grade", label: "Grade", width: 100, align: "center" },
+  { prop: "gp", label: "Grade Point", width: 120, align: "center" },
+  { prop: "remark", label: "Remark", width: 100, align: "center" },
+];
 async function viewTranscript(student) {
   try {
     loadingTranscript.value = true;
@@ -81,6 +169,72 @@ async function viewTranscript(student) {
     loadingTranscript.value = false;
   }
 }
+
+
+const getGrade = (score) => {
+  score = Number(score);
+
+  if (score >= 85) return { grade: "A", gp: 4.0, remark: "Excellent" };
+  if (score >= 80) return { grade: "B+", gp: 3.5, remark: "Very Good" };
+  if (score >= 70) return { grade: "B", gp: 3.0, remark: "Good" };
+  if (score >= 65) return { grade: "C+", gp: 2.5, remark: "Fairly Good" };
+  if (score >= 50) return { grade: "C", gp: 2.0, remark: "Fair" };
+  if (score >= 45) return { grade: "D", gp: 1.5, remark: "Poor" };
+  if (score >= 40) return { grade: "E", gp: 1.0, remark: "Very Poor" };
+
+  return { grade: "F", gp: 0.0, remark: "Failure" };
+};
+
+const groupedResults = computed(() => {
+  const results = transcript.value?.Results || [];
+  const map = {};
+
+  results.forEach((r) => {
+    const key = `${r.year}-${r.semester}`;
+    if (!map[key]) {
+      map[key] = {
+        key,
+        year: r.year,
+        semester: r.semester,
+        items: [],
+        totalCredits: 0,
+        totalPoints: 0, // Σ (gp × credit)
+      };
+    }
+
+    const grade = getGrade(r.point_sum);
+    const credits = Number(r.credits) || 0;
+
+    map[key].items.push({
+      ...r,
+      grade: grade.grade,
+      gp: grade.gp,
+      remark: grade.remark,
+    });
+    map[key].totalCredits += credits;
+    map[key].totalPoints += grade.gp * credits;
+  });
+
+  return Object.values(map)
+    .map((g) => ({
+      ...g,
+      gpa: g.totalCredits ? g.totalPoints / g.totalCredits : 0,
+    }))
+    .sort((a, b) => a.year - b.year || a.semester - b.semester);
+});
+
+const gpax = computed(() => {
+  const totalCredits = groupedResults.value.reduce((sum, g) => sum + g.totalCredits, 0);
+  const totalPoints = groupedResults.value.reduce((sum, g) => sum + g.totalPoints, 0);
+  // reduce() = យក Array មកបង្រួមជាតម្លៃមួយ
+  return {
+    totalCredits,
+    gpax: totalCredits ? totalPoints / totalCredits : 0,
+  };
+});
+
+
+// Object.values() គឺជា JavaScript Method សម្រាប់យក Values ទាំងអស់ចេញពី Object មកជា Array
 
 const props = defineProps({
   classRow: { type: Object, required: true },

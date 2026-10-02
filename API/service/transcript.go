@@ -39,16 +39,16 @@ func (s *transcriptservice) Student(ctx context.Context, userID int) (*response.
 	}
 
 	query := base().Select(`
-		u.id,
-		u.code,
-		COALESCE(u.name_kh, ''),
-		COALESCE(u.name_en, ''),
-		COALESCE(u.gender, 0),
-		COALESCE(p.registration_no, u.code),
-		p.date_of_birth,
-		COALESCE(p.place_of_birth, ''),
-		COALESCE(p.nationality, ''),
-		COALESCE(p.campus, '')
+		u.id AS id,
+		u.code AS code,
+		COALESCE(u.name_kh, '') AS name_kh,
+		COALESCE(u.name_en, '') AS name_en,
+		COALESCE(u.gender, 0) AS gender,
+		COALESCE(p.registration_no, u.code) AS registration_no,
+		p.date_of_birth AS date_of_birth,
+		COALESCE(p.place_of_birth, '') AS place_of_birth,
+		COALESCE(p.nationality, '') AS nationality,
+		COALESCE(p.campus, '') AS campus
 	`)
 
 	if err := query.Scan(&st).Error; err != nil {
