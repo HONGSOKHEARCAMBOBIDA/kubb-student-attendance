@@ -6,6 +6,7 @@ import (
 	"mysql/model"
 	"mysql/routes"
 	"mysql/utils"
+	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -13,10 +14,8 @@ import (
 )
 
 func main() {
-	// Initialize database connection
 	config.LoadEnv()
 	config.ConnectDatabase()
-
 	go func() {
 		for {
 			time.Sleep(24 * time.Hour)
@@ -25,11 +24,7 @@ func main() {
 			log.Printf("Session cleanup: removed %d expired/revoked sessions", result.RowsAffected)
 		}
 	}()
-
-	// Create Gin router
 	r := gin.Default()
-
-	// Apply CORS middleware
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -39,11 +34,10 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 	r.Use(utils.SecurityHeaders())
-	// Set up routes
 	routes.SetupRoutes(r)
-
-	// Start server
-	if err := r.Run("0.0.0.0:8080"); err != nil {
+	port := os.Getenv("PORT")
+	lc := os.Getenv("LC")
+	if err := r.Run(lc + port); err != nil {
 		panic(err)
 	}
 }

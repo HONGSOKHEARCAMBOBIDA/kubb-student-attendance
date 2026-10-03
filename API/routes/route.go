@@ -1,8 +1,10 @@
 package routes
 
 import (
+	"mysql/config"
 	"mysql/constant/permission"
 	"mysql/constant/route"
+	"mysql/constant/share"
 	"mysql/controller"
 	"mysql/middleware"
 
@@ -25,6 +27,12 @@ func SetupRoutes(r *gin.Engine) {
 	scorecontroller := controller.NewScoreController()
 	transcriptcontroller := controller.NewTranscriptController()
 	r.Static("/clientimage", "./public/clientimage")
+	r.GET("/health", func(ctx *gin.Context) {
+		if db, err := config.DB.DB(); err != nil || db.Ping() != nil {
+			share.ResponseError(ctx, 500, "Down")
+		}
+		share.ResponseSuccess(ctx, 200, "UP")
+	})
 	public := r.Group("/")
 	public.Use(middleware.APIKeyAuth())
 	{
