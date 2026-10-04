@@ -1,10 +1,8 @@
 <template>
 
     <el-divider content-position="left">
-      <el-row :gutter="20">
-        <el-col :span="12">
+      <el-row :gutter="20">     
           <AppInput v-model.trim="search" placeholder="ស្វែងរកសិស្ស (ឈ្មោះ ឬ កូដ)" clearable />
-        </el-col>
       </el-row>
     </el-divider>
 

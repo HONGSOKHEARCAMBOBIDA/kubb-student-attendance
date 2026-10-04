@@ -1,4 +1,4 @@
-```vue
+
 <template>
   <div class="login-page">
     <div class="login-card">
@@ -121,7 +121,7 @@ async function handleLogin() {
 .login-logo {
   display: flex;
   justify-content: center;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 .login-logo .el-image {
   width: 100px;
@@ -136,7 +136,7 @@ async function handleLogin() {
 }
 
 .login-card {
-  width: 420px;
+  width: 400px;
   padding: 48px 40px;
   border: 1px solid #8aaff5;
   border-radius: 2px;
@@ -155,4 +155,4 @@ async function handleLogin() {
   }
 }
 </style>
-```
+
