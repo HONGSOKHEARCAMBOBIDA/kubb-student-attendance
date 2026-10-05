@@ -145,3 +145,4 @@ export const getScoreReport = (params) =>  api.get('/view.score.report',{params}
 export const getTranscript = (id) => api.get(`/view.transcript/${id}`)
 
 export const addMajorPrice = (data) => api.post('/add.Major.Price',data )
+export const getMajorPrice = (params) => api.get('/view.Major.Price',{params})

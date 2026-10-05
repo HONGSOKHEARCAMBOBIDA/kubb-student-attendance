@@ -630,7 +630,7 @@ onUnmounted(() => clearTimeout(searchTimer));
     <MajorPrice
       v-model="priceDialogVisible"
       :raw="priceMajor"
-      :major-i-d="priceMajorId"
+      :major-id="priceMajorId"
       :generations="generations"
       :programmes="programmes"
     />

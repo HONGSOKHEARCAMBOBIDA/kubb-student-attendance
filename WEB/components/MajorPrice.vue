@@ -1,17 +1,19 @@
 <script setup>
-import { computed, reactive, ref, watch } from "vue";
-import { addMajorPrice } from "../src/api/services.js";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { addMajorPrice, getMajorPrice } from "../src/api/services.js";
 import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
 import AppSelect from "./AppSelect.vue";
 import AppInput from "./AppInput.vue";
 import { useNotification } from "../composables/useNotification.js";
+import AppFilterBar from "./AppFilterBar.vue";
+import AppTable from "./AppTable.vue";
 
 const props = defineProps({
-  raw: {type: Object,default: () => []},
+  raw: { type: Object, default: () => ({}) },
   isEdit: { type: Boolean, default: false },
-  modelValue: { type: Boolean, default: false },
-  majorID: { type: Number, default: null },
+  modelValue: { type: Boolean, default: false }, // list dialog (controlled by parent)
+  majorId: { type: Number, default: null },
   generations: { type: Array, default: () => [] },
   programmes: { type: Array, default: () => [] },
 });
@@ -21,10 +23,70 @@ const notify = useNotification();
 const formRef = ref();
 const saving = ref(false);
 
-const title = computed(() => {
-  const base = props.isEdit ? "កែប្រែថ្លៃសិក្សា" : "បន្ថែមថ្លៃសិក្សា";
-  return props.raw?.name_kh ? `${base} - ជំនាញ${props.raw.name_kh} | មហាវិទ្យាល័យ${props.raw.faculty_name}`  : base;
+/* ---------- list ---------- */
+const majorprice = ref([]);
+const loading = ref(false);
+const page = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+
+const filters = reactive({
+  year: "",
+  generation_id: "",
+  programme_id: "",
 });
+
+const listTitle = computed(() =>
+  props.raw?.name_kh
+    ? `ថ្លៃសិក្សា - ជំនាញ${props.raw.name_kh} | មហាវិទ្យាល័យ${props.raw.faculty_name}`
+    : "ថ្លៃសិក្សា",
+);
+
+async function fetchMajorPrice() {
+  if (!props.majorId) return;
+  loading.value = true;
+  try {
+    const res = await getMajorPrice({
+      major_id: props.majorId, // only this major's prices
+      page: page.value,
+      page_size: pageSize.value,
+      year: filters.year || undefined,
+      programme_id: filters.programme_id || undefined,
+      generation_id: filters.generation_id || undefined,
+    });
+    majorprice.value = res.data.data || [];
+    total.value = res.data.pagination?.totalCount || 0;
+    console.log(majorprice.value)
+  } catch (e) {
+    notify.error(e.response?.data?.error || "មានបញ្ហាក្នុងការទាញទិន្នន័យ");
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Fetch every time the list dialog opens (component is mounted once in parent)
+watch(
+  () => props.modelValue,
+  (open) => {
+    if (!open) return;
+    page.value = 1;
+    Object.assign(filters, { year: "", generation_id: "", programme_id: "" });
+    fetchMajorPrice();
+  },
+);
+
+// Refetch when filters change
+watch(filters, () => {
+  page.value = 1;
+  fetchMajorPrice();
+});
+
+function closeList() {
+  emit("update:modelValue", false);
+}
+
+/* ---------- add dialog ---------- */
+const addVisible = ref(false);
 
 const defaultForm = () => ({
   major_id: null,
@@ -61,18 +123,16 @@ const rules = {
   year_fee: feeRule("សូមបញ្ចូលថ្លៃប្រចាំឆ្នាំ"),
 };
 
-// Reset the form and attach the major every time the dialog opens
-watch(
-  () => props.modelValue,
-  (open) => {
-    if (!open) return;
-    Object.assign(form, defaultForm(), { major_id: props.majorID });
-    formRef.value?.clearValidate();
-  },
+const addTitle = computed(() =>
+  props.raw?.name_kh
+    ? `បន្ថែមថ្លៃសិក្សា - ជំនាញ${props.raw.name_kh}`
+    : "បន្ថែមថ្លៃសិក្សា",
 );
 
-function close() {
-  emit("update:modelValue", false);
+function openAddDialog() {
+  Object.assign(form, defaultForm(), { major_id: props.majorID });
+  addVisible.value = true;
+  formRef.value?.clearValidate();
 }
 
 async function handleSave() {
@@ -83,7 +143,7 @@ async function handleSave() {
   saving.value = true;
   try {
     await addMajorPrice({
-      major_id: props.majorID,
+      major_id: props.majorId,
       generation_id: form.generation_id,
       programme_id: form.programme_id,
       year: form.year,
@@ -93,7 +153,8 @@ async function handleSave() {
       year_fee: Number(form.year_fee),
     });
     notify.success("បង្កើតបានជោគជ័យ");
-    close();
+    addVisible.value = false; // back to the list
+    await fetchMajorPrice(); // show the new row
     emit("saved");
   } catch (e) {
     notify.error(e.response?.data?.error || "មានបញ្ហាក្នុងការរក្សាទុក");
@@ -101,15 +162,66 @@ async function handleSave() {
     saving.value = false;
   }
 }
+
 </script>
 
 <template>
+  <!-- 1) List dialog: shown first -->
   <AppDialog
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
-    :title= title
-    width="640px"
+    :title="listTitle"
+    width="75%"
   >
+    <AppFilterBar
+      :fields="[
+        { slot: 'generation', span: 5 },
+        { slot: 'programme', span: 5 },
+        { slot: 'year', span: 5 },
+      ]"
+      :action-span="4"
+    >
+      <template #generation>
+        <AppSelect v-model="filters.generation_id" placeholder="ជំនាន់" clearable size="large" :options="generations" />
+      </template>
+      <template #programme>
+        <AppSelect v-model="filters.programme_id" placeholder="កម្មវិធីសិក្សា" clearable size="large" :options="programmes" />
+      </template>
+      <template #year>
+        <AppSelect v-model="filters.year" placeholder="ឆ្នាំ" clearable size="large" :options="yearOptions" />
+      </template>
+      <template #actions>
+        <AppButton type="primary" @click="openAddDialog">បន្ថែមថ្លៃសិក្សា</AppButton>
+      </template>
+    </AppFilterBar>
+
+    <AppTable
+      show-index
+      :data="majorprice"
+      :loading="loading"
+      v-model:current-page="page"
+      v-model:page-size="pageSize"
+      :total="total"
+      @page-change="fetchMajorPrice"
+      :columns="[
+        { prop: 'major_name', label: 'ជំនាញ', minWidth: 120 },
+        { prop: 'generation_name', label: 'ជំនាន់', minWidth: 120 },
+        { prop: 'programme_name', label: 'កម្រិត', minWidth: 120 },
+        { prop: 'year', label: 'ឆ្នាំ', minWidth: 120 },
+        { prop: 'monthly_fee', label: '១ខែម្ដង', minWidth: 120 },
+        { prop: 'quarter_fee', label: '៣ខែម្ដង', minWidth: 120 },
+        { prop: 'semester_fee', label: '៦ខែម្ដង', minWidth: 120 },
+        { prop: 'year_fee', label: '១ឆ្នាំម្ដង', minWidth: 120 },
+      ]"
+    />
+
+    <template #footer>
+      <AppButton @click="closeList">បិទ</AppButton>
+    </template>
+  </AppDialog>
+
+  <!-- 2) Add dialog: only opens when user clicks "Add" -->
+  <AppDialog v-model="addVisible" :title="addTitle" width="640px">
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <div class="form-row">
         <AppSelect
@@ -151,14 +263,14 @@ async function handleSave() {
         <AppInput label="ថ្លៃប្រចាំឆមាស" prop="semester_fee" v-model.number="form.semester_fee" type="number" size="large" />
       </div>
 
-      <div >
+      <div class="form-row">
         <AppInput label="ថ្លៃប្រចាំឆ្នាំ" prop="year_fee" v-model.number="form.year_fee" type="number" size="large" />
         <div class="form-spacer" />
       </div>
     </el-form>
 
     <template #footer>
-      <AppButton @click="close">បោះបង់</AppButton>
+      <AppButton @click="addVisible = false">បោះបង់</AppButton>
       <AppButton type="primary" :loading="saving" @click="handleSave">រក្សាទុក</AppButton>
     </template>
   </AppDialog>

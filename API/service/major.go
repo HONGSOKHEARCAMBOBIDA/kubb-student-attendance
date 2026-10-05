@@ -11,6 +11,7 @@ import (
 	"mysql/request"
 	"mysql/response"
 	"mysql/utils"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -30,6 +31,7 @@ type MajorService interface {
 
 	// Major Price
 	AddMajorPrice(ctx context.Context, input request.MajorPriceRequestCreate) error
+	GetMajorPrice(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.MajorPrice, *model.PaginationMetadata, error)
 }
 
 type majorService struct {
@@ -286,4 +288,66 @@ func (s *majorService) AddMajorPrice(ctx context.Context, input request.MajorPri
 		return nil
 	})
 	return err
+}
+
+func (s *majorService) GetMajorPrice(
+	ctx context.Context,
+	pf request.Pagination,
+	filter map[string]string,
+) ([]response.MajorPrice, *model.PaginationMetadata, error) {
+	helper.NormalizePagination(&pf)
+	offset := (pf.Page - 1) * pf.PageSize
+
+	base := s.db.WithContext(ctx).Table("major_price mp").
+		Joins("LEFT JOIN generation g ON g.id = mp.generation_id").
+		Joins("LEFT JOIN major m ON m.id = mp.major_id").
+		Joins("LEFT JOIN programmes p ON p.id = mp.programme_id")
+
+	filterColumns := map[string]string{
+		"generation_id": "mp.generation_id",
+		"programme_id":  "mp.programme_id",
+		"major_id":      "mp.major_id",
+		"year":          "mp.year",
+	}
+	for key, col := range filterColumns {
+		if v := strings.TrimSpace(filter[key]); v != "" {
+			base = base.Where(col+" = ?", v)
+		}
+	}
+
+	var totalCount int64
+	if err := base.Session(&gorm.Session{}).Count(&totalCount).Error; err != nil {
+		return nil, nil, err
+	}
+
+	data := make([]response.MajorPrice, 0)
+	if totalCount == 0 {
+		return data, helper.BuildPaginationMeta(pf, 0), nil
+	}
+
+	err := base.Session(&gorm.Session{}).
+		Select(`
+			mp.id AS id,
+			m.id AS major_id,
+			m.name_kh AS major_name,
+			g.id AS generation_id,
+			g.name_kh AS generation_name,
+			p.id AS programme_id,
+			p.name AS programme_name,
+			mp.year AS year,
+			mp.monthly_fee,
+			mp.quarter_fee,
+			mp.semester_fee,
+			mp.year_fee,
+			mp.is_active
+		`).
+		Order("mp.id DESC").
+		Offset(offset).
+		Limit(pf.PageSize).
+		Scan(&data).Error
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return data, helper.BuildPaginationMeta(pf, totalCount), nil
 }
