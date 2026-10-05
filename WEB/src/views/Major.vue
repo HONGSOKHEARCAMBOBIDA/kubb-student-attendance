@@ -22,7 +22,7 @@ import {
 } from "../api/services.js";
 import { useUserDataStore } from "../stores/user_data.js";
 import AppSelect from "../../components/AppSelect.vue";
-
+import MajorPrice from "../../components/MajorPrice.vue";
 let searchTimer = null;
 const notify = useNotification();
 const userDataStore = useUserDataStore();
@@ -39,13 +39,23 @@ const editingId = ref(null);
 
 const generations = ref([]);
 const programmes = ref([]);
-const facultys = ref([])
-async function fetchLookups(){
+const facultys = ref([]);
+
+const priceDialogVisible = ref(false);
+const priceMajorId = ref(null);
+const priceMajor = ref(null);
+function openPriceDialog(row) {
+  priceMajor.value = row;
+  priceMajorId.value = row.id;
+  priceDialogVisible.value = true;
+}
+
+async function fetchLookups() {
   try {
-    const [generationRes,programmRes,facultyRes] = await Promise.all([
+    const [generationRes, programmRes, facultyRes] = await Promise.all([
       getGeneration(),
       getProgramme(),
-      getFaculty()
+      getFaculty(),
     ]);
     generations.value = (generationRes.data.data || []).map((c) => ({
       label: c.name_kh,
@@ -62,7 +72,7 @@ async function fetchLookups(){
       value: c.id,
       raw: c,
     }));
-  }catch (e) {
+  } catch (e) {
     notify.error(e.response?.data?.error || "");
   }
 }
@@ -82,14 +92,22 @@ const defaultForm = () => ({
   code: "",
   name_kh: "",
   name_en: "",
-  faculty_id: null
+  faculty_id: null,
 });
 const form = reactive(defaultForm());
 
 const rules = {
   code: [{ required: true, message: "សូមបញ្ចូលលេខកូដ", trigger: "blur" }],
-  name_kh: [{ required: true, message: "សូមបញ្ចូលឈ្មោះជាភាសាខ្មែរ", trigger: "blur" }],
-  name_en: [{ required: true, message: "សូមបញ្ចូលឈ្មោះជាភាសាអង់គ្លេស", trigger: "blur" }],
+  name_kh: [
+    { required: true, message: "សូមបញ្ចូលឈ្មោះជាភាសាខ្មែរ", trigger: "blur" },
+  ],
+  name_en: [
+    {
+      required: true,
+      message: "សូមបញ្ចូលឈ្មោះជាភាសាអង់គ្លេស",
+      trigger: "blur",
+    },
+  ],
 };
 
 const canCreateMajor = computed(() =>
@@ -109,7 +127,7 @@ async function fetchMajor() {
     });
     majors.value = res.data.data || [];
     pagination.total = res.data.pagination?.totalCount || 0;
-    console.log(majors.value)
+    console.log(majors.value);
   } catch {
     notify.error("Failed to load majors");
   } finally {
@@ -135,7 +153,7 @@ function openEditDialog(row) {
     code: row.code,
     name_kh: row.name_kh,
     name_en: row.name_en,
-    faculty_id: row.faculty_id
+    faculty_id: row.faculty_id,
   });
   dialogVisible.value = true;
 }
@@ -218,9 +236,15 @@ const defaultSubjectForm = () => ({
 const subjectForm = reactive(defaultSubjectForm());
 
 const subjectRules = {
-  subject_id: [{ required: true, message: "សូមជ្រើសរើសមុខវិជ្ជា", trigger: "change" }],
-  generation_id: [{ required: true, message: "សូមជ្រើសរើសជំនាន់", trigger: "change" }],
-  programme_id: [{ required: true, message: "សូមជ្រើសរើសកម្មវិធីសិក្សា", trigger: "change" }],
+  subject_id: [
+    { required: true, message: "សូមជ្រើសរើសមុខវិជ្ជា", trigger: "change" },
+  ],
+  generation_id: [
+    { required: true, message: "សូមជ្រើសរើសជំនាន់", trigger: "change" },
+  ],
+  programme_id: [
+    { required: true, message: "សូមជ្រើសរើសកម្មវិធីសិក្សា", trigger: "change" },
+  ],
   year: [{ required: true, message: "សូមបញ្ចូលឆ្នាំ", trigger: "blur" }],
   semester: [{ required: true, message: "សូមបញ្ចូលឆមាស", trigger: "blur" }],
 };
@@ -268,12 +292,8 @@ async function searchSubjects(query) {
       value: c.id,
       raw: c,
     }));
-  } catch (e) {
-    
-  }
+  } catch (e) {}
 }
-
-
 
 function handleSubjectsPageChange() {
   fetchMajorSubjects();
@@ -289,7 +309,7 @@ async function handleAddSubject() {
     await addMajorSubject(activeMajor.value.id, { ...subjectForm });
     notify.success("បន្ថែមមុខវិជ្ជាជោគជ័យ");
     //Object.assign(subjectForm, defaultSubjectForm());
-   // subjectFormRef.value.clearValidate();
+    // subjectFormRef.value.clearValidate();
     subjectPagination.page = 1;
     await fetchMajorSubjects();
   } catch (e) {
@@ -318,10 +338,10 @@ const getYearType = (year) => {
     2: "success",
     3: "warning",
     4: "danger",
-  }
+  };
 
-  return types[year] || "info"
-}
+  return types[year] || "info";
+};
 
 async function handleRemoveSubject(row) {
   removingId.value = row.id;
@@ -337,7 +357,7 @@ async function handleRemoveSubject(row) {
 }
 
 onMounted(() => {
-  fetchLookups()
+  fetchLookups();
   fetchMajor();
 });
 onUnmounted(() => clearTimeout(searchTimer));
@@ -345,12 +365,7 @@ onUnmounted(() => clearTimeout(searchTimer));
 
 <template>
   <div>
-    <AppFilterBar
-      :fields="[
-        { slot: 'name', span: 8 },
-      ]"
-      :action-span="4"
-    >
+    <AppFilterBar :fields="[{ slot: 'name', span: 8 }]" :action-span="4">
       <template #name>
         <AppInput
           v-model="filter.name"
@@ -361,7 +376,11 @@ onUnmounted(() => clearTimeout(searchTimer));
       </template>
 
       <template #actions>
-        <AppButton v-if="canCreateMajor" type="primary" @click="openCreateDialog">
+        <AppButton
+          v-if="canCreateMajor"
+          type="primary"
+          @click="openCreateDialog"
+        >
           បន្ថែមជំនាញ
         </AppButton>
       </template>
@@ -416,6 +435,17 @@ onUnmounted(() => clearTimeout(searchTimer));
               @click="openEditDialog(row)"
             />
           </el-tooltip>
+          <el-tooltip content="ថ្លៃសិក្សា" placement="top">
+            <AppButton
+              :disabled="row.is_active === false"
+              v-if="canCreateMajor"
+              size="small"
+              icon="Money"
+              color="#626aef"
+              circle
+              @click="openPriceDialog(row)"
+            />
+          </el-tooltip>
         </template>
       </AppTable>
     </el-card>
@@ -428,8 +458,19 @@ onUnmounted(() => clearTimeout(searchTimer));
     >
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
         <div class="form-row">
-          <AppInput label="លេខកូដ" prop="code" v-model="form.code" size="large" />
-          <AppSelect label="មហាវិទ្យាល័យ" v-model="form.faculty_id" size="large" placeholder="មហាវិទ្យាល័យ" :options="facultys"></AppSelect>
+          <AppInput
+            label="លេខកូដ"
+            prop="code"
+            v-model="form.code"
+            size="large"
+          />
+          <AppSelect
+            label="មហាវិទ្យាល័យ"
+            v-model="form.faculty_id"
+            size="large"
+            placeholder="មហាវិទ្យាល័យ"
+            :options="facultys"
+          ></AppSelect>
         </div>
 
         <div class="form-row">
@@ -459,7 +500,9 @@ onUnmounted(() => clearTimeout(searchTimer));
     <!-- Subjects belonging to the selected major (major_subject) -->
     <AppDialog
       v-model="subjectsDialogVisible"
-      :title="activeMajor ? `មុខវិជ្ជាសម្រាប់ ${activeMajor.name_kh}` : 'មុខវិជ្ជា'"
+      :title="
+        activeMajor ? `មុខវិជ្ជាសម្រាប់ ${activeMajor.name_kh}` : 'មុខវិជ្ជា'
+      "
       width="70%"
     >
       <el-form
@@ -470,18 +513,18 @@ onUnmounted(() => clearTimeout(searchTimer));
         class="add-subject-form"
       >
         <div class="form-row">
-            <AppSelect
-          label="មុខវិជ្ជា"
-          prop="subject_id"
-          v-model="subjectForm.subject_id"
-          :options="subjectOptions"
-          placeholder="ជ្រើសរើសមុខវិជ្ជា"
-          size="large"
-          filterable
-          remote
-          :remote-method="searchSubjects"
-          clearable
-        />
+          <AppSelect
+            label="មុខវិជ្ជា"
+            prop="subject_id"
+            v-model="subjectForm.subject_id"
+            :options="subjectOptions"
+            placeholder="ជ្រើសរើសមុខវិជ្ជា"
+            size="large"
+            filterable
+            remote
+            :remote-method="searchSubjects"
+            clearable
+          />
           <AppInput
             label="ឆ្នាំ"
             prop="year"
@@ -496,40 +539,37 @@ onUnmounted(() => clearTimeout(searchTimer));
             type="number"
             size="large"
           />
-              <AppSelect
-          v-model="subjectForm.generation_id"
-          :options="generations"
-          placeholder="ជ្រើសរើសជំនាន់"
-          label="ជំនាន់"
-          size="large"
-          filterable
-          clearable
-        />
-        <AppSelect
-          v-model="subjectForm.programme_id"
-          :options="programmes"
-          placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
-          label="កម្មវិធីសិក្សា"
-          size="large"
-          filterable
-          clearable
-        />
-        <el-form-item label="បន្ថែមមុខវិជ្ជា" prop="" class="grow">
-        <AppButton
-          type="primary"
-          :loading="addingSubject"
-          @click="handleAddSubject"
-        >
-          បន្ថែមមុខវិជ្ជា
-        </AppButton>
-        </el-form-item>
+          <AppSelect
+            v-model="subjectForm.generation_id"
+            :options="generations"
+            placeholder="ជ្រើសរើសជំនាន់"
+            label="ជំនាន់"
+            size="large"
+            filterable
+            clearable
+          />
+          <AppSelect
+            v-model="subjectForm.programme_id"
+            :options="programmes"
+            placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
+            label="កម្មវិធីសិក្សា"
+            size="large"
+            filterable
+            clearable
+          />
+          <el-form-item label="បន្ថែមមុខវិជ្ជា" prop="" class="grow">
+            <AppButton
+              type="primary"
+              :loading="addingSubject"
+              @click="handleAddSubject"
+            >
+              បន្ថែមមុខវិជ្ជា
+            </AppButton>
+          </el-form-item>
         </div>
-
-        
       </el-form>
 
       <AppTable
-        
         class="subjects-table"
         show-index
         :data="majorSubjects"
@@ -550,11 +590,11 @@ onUnmounted(() => clearTimeout(searchTimer));
           { label: 'ស្ថានភាព', slot: 'status', width: 110 },
         ]"
       >
-      <template #year="{ row }">
-  <el-text :type="getYearType(row.year)">
-    ឆ្នាំទី {{ row.year }}
-  </el-text>
-</template>
+        <template #year="{ row }">
+          <el-text :type="getYearType(row.year)">
+            ឆ្នាំទី {{ row.year }}
+          </el-text>
+        </template>
         <template #status="{ row }">
           <el-switch
             :model-value="row.is_active"
@@ -562,8 +602,10 @@ onUnmounted(() => clearTimeout(searchTimer));
             @change="handleToggleMajorSubject(row)"
           />
         </template>
-        <template #subject_name_kh="{row}">
-          <el-text>{{ row.subject_name_kh }} | {{ row.subject_name_en }}</el-text>
+        <template #subject_name_kh="{ row }">
+          <el-text
+            >{{ row.subject_name_kh }} | {{ row.subject_name_en }}</el-text
+          >
         </template>
 
         <template #actions="{ row }">
@@ -584,6 +626,14 @@ onUnmounted(() => clearTimeout(searchTimer));
         <AppButton @click="subjectsDialogVisible = false">បិទ</AppButton>
       </template>
     </AppDialog>
+
+    <MajorPrice
+      v-model="priceDialogVisible"
+      :raw="priceMajor"
+      :major-i-d="priceMajorId"
+      :generations="generations"
+      :programmes="programmes"
+    />
   </div>
 </template>
 

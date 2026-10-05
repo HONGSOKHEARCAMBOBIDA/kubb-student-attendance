@@ -143,3 +143,5 @@ export const updateScore = (data,id) => api.put(`/edit.score/${id}`,data)
 export const getScoreReport = (params) =>  api.get('/view.score.report',{params})
 
 export const getTranscript = (id) => api.get(`/view.transcript/${id}`)
+
+export const addMajorPrice = (data) => api.post('/add.Major.Price',data )

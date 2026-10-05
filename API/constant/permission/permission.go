@@ -71,4 +71,6 @@ const (
 	AddScore           = "add.score"
 	ViewScore          = "view.score"
 	EditScore          = "edit.score"
+
+	ViewLocation = "view.location"
 )

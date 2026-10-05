@@ -16,6 +16,7 @@ import (
 	"mysql/utils"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -36,7 +37,7 @@ type AuthService interface {
 	GetUserData(ctx context.Context, id int) (response.UserDataResponse, error)
 	CreateUserClass(ctx context.Context, input request.UserClass, c *gin.Context, userID int) error
 	UpdateUserClass(ctx context.Context, id int, input request.UserClassUpdateStatus) error
-	GetUserNotStudent(ctx context.Context) ([]response.UserResponseNotStudent, error)
+	GetUserIncludeStudent(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.UserResponseNotStudent, *model.PaginationMetadata, error)
 }
 
 type authservice struct {
@@ -470,8 +471,34 @@ func (s *authservice) GetRole(ctx context.Context, id int) ([]model.Role, error)
 	return role, nil
 }
 
-func (s *authservice) GetUserNotStudent(ctx context.Context) ([]response.UserResponseNotStudent, error) {
+func applyAccessFilterUserIncludeStudent(query *gorm.DB, db *gorm.DB, user model.User) *gorm.DB {
+	return query.Where("r.level <= ?", user.Role.Level)
+}
+
+func applyCommonFilterUserIncludeStudent(query *gorm.DB, filter map[string]string) *gorm.DB {
+	for key, value := range filter {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			continue
+		}
+		switch key {
+		case "name":
+			query = query.Where("u.name_kh LIKE ? OR u.name_en LIKE ?", "%"+value+"%", "%"+value+"%")
+		case "role_id":
+			query = query.Where("u.role_id =?", value)
+		}
+	}
+	return query
+}
+
+func (s *authservice) GetUserIncludeStudent(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.UserResponseNotStudent, *model.PaginationMetadata, error) {
 	var data []response.UserResponseNotStudent
+	var user model.User
+	if err := s.db.WithContext(ctx).Preload("Role").First(&user, id).Error; err != nil {
+		return nil, nil, err
+	}
+	offset := (pf.Page - 1) * pf.PageSize
+
 	q := s.db.WithContext(ctx).Table("user u").
 		Select(`
 		u.id AS id,
@@ -483,11 +510,16 @@ func (s *authservice) GetUserNotStudent(ctx context.Context) ([]response.UserRes
 		r.display_name AS role_name
 	`).
 		Joins("LEFT JOIN role r ON r.id = u.role_id")
-	q = q.Where("r.level > ?", 1)
-	if err := q.Scan(&data).Error; err != nil {
-		return nil, err
+	q = applyAccessFilterUserIncludeStudent(q, s.db, user)
+	q = applyCommonFilterUserIncludeStudent(q, filter)
+	var totalCount int64
+	if err := q.Count(&totalCount).Error; err != nil {
+		return nil, nil, err
 	}
-	return data, nil
+	if err := q.Offset(offset).Limit(pf.PageSize).Scan(&data).Error; err != nil {
+		return nil, nil, err
+	}
+	return data, helper.BuildPaginationMeta(pf, totalCount), nil
 }
 
 func (s *authservice) GetUserData(ctx context.Context, id int) (response.UserDataResponse, error) {

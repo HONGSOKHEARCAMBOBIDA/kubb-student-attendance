@@ -1,22 +1,40 @@
 <template>
   <div>
-    <AppFilterBar :fields="[
-      { slot: 'name', span: 10 },
-      { slot: 'role', span: 6 },
-      { slot: 'add', span: 4 },
-    ]" >
+    <AppFilterBar
+      :fields="[
+        { slot: 'name', span: 5 },
+        { slot: 'role', span: 5 },
+      ]"
+    >
       <template #name>
-        <AppInput v-model="filters.name" placeholder="ស្វែងរក" prefix-icon="Search" clearable @input="fetchUsers" />
+        <AppInput
+          v-model="filters.name"
+          placeholder="ស្វែងរក"
+          prefix-icon="Search"
+          clearable
+          @input="fetchUsers"
+        />
       </template>
 
       <template #role>
-        <el-select v-model="filters.role_id" placeholder="តួនាទី" clearable style="width: 100%" @change="fetchUsers"
-          size="large">
-          <el-option v-for="role in roles" :key="role.id" :label="role.display_name" :value="role.id" />
+        <el-select
+          v-model="filters.role_id"
+          placeholder="តួនាទី"
+          clearable
+          style="width: 100%"
+          @change="fetchUsers"
+          size="large"
+        >
+          <el-option
+            v-for="role in roles"
+            :key="role.id"
+            :label="role.display_name"
+            :value="role.id"
+          />
         </el-select>
       </template>
 
-      <template #add>
+      <template #actions>
         <AppButton v-if="candadd" type="primary" @click="openCreate">
           បន្ថែម
         </AppButton>
@@ -24,63 +42,114 @@
     </AppFilterBar>
 
     <el-card>
-      <AppTable :data="users" :loading="loading" show-index v-model:current-page="page" v-model:page-size="pageSize"
-        :total="total" @page-change="fetchUsers" :columns="[
+      <AppTable
+        :data="users"
+        :loading="loading"
+        show-index
+        v-model:current-page="page"
+        v-model:page-size="pageSize"
+        :total="total"
+        @page-change="fetchUsers"
+        :columns="[
           { prop: 'name_kh', label: 'ឈ្មោះខ្មែរ', minWidth: 130 },
           { prop: 'name_en', label: 'ឈ្មោះឡាតាំង', minWidth: 130 },
           { prop: 'code', label: 'កូដ', minWidth: 110 },
           { slot: 'gender', label: 'ភេទ', minWidth: 90 },
           { prop: 'role_name', label: 'តួនាទី', minWidth: 110 },
-        
-        ]" actionsWidth="140">
-        <template #gender="{row}">
+        ]"
+        actionsWidth="140"
+      >
+        <template #gender="{ row }">
           <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
         </template>
 
         <template #actions="{ row }" v-if="canedit">
           <el-tooltip content="កែប្រែ" placement="top">
-            <AppButton size="small" icon="Edit" type="warning" circle @click="openEdit(row)" />
+            <AppButton
+              size="small"
+              icon="Edit"
+              type="warning"
+              circle
+              @click="openEdit(row)"
+            />
           </el-tooltip>
           <el-tooltip content="បិទ" placement="top">
-            <AppButton size="small" :icon="row.is_active ? 'CircleClose' : 'CircleCheck'"
-              :type="row.is_active ? 'danger' : 'success'" circle @click="toggleStatus(row)" />
+            <AppButton
+              size="small"
+              :icon="row.is_active ? 'CircleClose' : 'CircleCheck'"
+              :type="row.is_active ? 'danger' : 'success'"
+              circle
+              @click="toggleStatus(row)"
+            />
           </el-tooltip>
         </template>
       </AppTable>
     </el-card>
 
-    <!-- Create / Edit dialog -->
-    <AppDialog v-model="createDialog" :title="isEdit ? 'កែប្រែសិស្ស' : 'បន្ថែមសិស្ស'" width="600px">
-      <el-form :model="createForm" :rules="createRules" ref="createFormRef" label-position="top">
+    <AppDialog
+      v-model="createDialog"
+      :title="isEdit ? 'កែប្រែសិស្ស' : 'បន្ថែមសិស្ស'"
+      width="600px"
+    >
+      <el-form
+        :model="createForm"
+        :rules="createRules"
+        ref="createFormRef"
+        label-position="top"
+      >
         <el-row :gutter="16">
           <el-col :xs="24" :sm="12">
-            <AppInput label="ឈ្មោះខ្មែរ" prop="name_kh" clearable v-model="createForm.name_kh" />
+            <AppInput
+              label="ឈ្មោះខ្មែរ"
+              prop="name_kh"
+              clearable
+              v-model="createForm.name_kh"
+            />
           </el-col>
           <el-col :xs="24" :sm="12">
-            <AppInput label="ឈ្មោះឡាតាំង" prop="name_en" clearable v-model="createForm.name_en" />
+            <AppInput
+              label="ឈ្មោះឡាតាំង"
+              prop="name_en"
+              clearable
+              v-model="createForm.name_en"
+              @input="createForm.code = generatecode(createForm.name_en)"
+            />
           </el-col>
           <el-col :xs="24" :sm="12">
-            <AppInput label="កូដ" prop="code" clearable v-model="createForm.code" />
+            <AppInput
+              label="អត្តលេខ"
+              prop="code"
+              clearable
+              v-model="createForm.code"
+            />
           </el-col>
           <el-col :xs="24" :sm="12">
             <el-form-item label="ភេទ" prop="gender">
-              <el-select v-model="createForm.gender" size="large" style="width: 100%">
+              <el-select
+                v-model="createForm.gender"
+                size="large"
+                style="width: 100%"
+              >
                 <el-option label="ប្រុស" :value="1" />
                 <el-option label="ស្រី" :value="2" />
               </el-select>
             </el-form-item>
           </el-col>
-          <!--
-            Role is intentionally NOT editable on create: the backend
-            Register service hardcodes RoleID = 5 for every bulk-created user.
-            It only shows up here on edit, where a dedicated update endpoint
-            can change it.
-          -->
-          <el-col >
+          <el-col>
             <el-form-item label="តួនាទី" prop="role_id">
-              <el-select v-model="createForm.role_id" placeholder="ជ្រើសតួនាទី" clearable size="large"
-                style="width: 100%">
-                <el-option v-for="role in roles" :key="role.id" :label="role.display_name" :value="role.id" />
+              <el-select
+                v-model="createForm.role_id"
+                placeholder="ជ្រើសតួនាទី"
+                clearable
+                size="large"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="role in roles"
+                  :key="role.id"
+                  :label="role.display_name"
+                  :value="role.id"
+                />
               </el-select>
             </el-form-item>
           </el-col>
@@ -88,32 +157,38 @@
       </el-form>
 
       <template #footer>
-        <AppButton @click="createDialog = false" size="large" :block="false" type="warning">
+        <AppButton
+          @click="createDialog = false"
+          size="large"
+          :block="false"
+          type="warning"
+        >
           បោះបង់
         </AppButton>
-        <AppButton @click="handleSave" type="primary" :loading="saving" size="large" :block="false">
+        <AppButton
+          @click="handleSave"
+          type="primary"
+          :loading="saving"
+          size="large"
+          :block="false"
+        >
           {{ isEdit ? "កែប្រែ" : "បង្កេីត" }}
         </AppButton>
       </template>
     </AppDialog>
-
-
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from "vue";
 import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
-import { UploadFilled } from "@element-plus/icons-vue";
 import { debounce } from "lodash-es";
-import * as XLSX from "xlsx";
 import {
   getUsers,
   updateUser,
   toggleUserStatus,
   getrole,
   registerUsersMain,
-  registerUsersExcel,
 } from "../api/services";
 import { watch } from "vue";
 import { useUserDataStore } from "../stores/user_data";
@@ -137,10 +212,11 @@ const isEdit = ref(false);
 const editId = ref(null);
 const createFormRef = ref();
 
-const importDialog = ref(false);
-const importing = ref(false);
-const previewRows = ref([]);
-const pickedFile = ref(null);
+function generatecode(name) {
+  const namecode = name.replace(/[^a-zA-Z]/g, "").toUpperCase();
+  const randomNumber = Math.floor(1000 + Math.random() * 9000);
+  return `${namecode}${randomNumber}`;
+}
 
 const userDataStore = useUserDataStore();
 const canedit = computed(() =>
@@ -159,15 +235,15 @@ const createForm = reactive({
 });
 
 const createRules = {
-  name_kh: [{ required: true, message: "សូមបញ្ចូលឈ្មោះខ្មែរ", trigger: "blur" }],
-  name_en: [{ required: true, message: "សូមបញ្ចូលឈ្មោះឡាតាំង", trigger: "blur" }],
+  name_kh: [
+    { required: true, message: "សូមបញ្ចូលឈ្មោះខ្មែរ", trigger: "blur" },
+  ],
+  name_en: [
+    { required: true, message: "សូមបញ្ចូលឈ្មោះឡាតាំង", trigger: "blur" },
+  ],
   code: [{ required: true, message: "សូមបញ្ចូលកូដ", trigger: "blur" }],
   gender: [{ required: true, message: "សូមជ្រើសភេទ", trigger: "change" }],
 };
-
-const validRowCount = computed(
-  () => previewRows.value.filter((r) => r._valid).length,
-);
 
 const debouncedFetch = debounce(() => {
   page.value = 1;
@@ -203,7 +279,13 @@ async function fetchRole() {
 function openCreate() {
   isEdit.value = false;
   editId.value = null;
-  Object.assign(createForm, { name_kh: "", name_en: "", code: "", gender: null, role_id: null });
+  Object.assign(createForm, {
+    name_kh: "",
+    name_en: "",
+    code: "",
+    gender: null,
+    role_id: null,
+  });
   createDialog.value = true;
 }
 
@@ -239,19 +321,21 @@ async function handleSave() {
       // Creating goes through the same Register endpoint the bulk-import
       // uses, just with a single-element array — this matches
       // RegisterRequest{ users: []UserInput } on the backend exactly.
-    await registerUsersMain({
-      name_kh: createForm.name_kh,
-      name_en: createForm.name_en,
-      code: createForm.code,
-      gender: createForm.gender,
-      role_id: createForm.role_id,
-    });
+      await registerUsersMain({
+        name_kh: createForm.name_kh,
+        name_en: createForm.name_en,
+        code: createForm.code,
+        gender: createForm.gender,
+        role_id: createForm.role_id,
+      });
       ElMessage.success("បង្កេីតសិស្សបានជោគជ័យ");
     }
     createDialog.value = false;
     fetchUsers();
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || e.response?.data?.error || "Failed to save");
+    ElMessage.error(
+      e.response?.data?.message || e.response?.data?.error || "Failed to save",
+    );
   } finally {
     saving.value = false;
   }
@@ -268,11 +352,13 @@ async function toggleStatus(row) {
     ElMessage.success("កែប្រែស្ថានភាពបានជោគជ័យ");
     fetchUsers();
   } catch (e) {
-    ElNotification.error({ title: "Error", message: e.response?.data?.error, offset: 100 });
+    ElNotification.error({
+      title: "Error",
+      message: e.response?.data?.error,
+      offset: 100,
+    });
   }
 }
-
-
 
 onMounted(() => {
   fetchUsers();

@@ -110,6 +110,7 @@ const (
 	EditMajor               = "edit.Major/:id"
 	ViewMajorWithPagination = "view.major.pagination"
 	ToggleMajor             = "Toggle.Major/:id"
+	AddMajorPrice           = "add.Major.Price"
 
 	AddMajorSubject    = "add.major.subject/:id"
 	GetMajorSubject    = "view.major.subject/:id"
@@ -132,4 +133,9 @@ const (
 	EditScore          = "edit.score/:id"
 
 	ViewTranscript = "view.transcript/:id"
+
+	ViewProvince = "/location/province"
+	ViewDistrict = "/location/district/:id"
+	ViewCommune  = "/location/commune/:id"
+	ViewVillage  = "/location/village/:id"
 )

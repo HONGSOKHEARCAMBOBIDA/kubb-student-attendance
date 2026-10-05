@@ -180,3 +180,16 @@ func (cr *MajorController) RemoveSubject(c *gin.Context) {
 	}
 	share.ResponseSuccess(c, http.StatusOK, "status company changed")
 }
+
+func (cr *MajorController) AddMajorPrice(c *gin.Context) {
+	var input request.MajorPriceRequestCreate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.AddMajorPrice(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "company created")
+}

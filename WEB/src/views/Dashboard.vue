@@ -223,7 +223,7 @@
               <ArrowRight />
             </el-icon>
           </div>
-          <div v-if="adminLevel" class="action-btn" @click="$router.push('/users')">
+          <div v-if="adminLevel || staftLevel" class="action-btn" @click="$router.push('/users')">
             <div class="icon-box">
               <el-icon :size="23">
                 <User />
@@ -231,9 +231,9 @@
             </div>
 
             <div class="action-content">
-              <span class="action-title">អ្នកប្រើប្រាស់</span>
+              <span class="action-title">អ្នកប្រើប្រាស់/និស្សិត</span>
               <span class="action-description">
-                អ្នកប្រើប្រាស់
+                អ្នកប្រើប្រាស់/និស្សិត
               </span>
             </div>
 
@@ -253,6 +253,8 @@ import { useUserDataStore } from "../stores/user_data";
 import { getcountleave } from "../api/services";
 const userDataStore = useUserDataStore();
 const adminLevel = computed(() => userDataStore.level === 7)
+const staftLevel = computed(() => userDataStore.level === 2)
+
 const leaves = ref([])
 async function fetchCountLeave() {
   try {

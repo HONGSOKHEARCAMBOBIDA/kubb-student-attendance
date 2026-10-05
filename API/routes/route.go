@@ -7,6 +7,8 @@ import (
 	"mysql/constant/share"
 	"mysql/controller"
 	"mysql/middleware"
+	"mysql/repository"
+	"mysql/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,6 +28,13 @@ func SetupRoutes(r *gin.Engine) {
 	classschedulecontroller := controller.NewClassScheduleController()
 	scorecontroller := controller.NewScoreController()
 	transcriptcontroller := controller.NewTranscriptController()
+
+	//repo
+	locationrepo := repository.NewLocationRepository(config.DB)
+	//service
+	locationservice := service.NewLocationService(locationrepo)
+	//controller
+	locationcontroller := controller.NewLocationController(locationservice)
 	r.Static("/clientimage", "./public/clientimage")
 	r.GET("/health", func(ctx *gin.Context) {
 		if db, err := config.DB.DB(); err != nil || db.Ping() != nil {
@@ -141,5 +150,14 @@ func SetupRoutes(r *gin.Engine) {
 		auth.GET(route.ViewScoreReport, middleware.PermissionMiddleware(permission.ViewScore), scorecontroller.GetScoreReport)
 
 		auth.GET(route.ViewTranscript, middleware.PermissionMiddleware(permission.ViewUser), transcriptcontroller.Transcript)
+
+		// Location
+		auth.GET(route.ViewProvince, middleware.PermissionMiddleware(permission.ViewLocation), locationcontroller.GetProvince)
+		auth.GET(route.ViewDistrict, middleware.PermissionMiddleware(permission.ViewLocation), locationcontroller.GetDistrict)
+		auth.GET(route.ViewCommune, middleware.PermissionMiddleware(permission.ViewLocation), locationcontroller.GetCommune)
+		auth.GET(route.ViewVillage, middleware.PermissionMiddleware(permission.ViewLocation), locationcontroller.GetVillage)
+
+		// MajorPrice
+		auth.POST(route.AddMajorPrice, middleware.PermissionMiddleware(permission.AddMajor), majorcontroller.AddMajorPrice)
 	}
 }

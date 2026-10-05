@@ -27,6 +27,9 @@ type MajorService interface {
 	UpdateSubject(ctx context.Context, majorSubjectID int, input request.MajorSubjectRequestUpdate) error
 	ToggleSubject(ctx context.Context, majorSubjectID int) error
 	RemoveSubject(ctx context.Context, majorSubjectID int) error
+
+	// Major Price
+	AddMajorPrice(ctx context.Context, input request.MajorPriceRequestCreate) error
 }
 
 type majorService struct {
@@ -260,4 +263,27 @@ func (s *majorService) RemoveSubject(ctx context.Context, majorSubjectID int) er
 		}
 		return nil
 	})
+}
+
+func (s *majorService) AddMajorPrice(ctx context.Context, input request.MajorPriceRequestCreate) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newdata := model.MajorPrice{
+			MajorID:      input.MajorID,
+			GenerationID: input.GenerationID,
+			ProgrammeID:  input.ProgrammeID,
+			Year:         input.Year,
+			MonthlyFee:   input.MonthlyFee,
+			QuarterFee:   input.QuarterFee,
+			SemesterFee:  input.SemesterFee,
+			YearFee:      input.YearFee,
+			IsActive:     true,
+		}
+		if err := tx.Create(&newdata).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }

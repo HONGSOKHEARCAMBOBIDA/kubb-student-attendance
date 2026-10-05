@@ -1,5 +1,5 @@
 <template>
-  <el-card class="filter-card" shadow="never">
+  <el-card class="filter-card" >
     <el-row :gutter="12" class="filter-row">
       <el-col
         v-for="(field, i) in normalizedFields"
@@ -31,7 +31,7 @@ const normalizedFields = computed(() => props.fields)
 
 <style scoped>
 .filter-card {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .filter-row {
