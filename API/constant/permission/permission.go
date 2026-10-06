@@ -73,4 +73,7 @@ const (
 	EditScore          = "edit.score"
 
 	ViewLocation = "view.location"
+
+	ViewFeeSchedule = "view.fee.schedule"
+	AddFee          = "add.fee"
 )

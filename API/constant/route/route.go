@@ -140,4 +140,7 @@ const (
 	ViewDistrict = "/location/district/:id"
 	ViewCommune  = "/location/commune/:id"
 	ViewVillage  = "/location/village/:id"
+
+	ViewFeeSchedule = "view.fee.schedule"
+	AddFee          = "add.fee"
 )

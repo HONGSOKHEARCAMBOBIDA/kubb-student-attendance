@@ -13,10 +13,10 @@ const (
 
 type FeeSchedule struct {
 	base.ModelBase
-	FeeInterval      string  `gorm:"type:enum('monthly_fee','quarterly_fee','semesterly_fee','yearly_fee');not null;uniqueIndex" json:"fee_interval"`
-	InstallmentCount int     `gorm:"not null;default:1" json:"installment_count"`
-	Description      *string `gorm:"type:text" json:"description"`
-	Active           bool    `gorm:"not null;default:true" json:"active"`
+	FeeInterval      FeeScheduleInterval `gorm:"type:enum('monthly_fee','quarterly_fee','semesterly_fee','yearly_fee');not null;uniqueIndex" json:"fee_interval"`
+	InstallmentCount int                 `gorm:"not null;default:1" json:"installment_count"`
+	Description      *string             `gorm:"type:text" json:"description"`
+	Active           bool                `gorm:"not null;default:true" json:"active"`
 }
 
 func (FeeSchedule) TableName() string {

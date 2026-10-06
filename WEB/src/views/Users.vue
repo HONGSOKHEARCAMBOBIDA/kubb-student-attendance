@@ -88,6 +88,7 @@
               icon="ArrowRightBold"
               type="success"
               circle
+              @click="openFeeDialog(row)"
             />
           </el-tooltip>
         </template>
@@ -184,6 +185,16 @@
         </AppButton>
       </template>
     </AppDialog>
+
+    <Fee
+    v-model="feedialogvisible"
+    :student-raw="studentRaw"
+    :programmes="lookupStore.programmes"
+    :generations="lookupStore.generations"
+    :majors="lookupStore.majors"
+    >
+
+    </Fee>
   </div>
 </template>
 
@@ -206,7 +217,7 @@ import AppDialog from "../../components/AppDialog.vue";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppInput from "../../components/AppInput.vue";
 import { useLookupStore } from "../stores/lookup.js";
-
+import Fee from "../../components/Fee.vue";
 const lookupStore = useLookupStore();
 const users = ref([]);
 const roles = ref([]);
@@ -229,6 +240,14 @@ function generatecode(name) {
 }
 
 const userDataStore = useUserDataStore();
+const feedialogvisible = ref(false)
+const studentRaw = ref(null)
+function openFeeDialog(row){
+  studentRaw.value = row;
+  feedialogvisible.value = true
+}
+
+
 const canedit = computed(() =>
   userDataStore.permissions?.some((p) => p.name === "edit.user"),
 );

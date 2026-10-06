@@ -4,7 +4,7 @@ import { getGeneration, getMajor, getProgramme } from "../api/services";
 export const useLookupStore = defineStore("lookup", {
   state: () => ({
     majors: [],
-    generation: [],
+    generations: [],
     programmes: [],
     loaded: false,
     loading: false,

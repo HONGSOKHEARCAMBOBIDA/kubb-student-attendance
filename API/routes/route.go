@@ -31,10 +31,13 @@ func SetupRoutes(r *gin.Engine) {
 
 	//repo
 	locationrepo := repository.NewLocationRepository(config.DB)
+	feerepo := repository.NewFeeRepository(config.DB)
 	//service
 	locationservice := service.NewLocationService(locationrepo)
+	feeservice := service.NewFeeService(feerepo)
 	//controller
 	locationcontroller := controller.NewLocationController(locationservice)
+	feecontroller := controller.NewFeeController(feeservice)
 	r.Static("/clientimage", "./public/clientimage")
 	r.GET("/health", func(ctx *gin.Context) {
 		if db, err := config.DB.DB(); err != nil || db.Ping() != nil {
@@ -161,5 +164,9 @@ func SetupRoutes(r *gin.Engine) {
 		auth.POST(route.AddMajorPrice, middleware.PermissionMiddleware(permission.AddMajor), majorcontroller.AddMajorPrice)
 		auth.GET(route.ViewMajorPrice, middleware.PermissionMiddleware(permission.ViewMajor), majorcontroller.GetMajorPrice)
 		auth.PUT(route.UpdateMajorPrice, middleware.PermissionMiddleware(permission.AddMajor), majorcontroller.UpdateMajorPrice)
+
+		// Fee
+		auth.GET(route.ViewFeeSchedule, middleware.PermissionMiddleware(permission.ViewFeeSchedule), feecontroller.GetFeeSchedule)
+		auth.POST(route.AddFee, middleware.PermissionMiddleware(permission.AddFee), feecontroller.AddFee)
 	}
 }
