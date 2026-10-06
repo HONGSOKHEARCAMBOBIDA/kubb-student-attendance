@@ -1,6 +1,10 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import { addMajorPrice, getMajorPrice } from "../src/api/services.js";
+import {
+  addMajorPrice,
+  getMajorPrice,
+  updateMajorPrice,
+} from "../src/api/services.js";
 import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
 import AppSelect from "./AppSelect.vue";
@@ -36,6 +40,12 @@ const filters = reactive({
   programme_id: "",
 });
 
+const editId = ref(null);
+
+const addTitle = computed(() =>
+  editId.value ? "កែប្រែថ្លៃសិក្សា" : "បន្ថែមថ្លៃសិក្សា",
+);
+
 const listTitle = computed(() =>
   props.raw?.name_kh
     ? `ថ្លៃសិក្សា - ជំនាញ${props.raw.name_kh} | មហាវិទ្យាល័យ${props.raw.faculty_name}`
@@ -56,7 +66,7 @@ async function fetchMajorPrice() {
     });
     majorprice.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;
-    console.log(majorprice.value)
+    console.log(majorprice.value);
   } catch (e) {
     notify.error(e.response?.data?.error || "មានបញ្ហាក្នុងការទាញទិន្នន័យ");
   } finally {
@@ -100,7 +110,10 @@ const defaultForm = () => ({
 });
 const form = reactive(defaultForm());
 
-const yearOptions = [1, 2, 3, 4].map((y) => ({ label: `ឆ្នាំទី ${y}`, value: y }));
+const yearOptions = [1, 2, 3, 4].map((y) => ({
+  label: `ឆ្នាំទី ${y}`,
+  value: y,
+}));
 
 const feeRule = (message) => [
   { required: true, message, trigger: "blur" },
@@ -114,8 +127,12 @@ const feeRule = (message) => [
 ];
 
 const rules = {
-  generation_id: [{ required: true, message: "សូមជ្រើសរើសជំនាន់", trigger: "change" }],
-  programme_id: [{ required: true, message: "សូមជ្រើសរើសកម្មវិធីសិក្សា", trigger: "change" }],
+  generation_id: [
+    { required: true, message: "សូមជ្រើសរើសជំនាន់", trigger: "change" },
+  ],
+  programme_id: [
+    { required: true, message: "សូមជ្រើសរើសកម្មវិធីសិក្សា", trigger: "change" },
+  ],
   year: [{ required: true, message: "សូមជ្រើសរើសឆ្នាំ", trigger: "change" }],
   monthly_fee: feeRule("សូមបញ្ចូលថ្លៃប្រចាំខែ"),
   quarter_fee: feeRule("សូមបញ្ចូលថ្លៃប្រចាំត្រីមាស"),
@@ -123,14 +140,25 @@ const rules = {
   year_fee: feeRule("សូមបញ្ចូលថ្លៃប្រចាំឆ្នាំ"),
 };
 
-const addTitle = computed(() =>
-  props.raw?.name_kh
-    ? `បន្ថែមថ្លៃសិក្សា - ជំនាញ${props.raw.name_kh}`
-    : "បន្ថែមថ្លៃសិក្សា",
-);
-
 function openAddDialog() {
-  Object.assign(form, defaultForm(), { major_id: props.majorID });
+  editId.value = null;
+  Object.assign(form, defaultForm(), { major_id: props.majorId });
+  addVisible.value = true;
+  formRef.value?.clearValidate();
+}
+
+function openEditDialog(row) {
+  editId.value = row.id;
+  Object.assign(form, {
+    major_id: props.majorId,
+    generation_id: row.generation_id,
+    programme_id: row.programme_id,
+    year: row.year,
+    monthly_fee: row.monthly_fee,
+    quarter_fee: row.quarter_fee,
+    semester_fee: row.semester_fee,
+    year_fee: row.year_fee,
+  });
   addVisible.value = true;
   formRef.value?.clearValidate();
 }
@@ -140,21 +168,28 @@ async function handleSave() {
   const valid = await formRef.value.validate().catch(() => false);
   if (!valid) return;
 
+  const payload = {
+    major_id: props.majorId,
+    generation_id: form.generation_id,
+    programme_id: form.programme_id,
+    year: form.year,
+    monthly_fee: Number(form.monthly_fee),
+    quarter_fee: Number(form.quarter_fee),
+    semester_fee: Number(form.semester_fee),
+    year_fee: Number(form.year_fee),
+  };
+
   saving.value = true;
   try {
-    await addMajorPrice({
-      major_id: props.majorId,
-      generation_id: form.generation_id,
-      programme_id: form.programme_id,
-      year: form.year,
-      monthly_fee: Number(form.monthly_fee),
-      quarter_fee: Number(form.quarter_fee),
-      semester_fee: Number(form.semester_fee),
-      year_fee: Number(form.year_fee),
-    });
-    notify.success("បង្កើតបានជោគជ័យ");
-    addVisible.value = false; // back to the list
-    await fetchMajorPrice(); // show the new row
+    if (editId.value) {
+      await updateMajorPrice(editId.value, payload);
+      notify.success("កែប្រែបានជោគជ័យ");
+    } else {
+      await addMajorPrice(payload);
+      notify.success("បង្កើតបានជោគជ័យ");
+    }
+    addVisible.value = false;
+    await fetchMajorPrice();
     emit("saved");
   } catch (e) {
     notify.error(e.response?.data?.error || "មានបញ្ហាក្នុងការរក្សាទុក");
@@ -162,7 +197,6 @@ async function handleSave() {
     saving.value = false;
   }
 }
-
 </script>
 
 <template>
@@ -182,16 +216,36 @@ async function handleSave() {
       :action-span="4"
     >
       <template #generation>
-        <AppSelect v-model="filters.generation_id" placeholder="ជំនាន់" clearable size="large" :options="generations" />
+        <AppSelect
+          v-model="filters.generation_id"
+          placeholder="ជំនាន់"
+          clearable
+          size="large"
+          :options="generations"
+        />
       </template>
       <template #programme>
-        <AppSelect v-model="filters.programme_id" placeholder="កម្មវិធីសិក្សា" clearable size="large" :options="programmes" />
+        <AppSelect
+          v-model="filters.programme_id"
+          placeholder="កម្មវិធីសិក្សា"
+          clearable
+          size="large"
+          :options="programmes"
+        />
       </template>
       <template #year>
-        <AppSelect v-model="filters.year" placeholder="ឆ្នាំ" clearable size="large" :options="yearOptions" />
+        <AppSelect
+          v-model="filters.year"
+          placeholder="ឆ្នាំ"
+          clearable
+          size="large"
+          :options="yearOptions"
+        />
       </template>
       <template #actions>
-        <AppButton type="primary" @click="openAddDialog">បន្ថែមថ្លៃសិក្សា</AppButton>
+        <AppButton type="primary" @click="openAddDialog"
+          >បន្ថែមថ្លៃសិក្សា</AppButton
+        >
       </template>
     </AppFilterBar>
 
@@ -203,18 +257,88 @@ async function handleSave() {
       v-model:page-size="pageSize"
       :total="total"
       @page-change="fetchMajorPrice"
+      actions-width="90px"
       :columns="[
-        { prop: 'major_name', label: 'ជំនាញ', minWidth: 120 },
-        { prop: 'generation_name', label: 'ជំនាន់', minWidth: 120 },
-        { prop: 'programme_name', label: 'កម្រិត', minWidth: 120 },
-        { prop: 'year', label: 'ឆ្នាំ', minWidth: 120 },
-        { prop: 'monthly_fee', label: '១ខែម្ដង', minWidth: 120 },
-        { prop: 'quarter_fee', label: '៣ខែម្ដង', minWidth: 120 },
-        { prop: 'semester_fee', label: '៦ខែម្ដង', minWidth: 120 },
-        { prop: 'year_fee', label: '១ឆ្នាំម្ដង', minWidth: 120 },
+        { prop: 'major_name', label: 'ជំនាញ', minWidth: 120, align: 'center' },
+        {
+          prop: 'generation_name',
+          label: 'ជំនាន់',
+          minWidth: 120,
+          align: 'center',
+        },
+        {
+          prop: 'programme_name',
+          label: 'កម្រិត',
+          minWidth: 120,
+          align: 'center',
+        },
+        { prop: 'year', label: 'ឆ្នាំ', minWidth: 120, align: 'center' },
+        {
+          slot: 'monthly_fee',
+          label: '១ខែម្ដង',
+          minWidth: 120,
+          align: 'center',
+        },
+        {
+          slot: 'quarter_fee',
+          label: '៣ខែម្ដង',
+          minWidth: 120,
+          align: 'center',
+        },
+        {
+          slot: 'semester_fee',
+          label: '៦ខែម្ដង',
+          minWidth: 120,
+          align: 'center',
+        },
+        {
+          slot: 'year_fee',
+          label: '១ឆ្នាំម្ដង',
+          minWidth: 120,
+          align: 'center',
+        },
       ]"
-    />
-
+    >
+      <template #monthly_fee="{ row }">
+        <el-statistic
+          :value="row.monthly_fee"
+          :formatter="(val) => `${Number(val).toFixed(2)}$ / ១ខែ`"
+          :value-style="{ fontSize: '16px', color: '#000000' }"
+        />
+      </template>
+      <template #quarter_fee="{ row }">
+        <el-statistic
+          :value="row.quarter_fee"
+          :formatter="(val) => `${Number(val).toFixed(2)}$ / ៣ខែ`"
+          :value-style="{ fontSize: '16px', color: '#000000' }"
+        />
+      </template>
+      <template #semester_fee="{ row }">
+        <el-statistic
+          :value="row.semester_fee"
+          :formatter="(val) => `${Number(val).toFixed(2)}$ / ៦ខែ`"
+          :value-style="{ fontSize: '16px', color: '#000000' }"
+        />
+      </template>
+      <template #year_fee="{ row }">
+        <el-statistic
+          :value="row.year_fee"
+          :formatter="(val) => `${Number(val).toFixed(2)}$ / ១ឆ្នាំ`"
+          :value-style="{ fontSize: '16px', color: '#000000' }"
+        />
+      </template>
+      <template #actions="{ row }">
+        <el-tooltip content="កែប្រែ" placement="top">
+          <AppButton
+            size="small"
+            icon="Edit"
+            type="warning"
+            circle
+            @click="openEditDialog(row)"
+          />
+        </el-tooltip>
+      </template>
+    </AppTable>
     <template #footer>
       <AppButton @click="closeList">បិទ</AppButton>
     </template>
@@ -255,23 +379,49 @@ async function handleSave() {
           placeholder="ជ្រើសរើសឆ្នាំ"
           size="large"
         />
-        <AppInput label="ថ្លៃប្រចាំខែ" prop="monthly_fee" v-model.number="form.monthly_fee" type="number" size="large" />
+        <AppInput
+          label="ថ្លៃប្រចាំខែ"
+          prop="monthly_fee"
+          v-model.number="form.monthly_fee"
+          type="number"
+          size="large"
+        />
       </div>
 
       <div class="form-row">
-        <AppInput label="ថ្លៃប្រចាំត្រីមាស" prop="quarter_fee" v-model.number="form.quarter_fee" type="number" size="large" />
-        <AppInput label="ថ្លៃប្រចាំឆមាស" prop="semester_fee" v-model.number="form.semester_fee" type="number" size="large" />
+        <AppInput
+          label="ថ្លៃប្រចាំត្រីមាស"
+          prop="quarter_fee"
+          v-model.number="form.quarter_fee"
+          type="number"
+          size="large"
+        />
+        <AppInput
+          label="ថ្លៃប្រចាំឆមាស"
+          prop="semester_fee"
+          v-model.number="form.semester_fee"
+          type="number"
+          size="large"
+        />
       </div>
 
       <div class="form-row">
-        <AppInput label="ថ្លៃប្រចាំឆ្នាំ" prop="year_fee" v-model.number="form.year_fee" type="number" size="large" />
+        <AppInput
+          label="ថ្លៃប្រចាំឆ្នាំ"
+          prop="year_fee"
+          v-model.number="form.year_fee"
+          type="number"
+          size="large"
+        />
         <div class="form-spacer" />
       </div>
     </el-form>
 
     <template #footer>
       <AppButton @click="addVisible = false">បោះបង់</AppButton>
-      <AppButton type="primary" :loading="saving" @click="handleSave">រក្សាទុក</AppButton>
+      <AppButton type="primary" :loading="saving" @click="handleSave"
+        >រក្សាទុក</AppButton
+      >
     </template>
   </AppDialog>
 </template>

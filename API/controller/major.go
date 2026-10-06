@@ -194,6 +194,23 @@ func (cr *MajorController) AddMajorPrice(c *gin.Context) {
 	share.ResponseSuccess(c, http.StatusOK, "company created")
 }
 
+func (cr *MajorController) UpdateMajorPrice(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	var input request.MajorPriceRequestUpdate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateMajorPrice(c, id, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "major price update")
+}
+
 func (cr *MajorController) GetMajorPrice(c *gin.Context) {
 	page, pageSize := helper.GetPagination(c)
 	filter := map[string]string{

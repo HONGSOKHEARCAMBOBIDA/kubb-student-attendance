@@ -111,6 +111,7 @@ const (
 	ViewMajorWithPagination = "view.major.pagination"
 	ToggleMajor             = "Toggle.Major/:id"
 	AddMajorPrice           = "add.Major.Price"
+	UpdateMajorPrice        = "update.Major.Price/:id"
 	ViewMajorPrice          = "view.Major.Price"
 
 	AddMajorSubject    = "add.major.subject/:id"

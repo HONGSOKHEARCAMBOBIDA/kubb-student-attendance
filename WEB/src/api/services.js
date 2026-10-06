@@ -146,3 +146,4 @@ export const getTranscript = (id) => api.get(`/view.transcript/${id}`)
 
 export const addMajorPrice = (data) => api.post('/add.Major.Price',data )
 export const getMajorPrice = (params) => api.get('/view.Major.Price',{params})
+export const updateMajorPrice = (id,data) => api.put(`/update.Major.Price/${id}`,data)

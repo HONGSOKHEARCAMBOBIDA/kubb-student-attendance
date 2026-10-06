@@ -73,13 +73,21 @@
               @click="openEdit(row)"
             />
           </el-tooltip>
-          <el-tooltip content="បិទ" placement="top">
+          <!-- <el-tooltip content="បិទ" placement="top">
             <AppButton
               size="small"
               :icon="row.is_active ? 'CircleClose' : 'CircleCheck'"
               :type="row.is_active ? 'danger' : 'success'"
               circle
               @click="toggleStatus(row)"
+            />
+          </el-tooltip> -->
+          <el-tooltip content="បង់ប្រាក់" placement="top">
+            <AppButton
+              size="small"
+              icon="ArrowRightBold"
+              type="success"
+              circle
             />
           </el-tooltip>
         </template>
@@ -197,7 +205,9 @@ import AppButton from "../../components/AppButton.vue";
 import AppDialog from "../../components/AppDialog.vue";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppInput from "../../components/AppInput.vue";
+import { useLookupStore } from "../stores/lookup.js";
 
+const lookupStore = useLookupStore();
 const users = ref([]);
 const roles = ref([]);
 const loading = ref(false);
@@ -361,6 +371,7 @@ async function toggleStatus(row) {
 }
 
 onMounted(() => {
+  lookupStore.fetchLookUp();
   fetchUsers();
   fetchRole();
 });

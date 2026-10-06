@@ -160,5 +160,6 @@ func SetupRoutes(r *gin.Engine) {
 		// MajorPrice
 		auth.POST(route.AddMajorPrice, middleware.PermissionMiddleware(permission.AddMajor), majorcontroller.AddMajorPrice)
 		auth.GET(route.ViewMajorPrice, middleware.PermissionMiddleware(permission.ViewMajor), majorcontroller.GetMajorPrice)
+		auth.PUT(route.UpdateMajorPrice, middleware.PermissionMiddleware(permission.AddMajor), majorcontroller.UpdateMajorPrice)
 	}
 }

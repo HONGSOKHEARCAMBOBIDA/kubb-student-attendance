@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type MajorService interface {
@@ -32,6 +33,7 @@ type MajorService interface {
 	// Major Price
 	AddMajorPrice(ctx context.Context, input request.MajorPriceRequestCreate) error
 	GetMajorPrice(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.MajorPrice, *model.PaginationMetadata, error)
+	UpdateMajorPrice(ctx context.Context, id int, input request.MajorPriceRequestUpdate) error
 }
 
 type majorService struct {
@@ -290,6 +292,46 @@ func (s *majorService) AddMajorPrice(ctx context.Context, input request.MajorPri
 	return err
 }
 
+func (s *majorService) UpdateMajorPrice(
+	ctx context.Context,
+	id int,
+	input request.MajorPriceRequestUpdate,
+) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var existing model.MajorPrice
+
+		if err := tx.
+			Clauses(clause.Locking{Strength: "UPDATE"}).
+			First(&existing, id).Error; err != nil {
+			return err
+		}
+
+		result := tx.Model(&existing).Updates(map[string]any{
+			"major_id":      input.MajorID,
+			"generation_id": input.GenerationID,
+			"programme_id":  input.ProgrammeID,
+			"year":          input.Year,
+			"monthly_fee":   input.MonthlyFee,
+			"quarter_fee":   input.QuarterFee,
+			"semester_fee":  input.SemesterFee,
+			"year_fee":      input.YearFee,
+		})
+
+		if result.Error != nil {
+			return result.Error
+		}
+
+		if result.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+
+		return nil
+	})
+}
+
 func (s *majorService) GetMajorPrice(
 	ctx context.Context,
 	pf request.Pagination,
@@ -341,7 +383,6 @@ func (s *majorService) GetMajorPrice(
 			mp.year_fee,
 			mp.is_active
 		`).
-		Order("mp.id DESC").
 		Offset(offset).
 		Limit(pf.PageSize).
 		Scan(&data).Error
