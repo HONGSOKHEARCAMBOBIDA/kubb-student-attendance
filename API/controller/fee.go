@@ -2,6 +2,7 @@ package controller
 
 import (
 	"mysql/constant/share"
+	"mysql/helper"
 	"mysql/request"
 	"mysql/service"
 	"net/http"
@@ -17,6 +18,20 @@ func NewFeeController(s service.FeeService) *FeeController {
 	return &FeeController{
 		service: s,
 	}
+}
+
+func (cr *FeeController) GetUserClass(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.GetUserClass(c.Request.Context(), id)
+	if err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	share.RespondDate(c, http.StatusOK, data)
 }
 
 func (cr *FeeController) GetFeeSchedule(c *gin.Context) {

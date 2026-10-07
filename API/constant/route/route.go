@@ -143,4 +143,5 @@ const (
 
 	ViewFeeSchedule = "view.fee.schedule"
 	AddFee          = "add.fee"
+	ViewUserClass   = "view.user.class/:id"
 )

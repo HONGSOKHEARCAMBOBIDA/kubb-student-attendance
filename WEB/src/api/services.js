@@ -180,3 +180,4 @@ export const updateMajorPrice = (id, data) =>
 
 export const getFeeschedule = () => api.get("/view.fee.schedule");
 export const addFee = (data) => api.post("/add.fee", data);
+export const getUserClasss = (id) => api.get(`/view.user.class/${id}`)

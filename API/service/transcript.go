@@ -44,11 +44,8 @@ func (s *transcriptservice) Student(ctx context.Context, userID int) (*response.
 		COALESCE(u.name_kh, '') AS name_kh,
 		COALESCE(u.name_en, '') AS name_en,
 		COALESCE(u.gender, 0) AS gender,
-		COALESCE(p.registration_no, u.code) AS registration_no,
 		p.date_of_birth AS date_of_birth,
-		COALESCE(p.place_of_birth, '') AS place_of_birth,
-		COALESCE(p.nationality, '') AS nationality,
-		COALESCE(p.campus, '') AS campus
+		COALESCE(p.nationality, '') AS nationality
 	`)
 
 	if err := query.Scan(&st).Error; err != nil {

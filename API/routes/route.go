@@ -168,5 +168,6 @@ func SetupRoutes(r *gin.Engine) {
 		// Fee
 		auth.GET(route.ViewFeeSchedule, middleware.PermissionMiddleware(permission.ViewFeeSchedule), feecontroller.GetFeeSchedule)
 		auth.POST(route.AddFee, middleware.PermissionMiddleware(permission.AddFee), feecontroller.AddFee)
+		auth.GET(route.ViewUserClass, middleware.PermissionMiddleware(permission.ViewUser), feecontroller.GetUserClass)
 	}
 }

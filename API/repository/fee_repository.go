@@ -7,6 +7,7 @@ import (
 	"mysql/helper"
 	"mysql/model"
 	"mysql/request"
+	"mysql/response"
 	"time"
 
 	"gorm.io/gorm"
@@ -15,6 +16,8 @@ import (
 type FeeRepository interface {
 	GetFeeSchedule(ctx context.Context) ([]model.FeeSchedule, error)
 	AddFee(ctx context.Context, input request.FeeRequestCreate) error
+	GetSchoolarship(ctx context.Context) ([]model.Schoolarship, error)
+	GetUserClass(ctx context.Context, userID int) ([]response.UserClass, error)
 }
 
 type feerepository struct {
@@ -27,8 +30,57 @@ func NewFeeRepository(db *gorm.DB) FeeRepository {
 	}
 }
 
+func (r *feerepository) GetUserClass(ctx context.Context, userID int) ([]response.UserClass, error) {
+	var data []response.UserClass
+
+	err := r.db.WithContext(ctx).
+		Table("user_class uc").
+		Select(`
+			uc.id AS id,
+			u.id AS user_id,
+			u.name_kh AS name_kh,
+			u.name_en AS name_en,
+			u.gender AS gender,
+			u.code AS code,
+			c.id AS class_id,
+			c.name AS class_name,
+			c.type AS type,
+			c.is_active AS active,
+			m.id AS major_id,
+			m.name_kh AS major_name,
+			s.id AS shift_id,
+			s.name AS shift_name,
+			g.id AS generation_id,
+			g.name_kh AS generation_name,
+			g.start_year AS generation_start,
+			g.end_year AS generation_end,
+			c.year AS year,
+			c.semester AS semester,
+			c.`+"`group`"+` AS group_name,
+			c.term AS term,
+			p.id AS programme_id,
+			p.name AS programme_name
+		`).
+		Joins("JOIN user u ON u.id = uc.user_id").
+		Joins("JOIN class c ON c.id = uc.class_id").
+		Joins("LEFT JOIN major m ON m.id = c.major_id").
+		Joins("LEFT JOIN generation g ON g.id = c.generation_id").
+		Joins("LEFT JOIN shift s ON s.id = c.shift_id").
+		Joins("LEFT JOIN programmes p ON p.id = c.programme_id").
+		Where("uc.user_id = ?", userID).
+		Scan(&data).Error
+
+	return data, err
+}
+
 func (r *feerepository) GetFeeSchedule(ctx context.Context) ([]model.FeeSchedule, error) {
 	var data []model.FeeSchedule
+	err := r.db.WithContext(ctx).Find(&data).Error
+	return data, err
+}
+
+func (r *feerepository) GetSchoolarship(ctx context.Context) ([]model.Schoolarship, error) {
+	var data []model.Schoolarship
 	err := r.db.WithContext(ctx).Find(&data).Error
 	return data, err
 }

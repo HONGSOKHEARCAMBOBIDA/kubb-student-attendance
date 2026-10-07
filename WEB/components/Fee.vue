@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, watch, computed } from "vue";
-import { getMajorPrice, getClass, addFee, getFeeschedule } from "../src/api/services";
+import { getMajorPrice, getClass, addFee, getFeeschedule,getUserClasss } from "../src/api/services";
 import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
 import AppSelect from "./AppSelect.vue";
@@ -28,7 +28,21 @@ const loading = ref(false);
 const majorprices = ref([]);
 const classes = ref([]);
 const feeschedules = ref([]);
-
+const userClasses = ref([]);
+const loadingUserClass = ref(false);
+async function fetchUserClass() {
+  userClasses.value = [];
+  if (!props.studentRaw?.id) return;
+  loadingUserClass.value = true;
+  try {
+    const res = await getUserClasss(props.studentRaw.id);
+    userClasses.value = res.data.data || [];
+  } catch (e) {
+    notify.error(errMsg(e));
+  } finally {
+    loadingUserClass.value = false;
+  }
+}
 const filters = reactive({
   major_id: null,
   generation_id: null,
@@ -47,7 +61,7 @@ const form = reactive({
 const yearOptions = [1, 2, 3, 4].map((y) => ({ label: `ឆ្នាំទី ${y}`, value: y }));
 
 const classOptions = computed(() =>
-  classes.value.map((c) => ({ label: `ថ្នាក់${c.name} - ជំនាញ${c.major_name} - ${c.generation_name} - កម្រិត${c.programme_name} - វេន${c.shift_name} - ឆ្នាំ${c.year}`, value: c.id })) // adjust field if not `name`
+  classes.value.map((c) => ({ label: `ថ្នាក់${c.name} - ជំនាញ${c.major_name} - ${c.generation_name} - កម្រិត${c.programme_name} - វេន${c.shift_name} - ឆ្នាំ${c.year} - ឆមាស${c.semester}`, value: c.id })) // adjust field if not `name`
 );
 
 const majorPriceOptions = computed(() =>
@@ -133,6 +147,7 @@ watch(
     Object.assign(filters, { year: null, generation_id: null, programme_id: null, major_id: null });
     resetForm();
     fetchFeeSchedule();
+     fetchUserClass(); 
   }
 );
 
@@ -196,6 +211,45 @@ async function submit() {
     :title="title"
     width="75%"
   >
+  <el-table
+  :data="userClasses"
+  v-loading="loadingUserClass"
+  border
+  stripe
+  size="small"
+  empty-text="មិនទាន់មានថ្នាក់"
+  style="width: 100%; margin-bottom: 16px"
+>
+  <el-table-column type="index" label="#" width="50" />
+  <el-table-column prop="class_name" label="ថ្នាក់" min-width="120" />
+  <el-table-column label="ប្រភេទ" min-width="90">
+    <template #default="{ row }">
+      <span>{{ row.type === 'onclass' ? 'ផ្ទាល់' : 'អនឡាញ' }}</span>
+    </template>
+  </el-table-column>
+  <el-table-column prop="major_name" label="ជំនាញ" min-width="130" />
+  <el-table-column prop="shift_name" label="វេន" min-width="80" />
+  <el-table-column label="ជំនាន់" min-width="140">
+    <template #default="{ row }">
+      {{ row.generation_name }}
+      <span v-if="row.generation_start || row.generation_end">
+        ({{ row.generation_start }} - {{ row.generation_end }})
+      </span>
+    </template>
+  </el-table-column>
+  <el-table-column prop="programme_name" label="កម្រិត" min-width="110" />
+  <el-table-column prop="year" label="ឆ្នាំ" width="70" />
+  <el-table-column prop="semester" label="ឆមាស" width="80" />
+  <el-table-column prop="group" label="ក្រុម" width="80" />
+  <el-table-column prop="term" label="ត្រីមាស" width="90" />
+  <el-table-column label="ស្ថានភាព" width="100">
+    <template #default="{ row }">
+      <el-tag :type="row.active ? 'success' : 'info'" size="small">
+        {{ row.active ? "កំពុងសិក្សា" : "បានបញ្ចប់" }}
+      </el-tag>
+    </template>
+  </el-table-column>
+</el-table>
     <el-form label-position="top">
             <AppFilterBar
       :fields="[
