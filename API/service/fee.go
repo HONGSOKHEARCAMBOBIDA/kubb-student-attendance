@@ -13,7 +13,7 @@ import (
 type FeeService interface {
 	GetFeeSchedule(ctx context.Context) ([]model.FeeSchedule, error)
 	AddFee(ctx context.Context, input request.FeeRequestCreate) error
-	//GetSchoolarship(ctx context.Context) ([]model.Schoolarship, error)
+	GetSchoolarship(ctx context.Context) ([]model.Schoolarship, error)
 	GetUserClass(ctx context.Context, userID int) ([]response.UserClass, error)
 }
 
@@ -49,9 +49,15 @@ func (s *feeservice) GetFeeSchedule(ctx context.Context) ([]model.FeeSchedule, e
 	return data, nil
 }
 
-// func (s *feeservice) GetSchoolarship(ctx context.Context) ([]model.Schoolarship, error) {
-// 	ctx ,cancel := c
-// }
+func (s *feeservice) GetSchoolarship(ctx context.Context) ([]model.Schoolarship, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	data, err := s.repo.GetSchoolarship(ctx)
+	if err != nil {
+		return nil, apperror.Internal("failed to fetch provinces", err)
+	}
+	return data, nil
+}
 
 func (s *feeservice) AddFee(ctx context.Context, input request.FeeRequestCreate) error {
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)

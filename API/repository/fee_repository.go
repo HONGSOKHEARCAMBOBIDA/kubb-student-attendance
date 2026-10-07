@@ -59,7 +59,13 @@ func (r *feerepository) GetUserClass(ctx context.Context, userID int) ([]respons
 			c.`+"`group`"+` AS group_name,
 			c.term AS term,
 			p.id AS programme_id,
-			p.name AS programme_name
+			p.name AS programme_name,
+			sc.description AS schoolarship,
+			f.description AS fee_schedule,
+			COALESCE(fe.amount, 0) AS amount,
+			COALESCE(fe.discount, 0) AS discount,
+			COALESCE(fe.total, 0) AS total,
+			COALESCE(fe.id, 0) AS fee_id
 		`).
 		Joins("JOIN user u ON u.id = uc.user_id").
 		Joins("JOIN class c ON c.id = uc.class_id").
@@ -67,10 +73,58 @@ func (r *feerepository) GetUserClass(ctx context.Context, userID int) ([]respons
 		Joins("LEFT JOIN generation g ON g.id = c.generation_id").
 		Joins("LEFT JOIN shift s ON s.id = c.shift_id").
 		Joins("LEFT JOIN programmes p ON p.id = c.programme_id").
+		Joins("LEFT JOIN fees fe ON fe.user_class_id = uc.id").
+		Joins("LEFT JOIN scholarships sc ON sc.id = fe.scholarship_id").
+		Joins("LEFT JOIN fee_schedules f ON f.id = fe.fee_schedule_id").
 		Where("uc.user_id = ?", userID).
 		Scan(&data).Error
+	if err != nil {
+		return nil, err
+	}
 
-	return data, err
+	feeIDs := make([]uint64, 0, len(data))
+	seen := make(map[uint64]struct{}, len(data))
+	for _, d := range data {
+		if d.FeeID == 0 {
+			continue
+		}
+		if _, ok := seen[d.FeeID]; ok {
+			continue
+		}
+		seen[d.FeeID] = struct{}{}
+		feeIDs = append(feeIDs, d.FeeID)
+	}
+	if len(feeIDs) == 0 {
+		return data, nil
+	}
+
+	var installments []response.InstallmentRespone
+	if err := r.db.WithContext(ctx).
+		Table("installments").
+		Where("fee_id IN ?", feeIDs).
+		Order("fee_id, sequence_no").
+		Find(&installments).Error; err != nil {
+		return nil, err
+	}
+
+	for i := range installments {
+		installments[i].DueDate = helper.FormatDate(installments[i].DueDate)
+	}
+
+	byFee := make(map[uint64][]response.InstallmentRespone, len(feeIDs))
+	for _, inst := range installments {
+		byFee[inst.FeeID] = append(byFee[inst.FeeID], inst)
+	}
+
+	for i := range data {
+		if list, ok := byFee[data[i].FeeID]; ok {
+			data[i].InstallmentRespone = list
+		} else {
+			data[i].InstallmentRespone = []response.InstallmentRespone{}
+		}
+	}
+
+	return data, nil
 }
 
 func (r *feerepository) GetFeeSchedule(ctx context.Context) ([]model.FeeSchedule, error) {
@@ -95,6 +149,7 @@ func (r *feerepository) AddFee(ctx context.Context, input request.FeeRequestCrea
 			UserID:   int64(input.StudentID),
 			ClassID:  int64(input.ClassID),
 			IsActive: true,
+			Status:   model.UserClassStatusSTUDY,
 		}
 		if err := tx.Create(&userClass).Error; err != nil {
 			return err

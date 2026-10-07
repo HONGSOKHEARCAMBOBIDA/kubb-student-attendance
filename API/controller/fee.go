@@ -44,6 +44,15 @@ func (cr *FeeController) GetFeeSchedule(c *gin.Context) {
 	share.RespondDate(c, http.StatusOK, data)
 }
 
+func (cr *FeeController) GetSchoolarship(c *gin.Context) {
+	data, err := cr.service.GetSchoolarship(c.Request.Context())
+	if err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
 func (cr *FeeController) AddFee(c *gin.Context) {
 	var input request.FeeRequestCreate
 	if err := c.ShouldBindJSON(&input); err != nil {

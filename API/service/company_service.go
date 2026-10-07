@@ -261,6 +261,9 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		if v, ok := filter["controlled_by"]; ok && v != "" {
 			tx = tx.Where("c.controlled_by = ?", v)
 		}
+		if v, ok := filter["year"]; ok && v != "" {
+			tx = tx.Where("c.year = ?", v)
+		}
 		return tx
 	}
 	if err := applyFilters(base()).Count(&total).Error; err != nil {
