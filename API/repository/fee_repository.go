@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"math"
 	"mysql/constant/apperror"
 	"mysql/helper"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type FeeRepository interface {
@@ -18,6 +20,9 @@ type FeeRepository interface {
 	AddFee(ctx context.Context, input request.FeeRequestCreate) error
 	GetSchoolarship(ctx context.Context) ([]model.Schoolarship, error)
 	GetUserClass(ctx context.Context, userID int) ([]response.UserClass, error)
+	AddFeeTransaction(ctx context.Context, input request.FeeTransaction) error
+	PrintInvoice(ctx context.Context, id int) (response.PrintInvoiceResponse, error)
+	DeleteFeeTransaction(ctx context.Context, id int) error
 }
 
 type feerepository struct {
@@ -55,7 +60,6 @@ func (r *feerepository) GetUserClass(ctx context.Context, userID int) ([]respons
 			g.start_year AS generation_start,
 			g.end_year AS generation_end,
 			c.year AS year,
-			c.semester AS semester,
 			c.`+"`group`"+` AS group_name,
 			c.term AS term,
 			p.id AS programme_id,
@@ -65,6 +69,7 @@ func (r *feerepository) GetUserClass(ctx context.Context, userID int) ([]respons
 			COALESCE(fe.amount, 0) AS amount,
 			COALESCE(fe.discount, 0) AS discount,
 			COALESCE(fe.total, 0) AS total,
+			COALESCE(fe.paid_amount,0) AS paid_amount,
 			COALESCE(fe.id, 0) AS fee_id
 		`).
 		Joins("JOIN user u ON u.id = uc.user_id").
@@ -73,7 +78,7 @@ func (r *feerepository) GetUserClass(ctx context.Context, userID int) ([]respons
 		Joins("LEFT JOIN generation g ON g.id = c.generation_id").
 		Joins("LEFT JOIN shift s ON s.id = c.shift_id").
 		Joins("LEFT JOIN programmes p ON p.id = c.programme_id").
-		Joins("LEFT JOIN fees fe ON fe.user_class_id = uc.id").
+		Joins("INNER JOIN fees fe ON fe.user_class_id = uc.id").
 		Joins("LEFT JOIN scholarships sc ON sc.id = fe.scholarship_id").
 		Joins("LEFT JOIN fee_schedules f ON f.id = fe.fee_schedule_id").
 		Where("uc.user_id = ?", userID).
@@ -101,9 +106,19 @@ func (r *feerepository) GetUserClass(ctx context.Context, userID int) ([]respons
 	var installments []response.InstallmentRespone
 	if err := r.db.WithContext(ctx).
 		Table("installments").
-		Where("fee_id IN ?", feeIDs).
-		Order("fee_id, sequence_no").
-		Find(&installments).Error; err != nil {
+		Joins("LEFT JOIN fee_transactions ft ON ft.installment_id = installments.id").
+		Where("installments.fee_id IN ?", feeIDs).
+		Order("installments.fee_id, installments.sequence_no").
+		Select(`
+		installments.id AS id,
+		installments.fee_id AS fee_id,
+		installments.sequence_no AS sequence_no,
+		installments.due_date AS due_date,
+		installments.amount AS amount,
+		installments.status AS status,
+		ft.id AS fee_transacntion_id,
+		ft.total AS fee_transaction_total
+		`).Scan(&installments).Error; err != nil {
 		return nil, err
 	}
 
@@ -184,6 +199,7 @@ func (r *feerepository) AddFee(ctx context.Context, input request.FeeRequestCrea
 			Amount:        BaseAmount,
 			Discount:      scholarshipdiscount,
 			Total:         NetAmount,
+			PaidAmount:    0,
 			Active:        true,
 		}
 		if err := tx.Create(&fee).Error; err != nil {
@@ -215,4 +231,160 @@ func (r *feerepository) AddFee(ctx context.Context, input request.FeeRequestCrea
 		return nil
 	})
 	return err
+}
+
+func (r *feerepository) AddFeeTransaction(ctx context.Context, input request.FeeTransaction) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var installment model.Installment
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			First(&installment, "id = ?", input.InstallmentID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return apperror.New(apperror.CodeNotFound, "installment not found", err)
+			}
+			return err
+		}
+		if installment.Status == string(model.InstallmentStatusPaid) {
+			return apperror.New(apperror.CodeConflict, "installment already paid", nil)
+		}
+
+		var fee model.Fee
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			First(&fee, "id = ?", installment.FeeID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return apperror.New(apperror.CodeNotFound, "fee not found", err)
+			}
+			return err
+		}
+
+		// TODO: validate input.Total == input.Amount - input.Discount + input.Tax
+		// and that it matches the installment amount.
+
+		ft := model.FeeTransaction{
+			FeeID:         fee.ID,
+			InstallmentID: &installment.ID,
+			Date:          input.Date,
+			DueDate:       &installment.DueDate,
+			Amount:        input.Amount,
+			Discount:      input.Discount,
+			Tax:           input.Tax,
+			Total:         input.Total,
+			Reference:     input.Reference,
+			Method:        input.Method,
+			Message:       input.Message,
+			Description:   input.Description,
+			Active:        true,
+		}
+		if err := tx.Create(&ft).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to create fee transaction", err)
+		}
+
+		if err := tx.Model(&ft).Updates(map[string]interface{}{
+			"code":      helper.GenerateCode("PAY", uint(ft.ID)),
+			"reference": helper.GenerateCode("REF", uint(ft.ID)),
+		}).Error; err != nil {
+			return apperror.New(
+				apperror.CodeInternal,
+				"failed to update transaction",
+				err,
+			)
+		}
+
+		if err := tx.Model(&installment).
+			Update("status", string(model.InstallmentStatusPaid)).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to update installment status", err)
+		}
+
+		if err := tx.Model(&fee).
+			UpdateColumn("paid_amount", gorm.Expr("paid_amount + ?", ft.Total)).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to update fee total", err)
+		}
+		return nil
+	})
+}
+
+func (r *feerepository) PrintInvoice(ctx context.Context, id int) (response.PrintInvoiceResponse, error) {
+	var data response.PrintInvoiceResponse
+
+	res := r.db.WithContext(ctx).
+		Table("fee_transactions ft").
+		Select(`
+			u.name_kh        AS name_kh,
+			u.name_en        AS name_en,
+			u.gender         AS gender,
+			u.code           AS code,
+			p.name           AS programme_name,
+			g.code        AS generation_name,
+			m.name_kh        AS major_name,
+			c.term           AS term,
+			c.year           AS year,
+			ft.code          AS transacntion_code,
+			ft.date          AS date,
+			ft.due_date      AS due_date,
+			ft.amount        AS amount,
+			ft.discount      AS discount,
+			ft.tax           AS tax,
+			ft.total         AS total,
+			ft.reference     AS reference,
+			ft.method        AS method,
+			ft.message       AS message,
+			ft.description   AS description,
+			i.sequence_no AS sequence_no
+		`).
+		Joins("LEFT JOIN fees f ON f.id = ft.fee_id").
+		Joins("LEFT JOIN installments i ON i.id = ft.installment_id").
+		Joins("LEFT JOIN user u ON u.id = f.user_id").
+		Joins("LEFT JOIN programmes p ON p.id = f.programme_id").
+		Joins("LEFT JOIN generation g ON g.id = f.generation_id").
+		Joins("LEFT JOIN major m ON m.id = f.major_id").
+		Joins("LEFT JOIN class c ON c.id = f.class_id").
+		Where("ft.id = ?", id).
+		Scan(&data)
+	data.Date = helper.FormatDate(data.Date)
+	if res.Error != nil {
+		return response.PrintInvoiceResponse{}, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return response.PrintInvoiceResponse{}, gorm.ErrRecordNotFound
+	}
+	return data, nil
+}
+
+func (r *feerepository) DeleteFeeTransaction(ctx context.Context, id int) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var ft model.FeeTransaction
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			First(&ft, id).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return apperror.New(apperror.CodeNotFound, "fee transaction not found", err)
+			}
+			return apperror.New(apperror.CodeInternal, "failed to load fee transaction", err)
+		}
+
+		// Reverse the payment on the fee
+		res := tx.Model(&model.Fee{}).
+			Where("id = ?", ft.FeeID).
+			UpdateColumn("paid_amount", gorm.Expr("paid_amount - ?", ft.Total))
+		if res.Error != nil {
+			return apperror.New(apperror.CodeInternal, "failed to update fee paid amount", res.Error)
+		}
+		if res.RowsAffected == 0 {
+			return apperror.New(apperror.CodeNotFound, "fee not found", nil)
+		}
+
+		// Reopen the installment
+		res = tx.Model(&model.Installment{}).
+			Where("id = ?", ft.InstallmentID).
+			Update("status", string(model.InstallmentStatusPending))
+		if res.Error != nil {
+			return apperror.New(apperror.CodeInternal, "failed to update installment status", res.Error)
+		}
+		if res.RowsAffected == 0 {
+			return apperror.New(apperror.CodeNotFound, "installment not found", nil)
+		}
+
+		if err := tx.Delete(&ft).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to delete fee transaction", err)
+		}
+		return nil
+	})
 }

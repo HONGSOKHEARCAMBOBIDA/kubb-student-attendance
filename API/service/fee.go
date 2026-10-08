@@ -15,6 +15,9 @@ type FeeService interface {
 	AddFee(ctx context.Context, input request.FeeRequestCreate) error
 	GetSchoolarship(ctx context.Context) ([]model.Schoolarship, error)
 	GetUserClass(ctx context.Context, userID int) ([]response.UserClass, error)
+	AddFeeTransaction(ctx context.Context, input request.FeeTransaction) error
+	PrintInvoice(ctx context.Context, id int) (response.PrintInvoiceResponse, error)
+	DeleteFeeTransaction(ctx context.Context, id int) error
 }
 
 type feeservice struct {
@@ -64,6 +67,36 @@ func (s *feeservice) AddFee(ctx context.Context, input request.FeeRequestCreate)
 	defer cancel()
 	if err := s.repo.AddFee(ctx, input); err != nil {
 		return apperror.Internal("failed to create fee", err)
+	}
+	return nil
+}
+
+func (s *feeservice) AddFeeTransaction(ctx context.Context, input request.FeeTransaction) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	if err := s.repo.AddFeeTransaction(ctx, input); err != nil {
+		return apperror.Internal("failed to create fee", err)
+	}
+	return nil
+}
+
+func (s *feeservice) PrintInvoice(ctx context.Context, id int) (response.PrintInvoiceResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	data, err := s.repo.PrintInvoice(ctx, id)
+	if err != nil {
+		return response.PrintInvoiceResponse{}, err
+	}
+
+	return data, nil
+}
+
+func (s *feeservice) DeleteFeeTransaction(ctx context.Context, id int) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	if err := s.repo.DeleteFeeTransaction(ctx, id); err != nil {
+		return apperror.Internal("failed to delete fee", err)
 	}
 	return nil
 }

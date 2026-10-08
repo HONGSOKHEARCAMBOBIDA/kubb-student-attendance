@@ -182,3 +182,6 @@ export const getFeeschedule = () => api.get("/view.fee.schedule");
 export const addFee = (data) => api.post("/add.fee", data);
 export const getUserClasss = (id) => api.get(`/view.user.class/${id}`)
 export const getSchoolarship = () => api.get(`/view.schoolarship`)
+export const addFeeTransaction = (data) => api.post('/add.fee.transaction',data)
+export const printInvoice  = (id) => api.get(`/print.invoice/${id}`)
+export const deletefeetransaction = (id) => api.delete(`/delete.fee.transaction/${id}`)

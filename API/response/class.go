@@ -38,6 +38,8 @@ type ClassResponse struct {
 
 type ClassNoPaginationResponse struct {
 	base.ModelBase
-	Name *string         `gorm:"column:name;type:varchar(255)" json:"name"`
-	Type model.ClassType `gorm:"column:type" json:"type"`
+	Name     *string         `gorm:"column:name;type:varchar(255)" json:"name"`
+	Type     model.ClassType `gorm:"column:type" json:"type"`
+	Year     int             `gorm:"column:year" json:"year"`
+	Semester int             `gorm:"column:semester" json:"semester"`
 }

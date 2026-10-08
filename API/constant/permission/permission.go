@@ -74,6 +74,7 @@ const (
 
 	ViewLocation = "view.location"
 
-	ViewFeeSchedule = "view.fee.schedule"
-	AddFee          = "add.fee"
+	ViewFeeSchedule      = "view.fee.schedule"
+	AddFee               = "add.fee"
+	DeleteFeeTransaction = "delete.fee.transaction"
 )

@@ -141,8 +141,11 @@ const (
 	ViewCommune  = "/location/commune/:id"
 	ViewVillage  = "/location/village/:id"
 
-	ViewFeeSchedule  = "view.fee.schedule"
-	AddFee           = "add.fee"
-	ViewUserClass    = "view.user.class/:id"
-	ViewSchoolarship = "view.schoolarship"
+	ViewFeeSchedule      = "view.fee.schedule"
+	AddFee               = "add.fee"
+	ViewUserClass        = "view.user.class/:id"
+	ViewSchoolarship     = "view.schoolarship"
+	AddFeeTransaction    = "add.fee.transaction"
+	PrintInvoice         = "print.invoice/:id"
+	DeleteFeeTransaction = "delete.fee.transaction/:id"
 )

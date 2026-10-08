@@ -7,6 +7,7 @@ import {
   getFeeschedule,
   getUserClasss,
   getSchoolarship,
+  deletefeetransaction
 } from "../src/api/services";
 import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
@@ -14,6 +15,37 @@ import AppSelect from "./AppSelect.vue";
 import AppFilterBar from "./AppFilterBar.vue";
 import { useNotification } from "../composables/useNotification.js";
 import AppTable from "./AppTable.vue";
+import FeeTransactionDialog from "./FeeTransactionDialog.vue";
+import InvoicePrint from "./InvoicePrint.vue";
+import { printInvoice } from "../src/api/services";
+import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
+async function deleteFeeTransaction(row) {
+   await ElMessageBox.confirm(
+    `លុបការបង់ប្រាក់ ${row.fee_transaction_total}$?`,
+    "សូមបញ្ជាក់",
+    { type: "warning" },
+  ); 
+  try {
+    await deletefeetransaction(row.fee_transacntion_id);
+    ElMessage.success("លុបការបង់ប្រាក់បានជោគជ័យ");
+    fetchUserClass();
+  } catch (e) {
+    ElNotification.error({
+      title: "Error",
+      message: e.response?.data?.error,
+      offset: 100,
+    });
+  }
+}
+
+const invoiceRef = ref(null);
+const invoice = ref({});
+
+async function onPrint(installment) {
+  const res = await printInvoice(installment.fee_transacntion_id); // the ft.id, not the installment id
+  invoice.value = res.data.data;
+  await invoiceRef.value.print();
+}
 
 const props = defineProps({
   studentRaw: { type: Object, default: () => ({}) },
@@ -32,11 +64,17 @@ const title = computed(() =>
     : "បង់លុយនិស្សិត",
 );
 const installmentColumns = [
-  { prop: 'sequence_no', label: 'លើកទី', minWidth: 120, align: 'center' },
-  { prop: 'due_date', label: 'ថ្ងៃ-ខែ ត្រូវបង់', minWidth: 120, align: 'center' },
-  { slot: 'amount', label: 'ចំនួនត្រូវបង់', minWidth: 120, align: 'center' },
-  { prop: 'status', label: 'ស្ថានភាព', minWidth: 120, align: 'center' },
-]
+  { prop: "sequence_no", label: "លើកទី", minWidth: 120, align: "center" },
+  {
+    prop: "due_date",
+    label: "ថ្ងៃ-ខែ ត្រូវបង់",
+    minWidth: 120,
+    align: "center",
+  },
+  { slot: "amount", label: "ចំនួនត្រូវបង់", minWidth: 120, align: "center" },
+  { slot: "fee_transaction_total", label: "ចំនួនបានបង់", minWidth: 120, align: "center" },
+  { prop: "status", label: "ស្ថានភាព", minWidth: 120, align: "center" },
+];
 const saving = ref(false);
 const loading = ref(false);
 const majorprices = ref([]);
@@ -45,6 +83,18 @@ const feeschedules = ref([]);
 const userClasses = ref([]);
 const scholarships = ref([]);
 const loadingUserClass = ref(false);
+
+const payDialog = ref(false);
+const selectedInstallment = ref(null);
+function openPay(installment) {
+  selectedInstallment.value = installment;
+  payDialog.value = true;
+}
+async function onPaid() {
+  await fetchUserClass();
+  emit("saved");
+}
+
 async function fetchUserClass() {
   userClasses.value = [];
   if (!props.studentRaw?.id) return;
@@ -267,7 +317,6 @@ async function submit() {
           align: 'center',
         },
         { slot: 'year', label: 'ឆ្នាំ', minWidth: 40, align: 'center' },
-        { slot: 'semester', label: 'ឆមាស', minWidth: 50, align: 'center' },
         { slot: 'group_name', label: 'ក្រុម', minWidth: 40, align: 'center' },
         { slot: 'term', label: 'វគ្គ', minWidth: 40, align: 'center' },
         { slot: 'active', label: 'ស្ថានភាព', minWidth: 120, align: 'center' },
@@ -292,15 +341,25 @@ async function submit() {
         },
         {
           slot: 'total',
-          label: 'ប្រាក់មិនទាន់បង់',
+          label: 'ប្រាក់ត្រូវបង់',
+          minWidth: 120,
+          align: 'center',
+        },
+        {
+          slot: 'paid_amount',
+          label: 'ប្រាក់បានបង់',
           minWidth: 120,
           align: 'center',
         },
       ]"
     >
-    <template #class_name="{row}">
-      <el-text size="large">{{ row.class_name }} | {{ row.type === "onclass" ? "ផ្ទាល់" : "អនឡាញ" }} | <el-text type="danger">{{ row.programme_name }}</el-text></el-text>
-    </template>
+      <template #class_name="{ row }">
+        <el-text size="large"
+          >{{ row.class_name }} |
+          {{ row.type === "onclass" ? "ផ្ទាល់" : "អនឡាញ" }} |
+          <el-text type="danger">{{ row.programme_name }}</el-text></el-text
+        >
+      </template>
       <template #generation_name="{ row }">
         {{ row.generation_name }}
         <span v-if="row.generation_start || row.generation_end">
@@ -312,66 +371,106 @@ async function submit() {
           {{ row.active ? "កំពុងសិក្សា" : "បានបញ្ចប់" }}
         </el-tag>
       </template>
-      <template #year="{row}">
-         <el-statistic
+      <template #year="{ row }">
+        <el-statistic
           :value="row.year"
           :value-style="{ fontSize: '20px', color: '#000000' }"
         />
       </template>
-            <template #semester="{row}">
-         <el-statistic
-          :value="row.semester"
-          :value-style="{ fontSize: '20px', color: '#000000' }"
-        />
-      </template>
-          <template #group_name="{row}">
-         <el-statistic
+      <template #group_name="{ row }">
+        <el-statistic
           :value="row.group_name"
           :value-style="{ fontSize: '20px', color: '#000000' }"
         />
       </template>
-          <template #term="{row}">
-         <el-statistic
+      <template #term="{ row }">
+        <el-statistic
           :value="row.term"
           :value-style="{ fontSize: '20px', color: '#000000' }"
         />
       </template>
-       <template #amount="{row}">
-            <el-statistic
+      <template #amount="{ row }">
+        <el-statistic
           :value="row.amount"
           :formatter="(val) => `${Number(val).toFixed(2)}$`"
           :value-style="{ fontSize: '16px', color: '#000000' }"
         />
       </template>
-            <template #discount="{row}">
-            <el-statistic
+      <template #discount="{ row }">
+        <el-statistic
           :value="row.discount"
           :formatter="(val) => `${Number(val).toFixed(2)}$`"
           :value-style="{ fontSize: '16px', color: '#000000' }"
         />
       </template>
-      <template #total="{row}">
-            <el-statistic
+      <template #total="{ row }">
+        <el-statistic
           :value="row.total"
           :formatter="(val) => `${Number(val).toFixed(2)}$`"
           :value-style="{ fontSize: '26px', color: '#FF0000' }"
         />
       </template>
-<template #expand="{ row: userClass }">
-  <AppTable
-    :show-pagination="false"
-    :data="userClass.installments ?? []"
-    :columns="installmentColumns"
-  >
-    <template #amount="{ row: installment }">
-      <el-statistic
-        :value="installment.amount"
-        :formatter="(val) => `${Number(val).toFixed(2)}$`"
-        :value-style="{ fontSize: '20px', color: '#FF0000' }"
-      />
-    </template>
-  </AppTable>
-</template>
+      <template #paid_amount="{ row }">
+        <el-statistic
+          :value="row.paid_amount"
+          :formatter="(val) => `${Number(val).toFixed(2)}$`"
+          :value-style="{ fontSize: '26px', color: '#FF0000' }"
+        />
+      </template>
+      <template #expand="{ row: userClass }">
+        <AppTable
+          :show-pagination="false"
+          :data="userClass.installments ?? []"
+          :columns="installmentColumns"
+        >
+          <template #amount="{ row: installment }">
+            <el-statistic
+              :value="installment.amount"
+              :formatter="(val) => `${Number(val).toFixed(2)}$`"
+              :value-style="{ fontSize: '20px', color: '#FF0000' }"
+            />
+          </template>
+          <template #fee_transaction_total="{row: installment}">
+            <el-statistic
+              :value="installment.fee_transaction_total"
+              :formatter="(val) => `${Number(val).toFixed(2)}$`"
+              :value-style="{ fontSize: '20px', color: '#FF0000' }"
+            />
+          </template>
+          <template #actions="{ row: installment }">
+            <el-tooltip content="បង់ប្រាក់" placement="top">
+              <AppButton
+                size="small"
+                icon="Money"
+                type="success"
+                circle
+                :disabled="installment.status === 'paid'"
+                @click="openPay(installment)"
+              />
+            </el-tooltip>
+            <el-tooltip content="ព្រីនវិក័យបត្រ" placement="top">
+              <AppButton
+                size="small"
+                icon="Printer"
+                type="primary"
+                circle
+                :disabled="installment.status !== 'paid'"
+                @click="onPrint(installment)"
+              />
+            </el-tooltip>
+            <el-tooltip content="លុបការបង់ប្រាក់" placement="top">
+              <AppButton
+                size="small"
+                icon="Delete"
+                type="danger"
+                circle
+                :disabled="installment.status !== 'paid'"
+                @click="deleteFeeTransaction(installment)"
+              />
+            </el-tooltip>
+          </template>
+        </AppTable>
+      </template>
     </AppTable>
     <el-form label-position="top">
       <AppFilterBar
@@ -470,6 +569,13 @@ async function submit() {
       >
     </template>
   </AppDialog>
+
+  <FeeTransactionDialog
+    v-model="payDialog"
+    :installment="selectedInstallment"
+    @saved="onPaid"
+  />
+  <InvoicePrint ref="invoiceRef" :data="invoice" />
 </template>
 
 <style scoped>

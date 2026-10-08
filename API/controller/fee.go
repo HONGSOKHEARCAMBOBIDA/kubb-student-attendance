@@ -65,3 +65,41 @@ func (cr *FeeController) AddFee(c *gin.Context) {
 	}
 	share.ResponseSuccess(c, http.StatusOK, "Create Success")
 }
+
+func (cr *FeeController) AddFeeTransaction(c *gin.Context) {
+	var input request.FeeTransaction
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.AddFeeTransaction(c.Request.Context(), input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "Create Success")
+}
+
+func (cr *FeeController) PrintInvoice(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.PrintInvoice(c.Request.Context(), id)
+	if err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr *FeeController) DeleteFeeTransaction(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	if err := cr.service.DeleteFeeTransaction(c, id); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "Create Success")
+}

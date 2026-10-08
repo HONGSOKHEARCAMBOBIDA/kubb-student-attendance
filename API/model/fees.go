@@ -20,6 +20,7 @@ type Fee struct {
 	Amount        float64 `gorm:"type:decimal(20,2);not null;default:0.00" json:"amount"`
 	Discount      float64 `gorm:"type:decimal(20,2);not null;default:0.00" json:"discount"`
 	Total         float64 `gorm:"type:decimal(20,2);not null;default:0.00" json:"total"`
+	PaidAmount    float64 `gorm:"column:paid_amount" json:"paid_amount"`
 	Active        bool    `gorm:"not null;default:true" json:"active"`
 }
 

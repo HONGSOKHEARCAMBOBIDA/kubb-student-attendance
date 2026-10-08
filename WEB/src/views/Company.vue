@@ -235,7 +235,7 @@ async function fetchLookups() {
       value: s.id
     }))
     classnopagination.value = (classnopaginationRef.data.data || []).map((s)=> ({
-      label: `${s.name} - ${s.type}`,
+      label: `${s.name} - ${s.type} - ឆ្នាំទី${s.year} - ឆមាសទី${s.semester}`,
       value: s.id
     }))
     users.value = (userRef.data.data || []).map((s) => ({
