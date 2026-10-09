@@ -149,4 +149,8 @@ const (
 	PrintInvoice         = "print.invoice/:id"
 	DeleteFeeTransaction = "delete.fee.transaction/:id"
 	DeleteFee            = "delete.fee/:id"
+
+	ViewIncomeCategory = "view.income.category"
+	ViewIncome         = "view.income"
+	AddIncome          = "add.income"
 )

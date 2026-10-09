@@ -78,4 +78,8 @@ const (
 	AddFee               = "add.fee"
 	DeleteFeeTransaction = "delete.fee.transaction"
 	DeleteFee            = "delete.fee"
+
+	ViewIncomeCategory = "view.income.category"
+	ViewIncome         = "view.income"
+	AddIncome          = "add.income"
 )

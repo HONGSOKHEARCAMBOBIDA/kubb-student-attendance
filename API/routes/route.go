@@ -32,12 +32,15 @@ func SetupRoutes(r *gin.Engine) {
 	//repo
 	locationrepo := repository.NewLocationRepository(config.DB)
 	feerepo := repository.NewFeeRepository(config.DB)
+	incomerepo := repository.NewIncomeRepository(config.DB)
 	//service
 	locationservice := service.NewLocationService(locationrepo)
 	feeservice := service.NewFeeService(feerepo)
+	incomeservice := service.NewIncomeService(incomerepo)
 	//controller
 	locationcontroller := controller.NewLocationController(locationservice)
 	feecontroller := controller.NewFeeController(feeservice)
+	incomecontroller := controller.NewIncomeController(incomeservice)
 	r.Static("/clientimage", "./public/clientimage")
 	r.GET("/health", func(ctx *gin.Context) {
 		if db, err := config.DB.DB(); err != nil || db.Ping() != nil {
@@ -174,5 +177,9 @@ func SetupRoutes(r *gin.Engine) {
 		auth.GET(route.PrintInvoice, middleware.PermissionMiddleware(permission.ViewFeeSchedule), feecontroller.PrintInvoice)
 		auth.DELETE(route.DeleteFeeTransaction, middleware.PermissionMiddleware(permission.DeleteFeeTransaction), feecontroller.DeleteFeeTransaction)
 		auth.DELETE(route.DeleteFee, middleware.PermissionMiddleware(permission.DeleteFee), feecontroller.DeleteFee)
+
+		// Income
+		auth.GET(route.ViewIncomeCategory, middleware.PermissionMiddleware(permission.ViewIncomeCategory), incomecontroller.GetIncomeCategory)
+		auth.POST(route.AddIncome, middleware.PermissionMiddleware(permission.AddIncome), incomecontroller.AddIncome)
 	}
 }

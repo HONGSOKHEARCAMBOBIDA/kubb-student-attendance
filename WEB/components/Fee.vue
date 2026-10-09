@@ -21,6 +21,7 @@ import InvoicePrint from "./InvoicePrint.vue";
 import { printInvoice } from "../src/api/services";
 import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
 import { Delete } from "@element-plus/icons-vue";
+
 async function deleteFeeTransaction(row) {
    await ElMessageBox.confirm(
     `លុបការបង់ប្រាក់ ${row.fee_transaction_total}$?`,
@@ -87,6 +88,7 @@ const props = defineProps({
   programmes: { type: Array, default: () => [] },
   majors: { type: Array, default: () => [] },
 });
+
 const emit = defineEmits(["update:modelValue", "saved"]);
 const notify = useNotification();
 const title = computed(() =>

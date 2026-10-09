@@ -57,7 +57,7 @@
           { slot: 'gender', label: 'ភេទ', minWidth: 90 },
           { prop: 'role_name', label: 'តួនាទី', minWidth: 110 },
         ]"
-        actionsWidth="140"
+        actionsWidth="160"
       >
         <template #gender="{ row }">
           <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
@@ -89,6 +89,15 @@
               type="success"
               circle
               @click="openFeeDialog(row)"
+            />
+          </el-tooltip>
+          <el-tooltip content="បង់ថ្លៃសេវាផ្សេងៗ" placement="top">
+            <AppButton
+              size="small"
+              icon="Money"
+              type="primary"
+              circle
+              @click="openIncomeDialog(row)"
             />
           </el-tooltip>
         </template>
@@ -193,8 +202,12 @@
     :generations="lookupStore.generations"
     :majors="lookupStore.majors"
     >
-
     </Fee>
+<Income
+  v-model="incomedialogvisible"
+  :student-raw="studentRaw"
+  @saved="fetchUsers"
+/>
   </div>
 </template>
 
@@ -218,6 +231,7 @@ import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppInput from "../../components/AppInput.vue";
 import { useLookupStore } from "../stores/lookup.js";
 import Fee from "../../components/Fee.vue";
+import Income from "../../components/Income.vue";
 const lookupStore = useLookupStore();
 const users = ref([]);
 const roles = ref([]);
@@ -247,6 +261,11 @@ function openFeeDialog(row){
   feedialogvisible.value = true
 }
 
+const incomedialogvisible = ref(false);
+function openIncomeDialog(row) {
+  studentRaw.value = row;
+  incomedialogvisible.value = true;
+}
 
 const canedit = computed(() =>
   userDataStore.permissions?.some((p) => p.name === "edit.user"),
