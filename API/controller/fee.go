@@ -103,3 +103,15 @@ func (cr *FeeController) DeleteFeeTransaction(c *gin.Context) {
 	}
 	share.ResponseSuccess(c, http.StatusOK, "Create Success")
 }
+
+func (cr *FeeController) DeleteFee(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	if err := cr.service.DeleteFee(c, id); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "delete Success")
+}

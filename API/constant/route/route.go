@@ -148,4 +148,5 @@ const (
 	AddFeeTransaction    = "add.fee.transaction"
 	PrintInvoice         = "print.invoice/:id"
 	DeleteFeeTransaction = "delete.fee.transaction/:id"
+	DeleteFee            = "delete.fee/:id"
 )

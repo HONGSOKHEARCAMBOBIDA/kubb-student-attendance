@@ -11,13 +11,22 @@ const (
 	UserClassStatusDROPPED  UserClassStatus = "DROPPED"
 )
 
+type FeeStatusUserClass string
+
+const (
+	FeeStatusUserClassNONE    FeeStatusUserClass = "NONE"
+	FeeStatusUserClassACTIVE  FeeStatusUserClass = "ACTIVE"
+	FeeStatusUserClassDELETED FeeStatusUserClass = "DELETED"
+)
+
 type UserClass struct {
 	base.ModelBase
-	UserID   int64           `gorm:"column:user_id;not null" json:"user_id"`
-	ClassID  int64           `gorm:"column:class_id;not null" json:"class_id"`
-	IsActive bool            `gorm:"column:is_active;not null;default:true" json:"is_active"`
-	Status   UserClassStatus `json:"status"`
-	Class    Class
+	UserID    int64              `gorm:"column:user_id;not null" json:"user_id"`
+	ClassID   int64              `gorm:"column:class_id;not null" json:"class_id"`
+	IsActive  bool               `gorm:"column:is_active;not null;default:true" json:"is_active"`
+	Status    UserClassStatus    `json:"status"`
+	FeeStatus FeeStatusUserClass `json:"fee_status"`
+	Class     Class
 }
 
 func (UserClass) TableName() string {

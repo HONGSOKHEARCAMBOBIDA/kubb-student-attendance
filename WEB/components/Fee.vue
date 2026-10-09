@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, watch, computed } from "vue";
+import { ref, reactive, watch, computed, markRaw } from "vue";
 import {
   getMajorPrice,
   getClass,
@@ -7,7 +7,8 @@ import {
   getFeeschedule,
   getUserClasss,
   getSchoolarship,
-  deletefeetransaction
+  deletefeetransaction,
+  deletefee
 } from "../src/api/services";
 import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
@@ -19,6 +20,7 @@ import FeeTransactionDialog from "./FeeTransactionDialog.vue";
 import InvoicePrint from "./InvoicePrint.vue";
 import { printInvoice } from "../src/api/services";
 import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
+import { Delete } from "@element-plus/icons-vue";
 async function deleteFeeTransaction(row) {
    await ElMessageBox.confirm(
     `លុបការបង់ប្រាក់ ${row.fee_transaction_total}$?`,
@@ -33,6 +35,37 @@ async function deleteFeeTransaction(row) {
     ElNotification.error({
       title: "Error",
       message: e.response?.data?.error,
+      offset: 100,
+    });
+  }
+}
+
+async function handleDeleteFee(row) {
+  try {
+    await ElMessageBox.confirm(
+      `តើអ្នកពិតជាចង់លុបថ្លៃសិក្សា ${row.total}$ មែនទេ?`,
+      "បញ្ជាក់ការលុប",
+      {
+        confirmButtonText: "លុប",
+        cancelButtonText: "បោះបង់",
+        type: "error",
+        icon: markRaw(Delete),
+        confirmButtonClass: "el-button--danger",
+        distinguishCancelAndClose: true,
+      }
+    );
+
+    await deletefee(row.fee_id);
+
+    ElMessage.success("លុបថ្លៃសិក្សាបានជោគជ័យ");
+    fetchUserClass();
+  } catch (e) {
+    // អ្នកប្រើចុចបោះបង់ មិនចាំបាច់បង្ហាញ Error ទេ
+    if (e === "cancel" || e === "close") return;
+
+    ElNotification.error({
+      title: "កំហុស",
+      message: e.response?.data?.error || "មិនអាចលុបថ្លៃសិក្សាបានទេ",
       offset: 100,
     });
   }
@@ -306,6 +339,7 @@ async function submit() {
       :show-pagination="false"
       :data="userClasses"
       :loading="loadingUserClass"
+      actions-width="90px"
       :columns="[
         { slot: 'class_name', label: 'ថ្នាក់', minWidth: 150, align: 'center' },
         { prop: 'major_name', label: 'ជំនាញ', minWidth: 120, align: 'center' },
@@ -416,6 +450,17 @@ async function submit() {
           :formatter="(val) => `${Number(val).toFixed(2)}$`"
           :value-style="{ fontSize: '26px', color: '#FF0000' }"
         />
+      </template>
+      <template #actions="{row}">
+            <el-tooltip content="លុបថ្លៃសិក្សា" placement="top">
+              <AppButton
+                size="small"
+                icon="Delete"
+                type="danger"
+                circle
+                @click="handleDeleteFee(row)"
+              />
+            </el-tooltip>        
       </template>
       <template #expand="{ row: userClass }">
         <AppTable

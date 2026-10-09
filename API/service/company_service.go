@@ -315,7 +315,7 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 	var students []response.StudentWithClass
 	if err := s.db.WithContext(ctx).Table("user u").
 		Joins("INNER JOIN user_class uc ON uc.user_id = u.id").
-		Where("uc.class_id IN ?", classIDs).
+		Where("uc.class_id IN ? AND uc.fee_status != ?", classIDs, model.FeeStatusUserClassDELETED).
 		Select(`
 		u.id AS id,
 		u.name_kh AS name_kh,
@@ -324,7 +324,8 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		u.code AS code,
 		uc.class_id AS class_id,
 		uc.status AS status,
-		uc.id AS user_class_id
+		uc.id AS user_class_id,
+		uc.fee_status AS fee_status
 	`).Scan(&students).Error; err != nil {
 		return nil, nil, err
 	}

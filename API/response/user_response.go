@@ -6,12 +6,13 @@ import (
 
 type UserResponse struct {
 	base.ModelBase
-	NameKH      string `json:"name_kh" gorm:"column:name_kh"`
-	NameEN      string `json:"name_en" gorm:"column:name_en"`
-	Gender      int    `json:"gender" gorm:"column:gender"`
-	Code        string `json:"code" gorm:"column:code"`
-	Status      string `json:"status"`
-	UserClassID int    `josn:"user_class_id" gorm:"column:user_class_id"`
+	NameKH             string `json:"name_kh" gorm:"column:name_kh"`
+	NameEN             string `json:"name_en" gorm:"column:name_en"`
+	Gender             int    `json:"gender" gorm:"column:gender"`
+	Code               string `json:"code" gorm:"column:code"`
+	Status             string `json:"status"`
+	UserClassID        int    `josn:"user_class_id" gorm:"column:user_class_id"`
+	UserClassFeeStatus string `json:"fee_status" gorm:"column:fee_status"`
 }
 
 type UserCount struct {

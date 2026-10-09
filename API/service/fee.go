@@ -18,6 +18,7 @@ type FeeService interface {
 	AddFeeTransaction(ctx context.Context, input request.FeeTransaction) error
 	PrintInvoice(ctx context.Context, id int) (response.PrintInvoiceResponse, error)
 	DeleteFeeTransaction(ctx context.Context, id int) error
+	DeleteFee(ctx context.Context, id int) error
 }
 
 type feeservice struct {
@@ -96,6 +97,15 @@ func (s *feeservice) DeleteFeeTransaction(ctx context.Context, id int) error {
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
 	defer cancel()
 	if err := s.repo.DeleteFeeTransaction(ctx, id); err != nil {
+		return apperror.Internal("failed to delete fee", err)
+	}
+	return nil
+}
+
+func (s *feeservice) DeleteFee(ctx context.Context, id int) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	if err := s.repo.DeleteFee(ctx, id); err != nil {
 		return apperror.Internal("failed to delete fee", err)
 	}
 	return nil

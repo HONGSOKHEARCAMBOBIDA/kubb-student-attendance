@@ -82,7 +82,7 @@
               @click="toggleStatus(row)"
             />
           </el-tooltip> -->
-          <el-tooltip content="ចុះឈ្មោះចូលរៀន" placement="top">
+          <el-tooltip content="បង់ថ្លៃសិក្សា" placement="top">
             <AppButton
               size="small"
               icon="ArrowRightBold"

@@ -23,6 +23,7 @@ type FeeRepository interface {
 	AddFeeTransaction(ctx context.Context, input request.FeeTransaction) error
 	PrintInvoice(ctx context.Context, id int) (response.PrintInvoiceResponse, error)
 	DeleteFeeTransaction(ctx context.Context, id int) error
+	DeleteFee(ctx context.Context, id int) error
 }
 
 type feerepository struct {
@@ -161,10 +162,11 @@ func (r *feerepository) AddFee(ctx context.Context, input request.FeeRequestCrea
 		var feeschedule model.FeeSchedule
 		var scholarship model.Schoolarship
 		userClass := model.UserClass{
-			UserID:   int64(input.StudentID),
-			ClassID:  int64(input.ClassID),
-			IsActive: true,
-			Status:   model.UserClassStatusSTUDY,
+			UserID:    int64(input.StudentID),
+			ClassID:   int64(input.ClassID),
+			IsActive:  true,
+			Status:    model.UserClassStatusSTUDY,
+			FeeStatus: model.FeeStatusUserClassACTIVE,
 		}
 		if err := tx.Create(&userClass).Error; err != nil {
 			return err
@@ -178,11 +180,15 @@ func (r *feerepository) AddFee(ctx context.Context, input request.FeeRequestCrea
 		if err := tx.First(&feeschedule, input.FeeScheduleID).Error; err != nil {
 			return err
 		}
-		if err := tx.First(&scholarship, input.SchoolarshipID).Error; err != nil {
-			return err
-		}
 		BaseAmount := helper.GetFeeAmountPerYear(majorprice, feeschedule)
-		scholarshipdiscount := helper.CalculateDiscountBySchoolarship(BaseAmount, &scholarship)
+		var scholarshipdiscount float64
+
+		if input.SchoolarshipID != nil && *input.SchoolarshipID > 0 {
+			if err := tx.First(&scholarship, input.SchoolarshipID).Error; err != nil {
+				return err
+			}
+			scholarshipdiscount = helper.CalculateDiscountBySchoolarship(BaseAmount, &scholarship)
+		}
 		NetAmount := BaseAmount - scholarshipdiscount
 		fee := model.Fee{
 			UserClassID:   userClass.ID,
@@ -386,5 +392,45 @@ func (r *feerepository) DeleteFeeTransaction(ctx context.Context, id int) error 
 			return apperror.New(apperror.CodeInternal, "failed to delete fee transaction", err)
 		}
 		return nil
+	})
+}
+
+func (r *feerepository) DeleteFee(ctx context.Context, id int) error {
+	if id <= 0 {
+		return errors.New("invalid fee id")
+	}
+
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var fee model.Fee
+		if err := tx.First(&fee, id).Error; err != nil {
+			return err
+		}
+
+		var installmentIDs []int
+		if err := tx.Model(&model.Installment{}).
+			Where("fee_id = ?", fee.ID).
+			Pluck("id", &installmentIDs).Error; err != nil {
+			return err
+		}
+
+		if len(installmentIDs) > 0 {
+			if err := tx.Where("installment_id IN ?", installmentIDs).
+				Delete(&model.FeeTransaction{}).Error; err != nil {
+				return err
+			}
+
+			if err := tx.Where("id IN ?", installmentIDs).
+				Delete(&model.Installment{}).Error; err != nil {
+				return err
+			}
+		}
+
+		if err := tx.Model(&model.UserClass{}).
+			Where("id = ?", fee.UserClassID).
+			Update("fee_status", model.FeeStatusUserClassDELETED).Error; err != nil {
+			return err
+		}
+
+		return tx.Delete(&fee).Error
 	})
 }

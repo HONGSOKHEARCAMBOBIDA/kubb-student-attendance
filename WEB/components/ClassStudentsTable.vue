@@ -260,6 +260,7 @@ const studentcolumn = [
   { slot: "gender", label: "ភេទ", minwidth: 100 },
   { prop: "code", label: "អត្តលេខ", minwidth: 100 },
   { slot: "status", label: "ស្ថានភាព", minwidth: 100 },
+  { prop: "fee_status", label: "បង់ប្រាក់", minwidth: 100 },
 ];
 
 const userClassStatus = [

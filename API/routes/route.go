@@ -173,5 +173,6 @@ func SetupRoutes(r *gin.Engine) {
 		auth.POST(route.AddFeeTransaction, middleware.PermissionMiddleware(permission.AddFee), feecontroller.AddFeeTransaction)
 		auth.GET(route.PrintInvoice, middleware.PermissionMiddleware(permission.ViewFeeSchedule), feecontroller.PrintInvoice)
 		auth.DELETE(route.DeleteFeeTransaction, middleware.PermissionMiddleware(permission.DeleteFeeTransaction), feecontroller.DeleteFeeTransaction)
+		auth.DELETE(route.DeleteFee, middleware.PermissionMiddleware(permission.DeleteFee), feecontroller.DeleteFee)
 	}
 }

@@ -77,4 +77,5 @@ const (
 	ViewFeeSchedule      = "view.fee.schedule"
 	AddFee               = "add.fee"
 	DeleteFeeTransaction = "delete.fee.transaction"
+	DeleteFee            = "delete.fee"
 )
