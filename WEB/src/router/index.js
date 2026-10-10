@@ -204,7 +204,7 @@ const routes = [
         path: "Income",
         name: "Income",
         component: () => import("../views/IncomeView.vue"),
-        meta: { title: "Income",showInNav: false }, // no showInNav -> hidden from sidebar
+        meta: { title: "បញ្ជីចំណូល",showInNav: false }, // no showInNav -> hidden from sidebar
       },
     ],
   },

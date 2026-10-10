@@ -14,6 +14,7 @@ type IncomeService interface {
 	GetIncomeCategory(ctx context.Context) ([]model.IncomeCategory, error)
 	AddIncome(ctx context.Context, input request.IncomeRequest) error
 	GetIncome(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.IncomeResponse, *model.PaginationMetadata, error)
+	DeleteIncome(ctx context.Context, id int) error
 }
 
 type incomeservice struct {
