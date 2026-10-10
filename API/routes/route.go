@@ -181,5 +181,6 @@ func SetupRoutes(r *gin.Engine) {
 		// Income
 		auth.GET(route.ViewIncomeCategory, middleware.PermissionMiddleware(permission.ViewIncomeCategory), incomecontroller.GetIncomeCategory)
 		auth.POST(route.AddIncome, middleware.PermissionMiddleware(permission.AddIncome), incomecontroller.AddIncome)
+		auth.GET(route.ViewIncome, middleware.PermissionMiddleware(permission.ViewIncome), incomecontroller.GetIncome)
 	}
 }

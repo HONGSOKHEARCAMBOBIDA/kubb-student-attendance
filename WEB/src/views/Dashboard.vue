@@ -241,6 +241,24 @@
               <ArrowRight />
             </el-icon>
           </div>
+          <div v-if="adminLevel || managerLevel" class="action-btn" @click="$router.push('/Income')">
+            <div class="icon-box">
+              <el-icon :size="23">
+                <Money />
+              </el-icon>
+            </div>
+
+            <div class="action-content">
+              <span class="action-title">ចំណូលផ្សេងៗ</span>
+              <span class="action-description">
+                ចំណូលផ្សេងៗក្រៅពីបង់ថ្លៃសិក្សា
+              </span>
+            </div>
+
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </div>
         </div>
       </el-card>
     </div>
@@ -254,7 +272,7 @@ import { getcountleave } from "../api/services";
 const userDataStore = useUserDataStore();
 const adminLevel = computed(() => userDataStore.level === 7)
 const staftLevel = computed(() => userDataStore.level === 2)
-
+const managerLevel = computed(() => userDataStore.level === 3)
 const leaves = ref([])
 async function fetchCountLeave() {
   try {

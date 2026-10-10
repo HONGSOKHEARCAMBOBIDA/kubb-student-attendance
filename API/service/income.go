@@ -6,12 +6,14 @@ import (
 	"mysql/model"
 	"mysql/repository"
 	"mysql/request"
+	"mysql/response"
 	"mysql/utils"
 )
 
 type IncomeService interface {
 	GetIncomeCategory(ctx context.Context) ([]model.IncomeCategory, error)
 	AddIncome(ctx context.Context, input request.IncomeRequest) error
+	GetIncome(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.IncomeResponse, *model.PaginationMetadata, error)
 }
 
 type incomeservice struct {
@@ -41,4 +43,15 @@ func (s *incomeservice) AddIncome(ctx context.Context, input request.IncomeReque
 		return apperror.Internal("failed to create fee", err)
 	}
 	return nil
+}
+
+func (s *incomeservice) GetIncome(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.IncomeResponse, *model.PaginationMetadata, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	data, meta, err := s.repo.GetIncome(ctx, pf, filter)
+	if err != nil {
+		return nil, nil, apperror.Internal("failed to fetch incomes", err)
+	}
+	return data, meta, nil
 }

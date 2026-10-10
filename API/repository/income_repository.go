@@ -150,19 +150,13 @@ func (r *incomerepository) AddIncome(ctx context.Context, input request.IncomeRe
 	return err
 }
 
-func (r *incomerepository) GetIncome(
-	ctx context.Context,
-	pf request.Pagination,
-	filter map[string]string,
-) ([]response.IncomeResponse, *model.PaginationMetadata, error) {
+func (r *incomerepository) GetIncome(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.IncomeResponse, *model.PaginationMetadata, error) {
 	helper.NormalizePagination(&pf)
-
 	base := func() *gorm.DB {
 		return r.db.WithContext(ctx).
 			Table("incomes i").
 			Joins("LEFT JOIN user u ON u.id = i.customer_id")
 	}
-
 	applyFilters := func(tx *gorm.DB) *gorm.DB {
 		if v := filter["name"]; v != "" {
 			like := "%" + v + "%"
@@ -173,14 +167,10 @@ func (r *incomerepository) GetIncome(
 		}
 		return tx
 	}
-
-	// ---- count ----
 	var total int64
 	if err := applyFilters(base()).Count(&total).Error; err != nil {
 		return nil, nil, fmt.Errorf("count incomes: %w", err)
 	}
-
-	// ---- page of incomes ----
 	var data []response.IncomeResponse
 	offset := (pf.Page - 1) * pf.PageSize
 	err := applyFilters(base()).
@@ -203,20 +193,20 @@ func (r *incomerepository) GetIncome(
 		Offset(offset).
 		Limit(pf.PageSize).
 		Scan(&data).Error
+	for i := range data {
+		data[i].IncomeDate = helper.FormatDate(data[i].IncomeDate)
+		*data[i].DueDate = helper.FormatDate(*data[i].DueDate)
+	}
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch incomes: %w", err)
 	}
-
 	if len(data) == 0 {
 		return data, helper.BuildPaginationMeta(pf, total), nil
 	}
-
 	ids := make([]uint64, len(data))
 	for i, d := range data {
 		ids[i] = uint64(d.ID)
 	}
-
-	// ---- items ----
 	var items []response.IncomeItemsResponse
 	err = r.db.WithContext(ctx).
 		Table("income_items it").
@@ -237,8 +227,6 @@ func (r *incomerepository) GetIncome(
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch income items: %w", err)
 	}
-
-	// ---- payments ----
 	var payments []response.IncomePaymentResponse
 	err = r.db.WithContext(ctx).
 		Table("income_payments ip").
@@ -258,8 +246,6 @@ func (r *incomerepository) GetIncome(
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch income payments: %w", err)
 	}
-
-	// ---- group by income id ----
 	itemsByIncome := make(map[uint64][]response.IncomeItemsResponse, len(data))
 	for _, it := range items {
 		itemsByIncome[it.IncomeID] = append(itemsByIncome[it.IncomeID], it)
@@ -268,18 +254,10 @@ func (r *incomerepository) GetIncome(
 	for _, p := range payments {
 		paymentsByIncome[p.IncomeID] = append(paymentsByIncome[p.IncomeID], p)
 	}
-
 	for i := range data {
 		id := uint64(data[i].ID)
 		data[i].IncomeItems = itemsByIncome[id]
 		data[i].IncomePayments = paymentsByIncome[id]
-		if data[i].IncomeItems == nil {
-			data[i].IncomeItems = []response.IncomeItemsResponse{}
-		}
-		if data[i].IncomePayments == nil {
-			data[i].IncomePayments = []response.IncomePaymentResponse{}
-		}
 	}
-
 	return data, helper.BuildPaginationMeta(pf, total), nil
 }

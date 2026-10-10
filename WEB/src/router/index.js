@@ -200,6 +200,12 @@ const routes = [
         component: () => import("../views/Shift.vue"),
         meta: { title: "Shift",showInNav: false }, // no showInNav -> hidden from sidebar
       },
+      {
+        path: "Income",
+        name: "Income",
+        component: () => import("../views/IncomeView.vue"),
+        meta: { title: "Income",showInNav: false }, // no showInNav -> hidden from sidebar
+      },
     ],
   },
 ];
