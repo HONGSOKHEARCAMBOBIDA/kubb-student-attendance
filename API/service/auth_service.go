@@ -38,6 +38,8 @@ type AuthService interface {
 	CreateUserClass(ctx context.Context, input request.UserClass, c *gin.Context, userID int) error
 	UpdateUserClass(ctx context.Context, id int, input request.UserClassUpdateStatus) error
 	GetUserIncludeStudent(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.UserResponseNotStudent, *model.PaginationMetadata, error)
+	GetStudentCategory(ctx context.Context) ([]model.StudentCategory, error)
+	AddStudentProfile(ctx context.Context, input request.StudentProfileRequestCreate) error
 }
 
 type authservice struct {
@@ -666,6 +668,53 @@ func (s *authservice) UpdateUserClass(ctx context.Context, id int, input request
 		data.Status = input.Status
 		if err := tx.Save(&data).Error; err != nil {
 			return apperror.New(apperror.CodeInternal, "failed to update student", nil)
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *authservice) GetStudentCategory(ctx context.Context) ([]model.StudentCategory, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	var data []model.StudentCategory
+
+	err := s.db.WithContext(ctx).Find(&data).Error
+	if err != nil {
+		return nil, err
+	}
+
+	if len(data) == 0 {
+		return nil, apperror.New(
+			apperror.CodeNotFound,
+			"student category not found",
+			nil,
+		)
+	}
+
+	return data, nil
+}
+
+func (s *authservice) AddStudentProfile(ctx context.Context, input request.StudentProfileRequestCreate) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newdata := model.StudentProfile{
+			UserID:            input.UserID,
+			StudentCategoryID: input.StudentCategoryID,
+			DateOfBirth:       input.DateOfBirth,
+			Nationality:       input.Nationality,
+			Phone:             input.Phone,
+			VillageID:         input.VillageID,
+			Occupation:        input.Occupation,
+			AcademicStream:    input.AcademicStream,
+			TelegramUsername:  input.TelegramUsername,
+			ExamIn:            false,
+			ExamOut:           false,
+		}
+		if err := tx.Create(&newdata).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to create student profile", nil)
 		}
 		return nil
 	})

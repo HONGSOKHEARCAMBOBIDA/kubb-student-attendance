@@ -192,4 +192,13 @@ export const deletefee = (id) => api.delete(`/delete.fee/${id}`);
 export const getincomecategory = () => api.get("/view.income.category");
 export const addincome = (data) => api.post("/add.income", data);
 export const getincome = (params) => api.get("/view.income", { params });
-export const deleteincome = (id) => api.delete(`/delete.income/${id}`)
+export const deleteincome = (id) => api.delete(`/delete.income/${id}`);
+
+export const getprovince = () => api.get("/location/province");
+export const getdistrict = (id) => api.get(`/location/district/${id}`);
+export const getcommunce = (id) => api.get(`/location/commune/${id}`);
+export const getvillage = (id) => api.get(`/location/village/${id}`);
+
+export const getstudentcategory = () => api.get("/view.student.category");
+export const addstudentprofile = (data) =>
+  api.post("/add.student.profile", data);

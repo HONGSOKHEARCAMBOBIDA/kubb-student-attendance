@@ -154,4 +154,7 @@ const (
 	ViewIncome         = "view.income"
 	AddIncome          = "add.income"
 	DeleteIncome       = "delete.income/:id"
+
+	ViewStudentCategory = "view.student.category"
+	AddStudentProfile   = "add.student.profile"
 )

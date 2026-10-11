@@ -183,5 +183,9 @@ func SetupRoutes(r *gin.Engine) {
 		auth.POST(route.AddIncome, middleware.PermissionMiddleware(permission.AddIncome), incomecontroller.AddIncome)
 		auth.GET(route.ViewIncome, middleware.PermissionMiddleware(permission.ViewIncome), incomecontroller.GetIncome)
 		auth.DELETE(route.DeleteIncome, middleware.PermissionMiddleware(permission.DeleteIncome), incomecontroller.DeleteIncome)
+
+		// Student
+		auth.GET(route.ViewStudentCategory, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetStudentCategory)
+		auth.POST(route.AddStudentProfile, middleware.PermissionMiddleware(permission.AddUser), authcontroller.AddStudentProfile)
 	}
 }

@@ -56,12 +56,16 @@
           { prop: 'code', label: 'កូដ', minWidth: 110 },
           { slot: 'gender', label: 'ភេទ', minWidth: 90 },
           { prop: 'role_name', label: 'តួនាទី', minWidth: 110 },
+          { slot: 'student_profile', label: 'ពត៍មានលំអិតនិស្សិត', width: 140,align:'center' },
         ]"
         actionsWidth="160"
       >
         <template #gender="{ row }">
           <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
         </template>
+<template #student_profile="{ row }">
+  <AppButton size="small" icon="user" plain type="primary" circle @click="openProfileDialog(row)" />
+</template>
 
         <template #actions="{ row }" v-if="canedit">
           <el-tooltip content="កែប្រែ" placement="top">
@@ -208,6 +212,8 @@
   :student-raw="studentRaw"
   @saved="fetchUsers"
 />
+
+<StudentProfile v-model="profiledialogvisible" :student-raw="studentRaw" />
   </div>
 </template>
 
@@ -232,6 +238,13 @@ import AppInput from "../../components/AppInput.vue";
 import { useLookupStore } from "../stores/lookup.js";
 import Fee from "../../components/Fee.vue";
 import Income from "../../components/Income.vue";
+import StudentProfile from "../../components/StudentProfile.vue";
+
+const profiledialogvisible = ref(false);
+function openProfileDialog(row) {
+  studentRaw.value = row;
+  profiledialogvisible.value = true;
+}
 const lookupStore = useLookupStore();
 const users = ref([]);
 const roles = ref([]);
