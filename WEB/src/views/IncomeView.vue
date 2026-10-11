@@ -1,12 +1,13 @@
 <script setup>
-import { ref, reactive, onMounted, watch } from "vue";
-import { ElMessage } from "element-plus";
-import { getincome } from "../api/services";
+import { ref, reactive, onMounted, watch, markRaw } from "vue";
+import { ElMessage ,ElMessageBox, ElNotification} from "element-plus";
+import { getincome,deleteincome } from "../api/services";
 import AppTable from "../../components/AppTable.vue";
 import AppButton from "../../components/AppButton.vue";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppInput from "../../components/AppInput.vue";
 import { View } from "@element-plus/icons-vue";
+import { Delete } from "@element-plus/icons-vue";
 const incomes = ref([]);
 const loading = ref(false);
 const page = ref(1);
@@ -27,6 +28,37 @@ async function fetchincome() {
     ElMessage.error("Failed to load income");
   } finally {
     loading.value = false;
+  }
+}
+
+async function handleDeleteIncome(row) {
+  try {
+    await ElMessageBox.confirm(
+      `តើអ្នកពិតជាចង់លុប ${row.total}$ មែនទេ?`,
+      "បញ្ជាក់ការលុប",
+      {
+        confirmButtonText: "លុប",
+        cancelButtonText: "បោះបង់",
+        type: "error",
+        icon: markRaw(Delete),
+        confirmButtonClass: "el-button--danger",
+        distinguishCancelAndClose: true,
+      }
+    );
+
+    await deleteincome(row.id);
+
+    ElMessage.success("លុបបានជោគជ័យ");
+    fetchincome();
+  } catch (e) {
+    // អ្នកប្រើចុចបោះបង់ មិនចាំបាច់បង្ហាញ Error ទេ
+    if (e === "cancel" || e === "close") return;
+
+    ElNotification.error({
+      title: "កំហុស",
+      message: e.response?.data?.error || "មិនអាចលុបថ្លៃសិក្សាបានទេ",
+      offset: 100,
+    });
   }
 }
 
@@ -80,7 +112,7 @@ onMounted(() => {
       ]">
       <template #actions="{ row }">
         <el-tooltip content="លុប" placement="top">
-          <AppButton size="small" icon="Delete" type="danger" circle />
+          <AppButton size="small" icon="Delete" type="danger" circle @click="handleDeleteIncome(row)"/>
         </el-tooltip>
       </template>
       <template #total="{ row }">

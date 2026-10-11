@@ -192,3 +192,4 @@ export const deletefee = (id) => api.delete(`/delete.fee/${id}`);
 export const getincomecategory = () => api.get("/view.income.category");
 export const addincome = (data) => api.post("/add.income", data);
 export const getincome = (params) => api.get("/view.income", { params });
+export const deleteincome = (id) => api.delete(`/delete.income/${id}`)

@@ -66,3 +66,15 @@ func (cr *IncomeController) GetIncome(c *gin.Context) {
 	}
 	share.ResponsePagination(c, 200, data, meta)
 }
+
+func (cr *IncomeController) DeleteIncome(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	if err := cr.service.DeleteIncome(c, id); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "Delete")
+}

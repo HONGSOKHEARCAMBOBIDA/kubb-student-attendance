@@ -56,3 +56,12 @@ func (s *incomeservice) GetIncome(ctx context.Context, pf request.Pagination, fi
 	}
 	return data, meta, nil
 }
+
+func (s *incomeservice) DeleteIncome(ctx context.Context, id int) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	if err := s.repo.DeleteIncome(ctx, id); err != nil {
+		return apperror.Internal("failed to delete income", err)
+	}
+	return nil
+}

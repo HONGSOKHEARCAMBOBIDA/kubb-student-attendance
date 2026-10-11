@@ -1,12 +1,29 @@
 package model
 
+import (
+	"mysql/model/base"
+)
+
+type AcademicStream string
+
+const (
+	AcademicStreamSCIENCE        AcademicStream = "SCIENCE"
+	AcademicStreamSOCIAL_SCIENCE AcademicStream = "SOCIAL_SCIENCE"
+)
+
 type StudentProfile struct {
-	UserID         int64   `gorm:"column:user_id;primaryKey" json:"user_id"`
-	RegistrationNo *string `gorm:"column:registration_no;size:50" json:"registration_no"`
-	DateOfBirth    string  `gorm:"column:date_of_birth;type:date" json:"date_of_birth"`
-	PlaceOfBirth   string  `gorm:"column:place_of_birth;size:255" json:"place_of_birth"`
-	Nationality    string  `gorm:"column:nationality;size:100" json:"nationality"`
-	Campus         string  `gorm:"column:campus;size:100" json:"campus"`
+	base.ModelBase
+	UserID            int            `gorm:"default:null" json:"user_id"`
+	StudentCategoryID int            `gorm:"default:null;index:idx_student_profile_student_category_id" json:"student_category_id"`
+	DateOfBirth       string         `gorm:"type:date;default:null" json:"date_of_birth"`
+	Nationality       *string        `gorm:"type:varchar(191);default:null" json:"nationality"`
+	Phone             *string        `gorm:"type:varchar(191);default:null" json:"phone"`
+	VillageID         *uint          `gorm:"default:null" json:"village_id"`
+	Occupation        *string        `gorm:"type:varchar(190);default:null" json:"occupation"`
+	AcademicStream    AcademicStream `gorm:"type:enum('SCIENCE','SOCIAL_SCIENCE');default:null" json:"academic_stream"`
+	TelegramUsername  *string        `gorm:"type:varchar(191);default:null" json:"telegram_username"`
+	ExamIn            bool           `gorm:"type:tinyint;default:null" json:"exam_in"`
+	ExamOut           bool           `gorm:"type:tinyint;default:null" json:"exam_out"`
 }
 
 func (StudentProfile) TableName() string {

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"mysql/constant/apperror"
@@ -264,5 +265,26 @@ func (r *incomerepository) GetIncome(ctx context.Context, pf request.Pagination,
 }
 
 func (r *incomerepository) DeleteIncome(ctx context.Context, id int) error {
+	if id <= 0 {
+		return errors.New("invalid income id")
+	}
 
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var income model.Income
+		if err := tx.First(&income, id).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("income_id = ?", income.ID).
+			Delete(&model.IncomeItem{}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("income_id = ?", income.ID).
+			Delete(&model.IncomePayment{}).Error; err != nil {
+			return err
+		}
+
+		return tx.Delete(&income).Error
+	})
 }
