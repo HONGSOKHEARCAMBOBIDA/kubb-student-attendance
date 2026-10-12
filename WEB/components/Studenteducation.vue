@@ -222,11 +222,6 @@ const rules = {
   ],
 };
 
-// Backend returns dates through helper.FormatDate. The date picker needs
-// YYYY-MM-DD, so normalise DD/MM/YYYY or DD-MM-YYYY (if that's what
-// FormatDate returns) back to ISO before editing.
-
-
 // Send null instead of "" so the *string columns / date columns stay NULL
 const nullIfEmpty = (v) => (v === "" || v === undefined ? null : v);
 
