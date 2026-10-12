@@ -40,6 +40,14 @@ type AuthService interface {
 	GetUserIncludeStudent(ctx context.Context, id int, pf request.Pagination, filter map[string]string) ([]response.UserResponseNotStudent, *model.PaginationMetadata, error)
 	GetStudentCategory(ctx context.Context) ([]model.StudentCategory, error)
 	AddStudentProfile(ctx context.Context, input request.StudentProfileRequestCreate) error
+	GetStudentProfile(ctx context.Context, id int) (*response.StudentProfile, error)
+	UpdateStudentProfile(ctx context.Context, input request.StudentProfileRequestUpdate) error
+	AddStudentFamily(ctx context.Context, input request.StudentFamily) error
+	GetStudentFamily(ctx context.Context, id int) (*model.StudentFamily, error)
+	UpdateStudentFamily(ctx context.Context, input request.StudentFamily) error
+	AddStudentEducation(ctx context.Context, input request.StudentEducation) error
+	GetStudentEducation(ctx context.Context, id int) (*[]response.StudentEducation, error)
+	UpdateStudentEducation(ctx context.Context, id int, input request.StudentEducation) error
 }
 
 type authservice struct {
@@ -718,5 +726,284 @@ func (s *authservice) AddStudentProfile(ctx context.Context, input request.Stude
 		}
 		return nil
 	})
+	return err
+}
+
+func (s *authservice) UpdateStudentProfile(
+	ctx context.Context,
+	input request.StudentProfileRequestUpdate,
+) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		data := model.StudentProfile{
+			StudentCategoryID: input.StudentCategoryID,
+			DateOfBirth:       input.DateOfBirth,
+			Nationality:       input.Nationality,
+			Phone:             input.Phone,
+			VillageID:         input.VillageID,
+			Occupation:        input.Occupation,
+			AcademicStream:    input.AcademicStream,
+			TelegramUsername:  input.TelegramUsername,
+		}
+
+		result := tx.Model(&model.StudentProfile{}).
+			Where("user_id = ?", input.UserID).
+			Updates(&data)
+
+		if result.Error != nil {
+			return apperror.New(
+				apperror.CodeInternal,
+				"failed to update student profile",
+				nil,
+			)
+		}
+
+		if result.RowsAffected == 0 {
+			return apperror.New(
+				apperror.CodeNotFound,
+				"student profile not found",
+				nil,
+			)
+		}
+
+		return nil
+	})
+
+	return err
+}
+
+func (s *authservice) GetStudentProfile(
+	ctx context.Context,
+	id int,
+) (*response.StudentProfile, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	var data response.StudentProfile
+
+	err := s.db.WithContext(ctx).
+		Table("student_profile sp").
+		Where("user_id = ?", id).
+		Select(`
+			sp.id AS id,
+			sp.user_id AS user_id,
+			sp.student_category_id AS student_category_id,
+			sp.date_of_birth AS date_of_birth,
+			sp.nationality AS nationality,
+			sp.phone AS phone,
+			sp.village_id,
+			c.id AS commune_id,
+			d.id AS district_id,
+			p.id AS province_id,
+			sp.occupation AS occupation,
+			sp.academic_stream AS academic_stream,
+			sp.telegram_username AS telegram_username
+		`).
+		Joins("LEFT JOIN villages v ON v.id = sp.village_id").
+		Joins("LEFT JOIN communes c ON c.id = v.commune_id").
+		Joins("LEFT JOIN districts d ON d.id = c.district_id").
+		Joins("LEFT JOIN provinces p ON p.id = d.province_id").Scan(&data).Error
+	if err != nil {
+		return nil, err
+	}
+
+	data.DateOfBirth = helper.FormatDate(data.DateOfBirth)
+
+	return &data, nil
+}
+
+func (s *authservice) AddStudentFamily(ctx context.Context, input request.StudentFamily) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newdata := model.StudentFamily{
+			StudentID:         input.StudentID,
+			FatherName:        input.FatherName,
+			FatherEnglishName: input.FatherEnglishName,
+			FatherAge:         input.FatherAge,
+			FatherIsAlive:     input.FatherIsAlive,
+			FatherPhoneNumber: input.FatherPhoneNumber,
+			FatherOccupation:  input.FatherOccupation,
+			FatherWorkplace:   input.FatherWorkplace,
+			MotherName:        input.MotherName,
+			MotherEnglishName: input.MotherEnglishName,
+			MotherAge:         input.MotherAge,
+			MotherIsAlive:     input.MotherIsAlive,
+			MotherPhoneNumber: input.MotherPhoneNumber,
+			MotherOccupation:  input.MotherOccupation,
+			MotherWorkplace:   input.MotherWorkplace,
+		}
+		if err := tx.Create(&newdata).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to create student profile", nil)
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *authservice) UpdateStudentFamily(ctx context.Context, input request.StudentFamily) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		data := model.StudentFamily{
+			FatherName:        input.FatherName,
+			FatherEnglishName: input.FatherEnglishName,
+			FatherAge:         input.FatherAge,
+			FatherIsAlive:     input.FatherIsAlive,
+			FatherPhoneNumber: input.FatherPhoneNumber,
+			FatherOccupation:  input.FatherOccupation,
+			FatherWorkplace:   input.FatherWorkplace,
+			MotherName:        input.MotherName,
+			MotherEnglishName: input.MotherEnglishName,
+			MotherAge:         input.MotherAge,
+			MotherIsAlive:     input.MotherIsAlive,
+			MotherPhoneNumber: input.MotherPhoneNumber,
+			MotherOccupation:  input.MotherOccupation,
+			MotherWorkplace:   input.MotherWorkplace,
+		}
+		result := tx.Model(&model.StudentFamily{}).
+			Where("student_id = ?", input.StudentID).
+			Updates(&data)
+
+		if result.Error != nil {
+			return apperror.New(
+				apperror.CodeInternal,
+				"failed to update student family",
+				nil,
+			)
+		}
+
+		if result.RowsAffected == 0 {
+			return apperror.New(
+				apperror.CodeNotFound,
+				"student profile not found",
+				nil,
+			)
+		}
+
+		return nil
+	})
+
+	return err
+}
+
+func (s *authservice) GetStudentFamily(ctx context.Context, id int) (*model.StudentFamily, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	var data model.StudentFamily
+	err := s.db.WithContext(ctx).Table("student_families").
+		Where("student_id =?", id).First(&data).Error
+	if err != nil {
+		return nil, err
+	}
+	return &data, nil
+}
+
+func (s *authservice) AddStudentEducation(ctx context.Context, input request.StudentEducation) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newdata := model.StudentEducation{
+			StudentID:       input.StudentID,
+			Level:           input.Level,
+			SchoolName:      input.SchoolName,
+			StartDate:       input.StartDate,
+			EndDate:         input.EndDate,
+			CertificateDate: input.CertificateDate,
+			Score:           input.Score,
+			GPA:             input.GPA,
+			Grade:           input.Grade,
+		}
+		if err := tx.Create(&newdata).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to create student profile", nil)
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *authservice) GetStudentEducation(
+	ctx context.Context,
+	id int,
+) (*[]response.StudentEducation, error) {
+	ctx, cancel := context.WithTimeout(
+		ctx,
+		utils.DefaultQueryTimeout,
+	)
+	defer cancel()
+
+	var data []response.StudentEducation
+
+	err := s.db.WithContext(ctx).
+		Table("student_education").
+		Where("student_id = ?", id).
+		Find(&data).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range data {
+		if data[i].StartDate != nil {
+			formatted := helper.FormatDate(*data[i].StartDate)
+			data[i].StartDate = &formatted
+		}
+
+		if data[i].EndDate != nil {
+			formatted := helper.FormatDate(*data[i].EndDate)
+			data[i].EndDate = &formatted
+		}
+
+		if data[i].CertificateDate != nil {
+			formatted := helper.FormatDate(*data[i].CertificateDate)
+			data[i].CertificateDate = &formatted
+		}
+	}
+
+	return &data, nil
+}
+
+func (s *authservice) UpdateStudentEducation(ctx context.Context, id int, input request.StudentEducation) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		data := model.StudentEducation{
+			Level:           input.Level,
+			SchoolName:      input.SchoolName,
+			StartDate:       input.StartDate,
+			EndDate:         input.EndDate,
+			CertificateDate: input.CertificateDate,
+			Score:           input.Score,
+			GPA:             input.GPA,
+			Grade:           input.Grade,
+		}
+		result := tx.Model(&model.StudentEducation{}).
+			Where("id = ?", id).
+			Updates(&data)
+
+		if result.Error != nil {
+			return apperror.New(
+				apperror.CodeInternal,
+				"failed to update student education",
+				nil,
+			)
+		}
+
+		if result.RowsAffected == 0 {
+			return apperror.New(
+				apperror.CodeNotFound,
+				"student educdation not found",
+				nil,
+			)
+		}
+
+		return nil
+	})
+
 	return err
 }

@@ -200,5 +200,17 @@ export const getcommunce = (id) => api.get(`/location/commune/${id}`);
 export const getvillage = (id) => api.get(`/location/village/${id}`);
 
 export const getstudentcategory = () => api.get("/view.student.category");
-export const addstudentprofile = (data) =>
+export const addStudentProfile = (data) =>
   api.post("/add.student.profile", data);
+export const getStudentProfile = (id) => api.get(`/view.student.profile/${id}`)
+export const updateStudentProfile = (id,data) => api.put(`/update.student.profile/${id}`,data)
+
+export const addStudentFamily  = (data) =>
+  api.post("/add.student.Family", data);
+export const getStudentFamily  = (id) => api.get(`/view.student.Family/${id}`)
+export const updateStudentFamily  = (id,data) => api.put(`/update.student.Family/${id}`,data)
+
+export const addStudentEducation   = (data) =>
+  api.post("/add.student.Education", data);
+export const getStudentEducation   = (id) => api.get(`/view.student.Education/${id}`)
+export const updateStudentEducation   = (id,data) => api.put(`/update.student.Education/${id}`,data)

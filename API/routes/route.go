@@ -187,5 +187,13 @@ func SetupRoutes(r *gin.Engine) {
 		// Student
 		auth.GET(route.ViewStudentCategory, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetStudentCategory)
 		auth.POST(route.AddStudentProfile, middleware.PermissionMiddleware(permission.AddUser), authcontroller.AddStudentProfile)
+		auth.GET(route.ViewStudentProfile, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetStudentProfile)
+		auth.PUT(route.UpdateStudentProfile, middleware.PermissionMiddleware(permission.AddUser), authcontroller.UpdateStudentProfile)
+		auth.POST(route.AddStudentFamily, middleware.PermissionMiddleware(permission.AddUser), authcontroller.AddStudentFamily)
+		auth.GET(route.ViewStudentFamily, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetStudentFamily)
+		auth.PUT(route.UpdateStudentFamily, middleware.PermissionMiddleware(permission.AddUser), authcontroller.UpdateStudentFamily)
+		auth.POST(route.AddStudentEducation, middleware.PermissionMiddleware(permission.AddUser), authcontroller.AddStudentEducation)
+		auth.GET(route.ViewStudentEducation, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetStudentEducation)
+		auth.PUT(route.UpdateStudentEducation, middleware.PermissionMiddleware(permission.AddUser), authcontroller.UpdateStudentEducation)
 	}
 }

@@ -155,6 +155,16 @@ const (
 	AddIncome          = "add.income"
 	DeleteIncome       = "delete.income/:id"
 
-	ViewStudentCategory = "view.student.category"
-	AddStudentProfile   = "add.student.profile"
+	ViewStudentCategory  = "view.student.category"
+	AddStudentProfile    = "add.student.profile"
+	ViewStudentProfile   = "view.student.profile/:id"
+	UpdateStudentProfile = "update.student.profile/:id"
+
+	AddStudentFamily    = "add.student.Family"
+	ViewStudentFamily   = "view.student.Family/:id"
+	UpdateStudentFamily = "update.student.Family/:id"
+
+	AddStudentEducation    = "add.student.Education"
+	ViewStudentEducation   = "view.student.Education/:id"
+	UpdateStudentEducation = "update.student.Education/:id"
 )

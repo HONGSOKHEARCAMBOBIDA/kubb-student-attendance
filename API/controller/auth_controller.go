@@ -359,3 +359,110 @@ func (cr *AuthController) AddStudentProfile(c *gin.Context) {
 	}
 	share.ResponseSuccess(c, http.StatusOK, "user create")
 }
+
+func (cr *AuthController) GetStudentProfile(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.GetStudentProfile(c.Request.Context(), id)
+	if err != nil {
+		share.ResponseError(c, http.StatusNotFound, err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+func (cr *AuthController) UpdateStudentProfile(c *gin.Context) {
+	var input request.StudentProfileRequestUpdate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateStudentProfile(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "user create")
+}
+
+func (cr *AuthController) AddStudentFamily(c *gin.Context) {
+	var input request.StudentFamily
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.AddStudentFamily(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "user create")
+}
+
+func (cr *AuthController) UpdateStudentFamily(c *gin.Context) {
+	var input request.StudentFamily
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateStudentFamily(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "user create")
+}
+
+func (cr *AuthController) GetStudentFamily(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.GetStudentFamily(c.Request.Context(), id)
+	if err != nil {
+		share.ResponseError(c, http.StatusNotFound, err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr *AuthController) AddStudentEducation(c *gin.Context) {
+	var input request.StudentEducation
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.AddStudentEducation(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "user create")
+}
+
+func (cr *AuthController) GetStudentEducation(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.GetStudentEducation(c.Request.Context(), id)
+	if err != nil {
+		share.ResponseError(c, http.StatusNotFound, err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr *AuthController) UpdateStudentEducation(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	var input request.StudentEducation
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateStudentEducation(c, id, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "user create")
+}

@@ -56,17 +56,57 @@
           { prop: 'code', label: 'កូដ', minWidth: 110 },
           { slot: 'gender', label: 'ភេទ', minWidth: 90 },
           { prop: 'role_name', label: 'តួនាទី', minWidth: 110 },
-          { slot: 'student_profile', label: 'ពត៍មានលំអិតនិស្សិត', width: 140,align:'center' },
+          {
+            slot: 'student_profile',
+            label: 'ព័ត៍មានលំអិតនិស្សិត',
+            width: 140,
+            align: 'center',
+          },
+          {
+            slot: 'student_family',
+            label: 'ព័ត៍មានអំពីគ្រួសារ',
+            width: 140,
+            align: 'center',
+          },
+          {
+            slot: 'student_education',
+            label: 'ព័ត៍មានអំពីប្រវត្តិសិក្សា',
+            width: 160,
+            align: 'center',
+          },
         ]"
         actionsWidth="160"
       >
         <template #gender="{ row }">
           <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
         </template>
-<template #student_profile="{ row }">
-  <AppButton size="small" icon="user" plain type="primary" circle @click="openProfileDialog(row)" />
-</template>
-
+        <template #student_profile="{ row }">
+          <AppButton
+            size="small"
+            icon="user"
+            type="primary"
+            circle
+            @click="openProfileDialog(row)"
+          />
+        </template>
+        <template #student_family="{ row }">
+          <AppButton
+            size="small"
+            icon="user"
+            type="primary"
+            circle
+             @click="openFamilyDialog(row)"
+          />
+        </template>
+        <template #student_education="{ row }">
+          <AppButton
+            size="small"
+            icon="user"
+            type="primary"
+            circle
+            @click="openEducationDialog(row)"
+          />
+        </template>
         <template #actions="{ row }" v-if="canedit">
           <el-tooltip content="កែប្រែ" placement="top">
             <AppButton
@@ -200,20 +240,22 @@
     </AppDialog>
 
     <Fee
-    v-model="feedialogvisible"
-    :student-raw="studentRaw"
-    :programmes="lookupStore.programmes"
-    :generations="lookupStore.generations"
-    :majors="lookupStore.majors"
+      v-model="feedialogvisible"
+      :student-raw="studentRaw"
+      :programmes="lookupStore.programmes"
+      :generations="lookupStore.generations"
+      :majors="lookupStore.majors"
     >
     </Fee>
-<Income
-  v-model="incomedialogvisible"
-  :student-raw="studentRaw"
-  @saved="fetchUsers"
-/>
+    <Income
+      v-model="incomedialogvisible"
+      :student-raw="studentRaw"
+      @saved="fetchUsers"
+    />
 
-<StudentProfile v-model="profiledialogvisible" :student-raw="studentRaw" />
+    <StudentProfile v-model="profiledialogvisible" :student-raw="studentRaw" />
+    <StudentFamily v-model="familydialogvisible" :student-raw="studentRaw" />
+    <StudentEducation v-model="educationdialogvisible" :student-raw="studentRaw" />
   </div>
 </template>
 
@@ -239,11 +281,22 @@ import { useLookupStore } from "../stores/lookup.js";
 import Fee from "../../components/Fee.vue";
 import Income from "../../components/Income.vue";
 import StudentProfile from "../../components/StudentProfile.vue";
-
+import StudentFamily from "../../components/StudentFamily.vue";
+import StudentEducation from "../../components/Studenteducation.vue";
+const educationdialogvisible = ref(false);
+function openEducationDialog(row) {
+  studentRaw.value = row;
+  educationdialogvisible.value = true;
+}
 const profiledialogvisible = ref(false);
 function openProfileDialog(row) {
   studentRaw.value = row;
   profiledialogvisible.value = true;
+}
+const familydialogvisible = ref(false);
+function openFamilyDialog(row) {
+  studentRaw.value = row;
+  familydialogvisible.value = true;
 }
 const lookupStore = useLookupStore();
 const users = ref([]);
@@ -267,11 +320,11 @@ function generatecode(name) {
 }
 
 const userDataStore = useUserDataStore();
-const feedialogvisible = ref(false)
-const studentRaw = ref(null)
-function openFeeDialog(row){
+const feedialogvisible = ref(false);
+const studentRaw = ref(null);
+function openFeeDialog(row) {
   studentRaw.value = row;
-  feedialogvisible.value = true
+  feedialogvisible.value = true;
 }
 
 const incomedialogvisible = ref(false);
