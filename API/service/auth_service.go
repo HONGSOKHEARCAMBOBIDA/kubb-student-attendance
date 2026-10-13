@@ -48,6 +48,10 @@ type AuthService interface {
 	AddStudentEducation(ctx context.Context, input request.StudentEducation) error
 	GetStudentEducation(ctx context.Context, id int) (*[]response.StudentEducation, error)
 	UpdateStudentEducation(ctx context.Context, id int, input request.StudentEducation) error
+	GetDocumentType(ctx context.Context) ([]model.DocumentType, error)
+	AddStudentDocument(ctx context.Context, input request.StudentDocumentRequestCreate) error
+	UpdateStudentDocument(ctx context.Context, id int, input request.StudentDocumentRequestUpdate) error
+	GetStudentDocuments(ctx context.Context, id int) ([]response.StudentDocument, error)
 }
 
 type authservice struct {
@@ -1006,4 +1010,102 @@ func (s *authservice) UpdateStudentEducation(ctx context.Context, id int, input 
 	})
 
 	return err
+}
+
+func (s *authservice) GetDocumentType(ctx context.Context) ([]model.DocumentType, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	var data []model.DocumentType
+
+	err := s.db.WithContext(ctx).Find(&data).Error
+	if err != nil {
+		return nil, err
+	}
+
+	if len(data) == 0 {
+		return nil, apperror.New(
+			apperror.CodeNotFound,
+			"document type not found",
+			nil,
+		)
+	}
+
+	return data, nil
+}
+
+func (s *authservice) AddStudentDocument(ctx context.Context, input request.StudentDocumentRequestCreate) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newdata := model.StudentDocument{
+			StudentID:      input.StudentID,
+			DocumentTypeID: input.DocumentTypeID,
+			RequiredQty:    input.RequiredQty,
+			ReceivedQty:    input.ReceivedQty,
+			Remark:         input.Remark,
+		}
+		if err := tx.Create(&newdata).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to create student document", nil)
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *authservice) UpdateStudentDocument(ctx context.Context, id int, input request.StudentDocumentRequestUpdate) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		data := model.StudentDocument{
+			DocumentTypeID: input.DocumentTypeID,
+			RequiredQty:    input.RequiredQty,
+			ReceivedQty:    input.ReceivedQty,
+			Remark:         input.Remark,
+		}
+		update := tx.Model(&model.StudentDocument{}).Where("id =?", id).Updates(&data)
+		if update.Error != nil {
+			return apperror.New(
+				apperror.CodeInternal,
+				"failed to update student document",
+				nil,
+			)
+		}
+
+		if update.RowsAffected == 0 {
+			return apperror.New(
+				apperror.CodeNotFound,
+				"student document not found",
+				nil,
+			)
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *authservice) GetStudentDocuments(ctx context.Context, id int) ([]response.StudentDocument, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	var docs []response.StudentDocument
+
+	err := s.db.WithContext(ctx).
+		Table("student_documents AS sd").
+		Select(`
+			sd.id            AS id,
+			d.id             AS document_type_id,
+			d.name_kh        AS document_type_name,
+			sd.required_qty  AS required_qty,
+			sd.received_qty  AS received_qty,
+			sd.remark        AS remark
+		`).
+		Where("sd.student_id =?", id).
+		Joins("LEFT JOIN document_types AS d ON d.id = sd.document_type_id").
+		Scan(&docs).Error
+	if err != nil {
+		return nil, fmt.Errorf("get student documents: %w", err)
+	}
+
+	return docs, nil
 }

@@ -466,3 +466,55 @@ func (cr *AuthController) UpdateStudentEducation(c *gin.Context) {
 	}
 	share.ResponseSuccess(c, http.StatusOK, "user create")
 }
+
+func (cr *AuthController) GetDocumentType(c *gin.Context) {
+	data, err := cr.service.GetDocumentType(c)
+	if err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr *AuthController) AddStudentDocument(c *gin.Context) {
+	var input request.StudentDocumentRequestCreate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.AddStudentDocument(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "user create")
+}
+
+func (cr *AuthController) UpdateStudentDocument(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	var input request.StudentDocumentRequestUpdate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateStudentDocument(c, id, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "user create")
+}
+
+func (cr *AuthController) GetStudentDocuments(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.GetStudentDocuments(c.Request.Context(), id)
+	if err != nil {
+		share.ResponseError(c, http.StatusNotFound, err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}

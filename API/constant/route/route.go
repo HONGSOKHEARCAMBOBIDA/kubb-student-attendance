@@ -167,4 +167,10 @@ const (
 	AddStudentEducation    = "add.student.Education"
 	ViewStudentEducation   = "view.student.Education/:id"
 	UpdateStudentEducation = "update.student.Education/:id"
+
+	ViewDocumnetType = "view.document.type"
+
+	AddStudentDocument    = "add.student.Document"
+	ViewStudentDocument   = "view.student.Document/:id"
+	UpdateStudentDocument = "update.student.Document/:id"
 )

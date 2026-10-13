@@ -74,6 +74,12 @@
             width: 160,
             align: 'center',
           },
+          {
+            slot: 'student_document',
+            label: 'ព័ត៍មានឯកសារនិស្សិតប្រគល់ជួន',
+            width: 230,
+            align: 'center',
+          },
         ]"
         actionsWidth="160"
       >
@@ -105,6 +111,15 @@
             type="primary"
             circle
             @click="openEducationDialog(row)"
+          />
+        </template>
+        <template #student_document="{ row }">
+          <AppButton
+            size="small"
+            icon="document"
+            type="primary"
+            circle
+            @click="openDocumentDialog(row)"
           />
         </template>
         <template #actions="{ row }" v-if="canedit">
@@ -256,6 +271,7 @@
     <StudentProfile v-model="profiledialogvisible" :student-raw="studentRaw" />
     <StudentFamily v-model="familydialogvisible" :student-raw="studentRaw" />
     <StudentEducation v-model="educationdialogvisible" :student-raw="studentRaw" />
+    <StudentDocument v-model="documentdialogvisible" :student-raw="studentRaw" />
   </div>
 </template>
 
@@ -283,6 +299,12 @@ import Income from "../../components/Income.vue";
 import StudentProfile from "../../components/StudentProfile.vue";
 import StudentFamily from "../../components/StudentFamily.vue";
 import StudentEducation from "../../components/Studenteducation.vue";
+import StudentDocument from "../../components/Studentdocument.vue";
+const documentdialogvisible = ref(false);
+function openDocumentDialog(row) {
+  studentRaw.value = row;
+  documentdialogvisible.value = true;
+}
 const educationdialogvisible = ref(false);
 function openEducationDialog(row) {
   studentRaw.value = row;
