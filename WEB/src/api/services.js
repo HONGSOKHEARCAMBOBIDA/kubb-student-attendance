@@ -233,3 +233,4 @@ export const getTeacherProfile = (id) =>
   api.get(`/view.Teacher.Profile/${id}`);
 export const updateTeacherProfile = (id, data) =>
   api.put(`/update.Teacher.Profile`, data);
+export const updateTeacherRate = (id,data) => api.put(`/update.Teacher.Rate/${id}`,data)

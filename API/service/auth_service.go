@@ -55,6 +55,7 @@ type AuthService interface {
 	AddTeacherProfile(ctx context.Context, input request.TeacherProfile) error
 	UpdateTeacherProfile(ctx context.Context, input request.TeacherProfile) error
 	GetTeacherProfile(ctx context.Context, id int) (*response.TeacherProfile, error)
+	UpdateTeacherRate(ctx context.Context, classscheduleID int, input request.TeacherRate) error
 }
 
 type authservice struct {
@@ -1177,4 +1178,42 @@ func (s *authservice) GetTeacherProfile(ctx context.Context, id int) (*response.
 	}
 	*data.DateOfBirth = helper.FormatDate(*data.DateOfBirth)
 	return &data, nil
+}
+
+func (s *authservice) UpdateTeacherRate(
+	ctx context.Context,
+	classscheduleID int,
+	input request.TeacherRate,
+) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		data := model.TeacherRate{
+			UserID:     input.UserID,
+			HourlyRate: input.HourlyRate,
+		}
+
+		result := tx.Model(&model.TeacherRate{}).
+			Where("class_schedule_id = ?", classscheduleID).
+			Updates(&data)
+
+		if result.Error != nil {
+			return apperror.New(
+				apperror.CodeInternal,
+				"failed to update teacher rate",
+				nil,
+			)
+		}
+
+		if result.RowsAffected == 0 {
+			return apperror.New(
+				apperror.CodeNotFound,
+				"teacher rate not found",
+				nil,
+			)
+		}
+
+		return nil
+	})
 }

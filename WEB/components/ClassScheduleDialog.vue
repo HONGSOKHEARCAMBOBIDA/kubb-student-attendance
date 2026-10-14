@@ -12,6 +12,7 @@ import {
   createClassSchedule,
   toggleClassSchedule,
   getUsers,
+  updateTeacherRate
 } from "../src/api/services.js";
 import AppInput from "./AppInput.vue";
 import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
@@ -173,6 +174,46 @@ async function handleToggle(row) {
   }
 }
 
+// ---- Edit teacher rate ----
+const editVisible = ref(false);
+const editRow = ref(null);
+const editFormRef = ref();
+const editSubmitting = ref(false);
+const editForm = reactive({ user_id: null, hourly_rate: 0 });
+const editRules = {
+  user_id: [{ required: true, message: "សូមជ្រើសរើសគ្រូបង្រៀន", trigger: "change" }],
+  hourly_rate: [{ required: true, message: "សូមបញ្ចូលតម្លៃម៉ោងគ្រូ", trigger: "change" }],
+};
+
+function openEdit(row) {
+  editRow.value = row;
+  // make sure your GET schedule API returns the teacher's user id (teacher_id / user_id)
+  editForm.user_id = row.teacher_id ?? row.user_id ?? null;
+  editForm.hourly_rate = Number(row.hourly_rate) || 0;
+  editVisible.value = true;
+  editFormRef.value?.clearValidate();
+}
+
+async function handleUpdateRate() {
+  const valid = await editFormRef.value.validate().catch(() => false);
+  if (!valid || !editRow.value) return;
+
+  editSubmitting.value = true;
+  try {
+    await updateTeacherRate(editRow.value.id, {
+      user_id: editForm.user_id,
+      hourly_rate: editForm.hourly_rate,
+    });
+    notify.success("កែប្រែតម្លៃម៉ោងគ្រូជោគជ័យ");
+    editVisible.value = false;
+    await fetchSchedules();
+  } catch (e) {
+    notify.error(e.response?.data?.error || "មិនអាចកែប្រែបានទេ");
+  } finally {
+    editSubmitting.value = false;
+  }
+}
+
 // Load fresh data every time the dialog is opened for a (possibly new) class
 watch(
   () => [props.modelValue, props.classRow?.id],
@@ -302,6 +343,7 @@ watch(
       :data="schedules"
       :loading="loading"
       :show-pagination="false"
+      actions-width="90px"
       :columns="[
         { label: 'លេខកូដ', prop: 'subject_code', minWidth: 100 },
         { label: 'មុខវិជ្ជា', prop: 'subject_name_kh', minWidth: 160 },
@@ -310,7 +352,8 @@ watch(
         { label: 'Session សរុប', prop: 'total_session', width: 120 },
         { label: 'សាស្រ្តាចារ្យ', slot: 'name_kh', minWidth: 120 },
         { label: 'តម្លៃម៉ោង', slot: 'hourly_rate', width: 120 },
-        { label: 'បង្កើតដោយ', prop: 'created_by', width: 120 },
+        { label: 'ប្រាក់ម៉ោងគ្រូសរុប', slot: 'total_rate', width: 150 },
+        { label: 'បង្កើតដោយ', prop: 'created_by', minWidth: 120 },
         { label: 'ស្ថានភាព', slot: 'status', width: 110 },
       ]"
     >
@@ -327,6 +370,13 @@ watch(
               :value-style="{ fontSize: '20px', color: '#FF0000' }"
             />
       </template>
+      <template #total_rate="{row}">
+             <el-statistic
+              :value="row.total_session * row.hourly_rate"
+              :formatter="(val) => `${Number(val).toFixed(2)}$`"
+              :value-style="{ fontSize: '20px', color: '#FF0000' }"
+            />       
+      </template>
       <template #status="{ row }">
         <el-switch
           :model-value="row.is_active"
@@ -334,8 +384,43 @@ watch(
           @change="handleToggle(row)"
         />
       </template>
+<template #actions="{ row }">
+  <el-tooltip content="កែប្រែ" placement="top">
+    <AppButton  :disabled="!row.is_active" circle size="small" type="warning" icon="Edit" @click="openEdit(row)" />
+  </el-tooltip>
+</template>
     </AppTable>
   </AppDialog>
+
+  <AppDialog v-model="editVisible" title="កែប្រែតម្លៃម៉ោងគ្រូ" width="420px" append-to-body>
+  <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-position="top">
+
+      <AppSelect
+        label="គ្រូបង្រៀន"
+        v-model="editForm.user_id"
+        :options="Teachers"
+        placeholder="ជ្រើសរើសគ្រូបង្រៀន"
+        size="large"
+        filterable
+      />
+
+      <AppInput
+        label="តម្លៃម៉ោងគ្រូ"
+        suffix="$"
+        type="number"
+        v-model.number="editForm.hourly_rate"
+        placeholder="តម្លៃម៉ោងគ្រូ"
+        size="large"
+      />
+
+    <div style="display:flex; justify-content:flex-end; gap:8px">
+      <AppButton @click="editVisible = false">បោះបង់</AppButton>
+      <AppButton type="primary" :loading="editSubmitting" @click="handleUpdateRate">
+        រក្សាទុក
+      </AppButton>
+    </div>
+  </el-form>
+</AppDialog>
 </template>
 
 <style scoped>

@@ -61,6 +61,7 @@ func (s *classScheduleService) GetByClass(ctx context.Context, classID int) ([]r
 			cs.total_session AS total_session,
 			t.name_kh AS name_kh,
 			t.name_en AS name_en,
+			t.id AS teacher_id,
 			tr.hourly_rate AS hourly_rate,
 			cr.name_kh AS created_by
 		`).
@@ -174,5 +175,17 @@ func (s *classScheduleService) Create(ctx context.Context, classID int, input re
 }
 
 func (s *classScheduleService) Toggle(ctx context.Context, id int) error {
-	return utils.ToggleStatus[model.ClassSchedule](ctx, s.db, id)
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := utils.ToggleStatus[model.ClassSchedule](ctx, tx, id); err != nil {
+			return err
+		}
+
+		if err := tx.Model(&model.TeacherRate{}).
+			Where("class_schedule_id = ?", id).
+			Update("active", gorm.Expr("NOT active")).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

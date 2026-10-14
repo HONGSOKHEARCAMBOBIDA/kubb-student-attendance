@@ -210,36 +210,46 @@ func (s *attendanceservice) CreateAttendance(ctx context.Context, id int, input 
 		return err
 	}
 
-	companyLat, err := strconv.ParseFloat(*class.Latitude, 64)
-	if err != nil {
-		return fmt.Errorf("invalid company latitude: %w", err)
-	}
+	var inzone bool
 
-	companyLng, err := strconv.ParseFloat(*class.Longitude, 64)
-	if err != nil {
-		return fmt.Errorf("invalid company longitude: %w", err)
-	}
+	if !class.CanScanOutsize {
+		companyLat, err := strconv.ParseFloat(*class.Latitude, 64)
+		if err != nil {
+			return fmt.Errorf("invalid company latitude: %w", err)
+		}
 
-	userLat, err := strconv.ParseFloat(input.Latitude, 64)
-	if err != nil {
-		return fmt.Errorf("invalid user latitude: %w", err)
-	}
+		companyLng, err := strconv.ParseFloat(*class.Longitude, 64)
+		if err != nil {
+			return fmt.Errorf("invalid company longitude: %w", err)
+		}
 
-	userLng, err := strconv.ParseFloat(input.Longitude, 64)
-	if err != nil {
-		return fmt.Errorf("invalid user longitude :%w", err)
-	}
+		userLat, err := strconv.ParseFloat(input.Latitude, 64)
+		if err != nil {
+			return fmt.Errorf("invalid user latitude: %w", err)
+		}
 
-	radius, err := strconv.ParseFloat(class.Radius, 64)
-	if err != nil {
-		return fmt.Errorf("invalid company redius: %w", err)
-	}
+		userLng, err := strconv.ParseFloat(input.Longitude, 64)
+		if err != nil {
+			return fmt.Errorf("invalid user longitude: %w", err)
+		}
 
-	distance := utils.CalculateDistance(companyLat, companyLng, userLat, userLng)
-	inzone := distance <= radius
+		radius, err := strconv.ParseFloat(class.Radius, 64)
+		if err != nil {
+			return fmt.Errorf("invalid company radius: %w", err)
+		}
 
-	if !inzone && class.CanScanOutsize == false {
-		return errors.New("អ្នកមិនអាចស្កែនក្រៅតំបន់សាលាបានទេ")
+		distance := utils.CalculateDistance(
+			companyLat, companyLng,
+			userLat, userLng,
+		)
+
+		inzone = distance <= radius
+
+		if !inzone {
+			return errors.New("អ្នកមិនអាចស្កែនក្រៅតំបន់សាលាបានទេ")
+		}
+	} else {
+		inzone = false
 	}
 
 	var current sessionConfig

@@ -26,5 +26,7 @@ type CompanyColor struct {
 
 type ClassScanResponse struct {
 	base.ModelBase
-	Name string `json:"name"`
+	Name     string `json:"name"`
+	Year     int    `json:"year"`
+	Semester int    `json:"semester"`
 }

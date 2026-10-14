@@ -4,7 +4,7 @@
       <div class="header">
         <el-image class="logo" src="/logo.png" alt="University Logo" fit="contain" />
         <el-tag size="large" :type="draft?.subject_name ? 'success' : 'warning'">
-          {{ draft?.subject_name ?? "វត្តមាន" }}
+          មុខវិជ្ជា: {{ draft?.subject_name ?? "វត្តមាន" }}
         </el-tag>
       </div>
     </template>
@@ -33,7 +33,7 @@
         <div class="icon-box1">
           <el-icon :size="22" color="#626aef"><Sunny /></el-icon>
         </div>
-        <span class="company-name">{{ c.name }}</span>
+        <span class="company-name">{{ c.name }} | ឆ្នាំទី{{ c.year }} | ឆមាសទី{{ c.semester }}</span>
         <el-icon class="company-check">
           <CircleCheckFilled v-if="attendForm.company_id === c.id" />
           <ArrowRight v-else />

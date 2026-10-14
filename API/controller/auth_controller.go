@@ -557,3 +557,20 @@ func (cr *AuthController) UpdateTeacherProfile(c *gin.Context) {
 	}
 	share.ResponseSuccess(c, http.StatusOK, "user create")
 }
+
+func (cr *AuthController) UpdateTeacherRate(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	var input request.TeacherRate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateTeacherRate(c, id, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "Udpated")
+}

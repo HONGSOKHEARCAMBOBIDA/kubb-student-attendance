@@ -177,4 +177,6 @@ const (
 	AddTeacherProfile    = "add.Teacher.Profile"
 	ViewTeacherProfile   = "view.Teacher.Profile/:id"
 	UpdateTeacherProfile = "update.Teacher.Profile"
+
+	UpdateTeacherRate = "update.Teacher.Rate/:id"
 )

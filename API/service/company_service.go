@@ -358,7 +358,9 @@ func (s *companyservice) GetClassScan(ctx context.Context, id int) ([]response.C
 	query := s.db.WithContext(ctx).Table("class AS c").
 		Select(`
 			c.id AS id,
-			c.name AS name
+			c.name AS name,
+			c.year AS year,
+			c.semester AS semester
 		`)
 	query = helper.ManageClassFilter(query, s.db, user)
 

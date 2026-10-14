@@ -12,6 +12,7 @@ type ClassScheduleResponse struct {
 	TotalSession int     `json:"total_session"`
 	ScheduleDate string  `json:"schedule_date"`
 	IsActive     bool    `json:"is_active"`
+	TeacherID    int     `json:"teacher_id"`
 	NameKh       string  `json:"name_kh"`
 	NameEn       string  `json:"name_en"`
 	HourlyRate   float64 `gorm:"type:decimal(12,2);not null;default:0.00" json:"hourly_rate"`

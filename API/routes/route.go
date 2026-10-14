@@ -202,5 +202,6 @@ func SetupRoutes(r *gin.Engine) {
 		auth.POST(route.AddTeacherProfile, middleware.PermissionMiddleware(permission.AddUser), authcontroller.AddTeacherProfile)
 		auth.GET(route.ViewTeacherProfile, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetTeacherProfile)
 		auth.PUT(route.UpdateTeacherProfile, middleware.PermissionMiddleware(permission.AddUser), authcontroller.UpdateTeacherProfile)
+		auth.PUT(route.UpdateTeacherRate, middleware.PermissionMiddleware(permission.AddUser), authcontroller.UpdateTeacherRate)
 	}
 }
