@@ -7,7 +7,7 @@
         </el-icon>
 
         <span v-if="!collapsed" class="brand">
-          ប្រព័ន្ធគ្រប់គ្រងវត្តមាននិស្សិត
+          សាកលវិទ្យាល័យខេរាវិទូ
         </span>
       </div>
 
@@ -117,7 +117,6 @@ const auth = useAuthStore()
 const userdataStore = useUserDataStore()
 
 const userName = computed(() => userdataStore.name || 'User')
-const adminLevel = computed(() => userdataStore.level === 7)
 const collapsed = ref(false)
 
 const nav = computed(() => {

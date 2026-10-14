@@ -3,7 +3,8 @@
     <AppFilterBar
       :fields="[
         { slot: 'name', span: 5 },
-        { slot: 'role', span: 5 },
+        // { slot: 'role', span: 5 },
+        { slot: 'quick', span: 6 },
       ]"
     >
       <template #name>
@@ -16,7 +17,7 @@
         />
       </template>
 
-      <template #role>
+      <!-- <template #role>
         <el-select
           v-model="filters.role_id"
           placeholder="តួនាទី"
@@ -32,6 +33,16 @@
             :value="role.id"
           />
         </el-select>
+      </template> -->
+      <template #quick>
+        <div class="custom-style">
+          <el-segmented
+            v-model="filters.role_id"
+            :options="roleOptions"
+            size="large"
+            @change="onRoleChange"
+          />
+        </div>
       </template>
 
       <template #actions>
@@ -50,37 +61,7 @@
         v-model:page-size="pageSize"
         :total="total"
         @page-change="fetchUsers"
-        :columns="[
-          { prop: 'name_kh', label: 'ឈ្មោះខ្មែរ', minWidth: 130 },
-          { prop: 'name_en', label: 'ឈ្មោះឡាតាំង', minWidth: 130 },
-          { prop: 'code', label: 'កូដ', minWidth: 110 },
-          { slot: 'gender', label: 'ភេទ', minWidth: 90 },
-          { prop: 'role_name', label: 'តួនាទី', minWidth: 110 },
-          {
-            slot: 'student_profile',
-            label: 'ព័ត៍មានលំអិតនិស្សិត',
-            width: 140,
-            align: 'center',
-          },
-          {
-            slot: 'student_family',
-            label: 'ព័ត៍មានអំពីគ្រួសារ',
-            width: 140,
-            align: 'center',
-          },
-          {
-            slot: 'student_education',
-            label: 'ព័ត៍មានអំពីប្រវត្តិសិក្សា',
-            width: 160,
-            align: 'center',
-          },
-          {
-            slot: 'student_document',
-            label: 'ព័ត៍មានឯកសារនិស្សិតប្រគល់ជួន',
-            width: 230,
-            align: 'center',
-          },
-        ]"
+        :columns="columns"
         actionsWidth="160"
       >
         <template #gender="{ row }">
@@ -88,6 +69,7 @@
         </template>
         <template #student_profile="{ row }">
           <AppButton
+            v-if="isStudent"
             size="small"
             icon="user"
             type="primary"
@@ -101,7 +83,7 @@
             icon="user"
             type="primary"
             circle
-             @click="openFamilyDialog(row)"
+            @click="openFamilyDialog(row)"
           />
         </template>
         <template #student_education="{ row }">
@@ -120,6 +102,16 @@
             type="primary"
             circle
             @click="openDocumentDialog(row)"
+          />
+        </template>
+        <template #teacher_profile="{ row }">
+          <AppButton
+            v-if="isTeacher(row)"
+            size="small"
+            icon="user"
+            type="primary"
+            circle
+            @click="openTeacherDialog(row)"
           />
         </template>
         <template #actions="{ row }" v-if="canedit">
@@ -141,24 +133,26 @@
               @click="toggleStatus(row)"
             />
           </el-tooltip> -->
-          <el-tooltip content="បង់ថ្លៃសិក្សា" placement="top">
-            <AppButton
-              size="small"
-              icon="ArrowRightBold"
-              type="success"
-              circle
-              @click="openFeeDialog(row)"
-            />
-          </el-tooltip>
-          <el-tooltip content="បង់ថ្លៃសេវាផ្សេងៗ" placement="top">
-            <AppButton
-              size="small"
-              icon="Money"
-              type="primary"
-              circle
-              @click="openIncomeDialog(row)"
-            />
-          </el-tooltip>
+          <template v-if="isStudent(row)">
+            <el-tooltip content="បង់ថ្លៃសិក្សា" placement="top">
+              <AppButton
+                size="small"
+                icon="ArrowRightBold"
+                type="success"
+                circle
+                @click="openFeeDialog(row)"
+              />
+            </el-tooltip>
+            <el-tooltip content="បង់ថ្លៃសេវាផ្សេងៗ" placement="top">
+              <AppButton
+                size="small"
+                icon="Money"
+                type="primary"
+                circle
+                @click="openIncomeDialog(row)"
+              />
+            </el-tooltip>
+          </template>
         </template>
       </AppTable>
     </el-card>
@@ -270,8 +264,15 @@
 
     <StudentProfile v-model="profiledialogvisible" :student-raw="studentRaw" />
     <StudentFamily v-model="familydialogvisible" :student-raw="studentRaw" />
-    <StudentEducation v-model="educationdialogvisible" :student-raw="studentRaw" />
-    <StudentDocument v-model="documentdialogvisible" :student-raw="studentRaw" />
+    <StudentEducation
+      v-model="educationdialogvisible"
+      :student-raw="studentRaw"
+    />
+    <StudentDocument
+      v-model="documentdialogvisible"
+      :student-raw="studentRaw"
+    />
+    <TeacherProfile v-model="teacherdialogvisible" :teacher-raw="teacherRaw" />
   </div>
 </template>
 
@@ -300,6 +301,13 @@ import StudentProfile from "../../components/StudentProfile.vue";
 import StudentFamily from "../../components/StudentFamily.vue";
 import StudentEducation from "../../components/Studenteducation.vue";
 import StudentDocument from "../../components/Studentdocument.vue";
+import TeacherProfile from "../../components/TeacherProfie.vue";
+const teacherdialogvisible = ref(false);
+const teacherRaw = ref(null);
+function openTeacherDialog(row) {
+  teacherRaw.value = row;
+  teacherdialogvisible.value = true;
+}
 const documentdialogvisible = ref(false);
 function openDocumentDialog(row) {
   studentRaw.value = row;
@@ -329,6 +337,77 @@ const page = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 const filters = reactive({ name: "", role_id: null });
+
+const roleOptions = computed(() => [
+  { label: "ទាំងអស់", value: 0 },
+  ...roles.value.map((r) => ({ label: r.display_name, value: r.id })),
+]);
+
+function onRoleChange() {
+  page.value = 1; // go back to page 1 when the filter changes
+  fetchUsers();
+}
+
+const isStudent = (row) => row.role_for_check === "student";
+const isTeacher = (row) => row.role_for_check === "Teacher";
+const seelectedRole = computed(() =>
+  roles.value.find((r) => r.id === filters.role_id),
+);
+const showStudentColumn = computed(
+  () => seelectedRole.value?.name === "student",
+);
+const showTeacherColumn = computed(
+  () => seelectedRole.value?.name === "Teacher",
+);
+const columns = computed(() => {
+  const base = [
+    { prop: "name_kh", label: "ឈ្មោះខ្មែរ", minWidth: 130 },
+    { prop: "name_en", label: "ឈ្មោះឡាតាំង", minWidth: 130 },
+    { prop: "code", label: "កូដ", minWidth: 110 },
+    { slot: "gender", label: "ភេទ", minWidth: 90 },
+    { prop: "role_name", label: "តួនាទី", minWidth: 110 },
+  ];
+
+  const studentCols = [
+    {
+      slot: "student_profile",
+      label: "ព័ត៍មានលំអិតនិស្សិត",
+      width: 140,
+      align: "center",
+    },
+    {
+      slot: "student_family",
+      label: "ព័ត៍មានអំពីគ្រួសារ",
+      width: 140,
+      align: "center",
+    },
+    {
+      slot: "student_education",
+      label: "ព័ត៍មានអំពីប្រវត្តិសិក្សា",
+      width: 160,
+      align: "center",
+    },
+    {
+      slot: "student_document",
+      label: "ព័ត៍មានឯកសារនិស្សិតប្រគល់ជួន",
+      width: 230,
+      align: "center",
+    },
+  ];
+
+  const teacherCols = [
+    {
+      slot: "teacher_profile",
+      label: "ព័ត៍មានលំអិតសាស្រ្តាចារ្យ",
+      width: 200,
+      align: "center",
+    },
+  ];
+
+  if (showStudentColumn.value) return [...base, ...studentCols];
+  if (showTeacherColumn.value) return [...base, ...teacherCols];
+  return base;
+});
 
 const createDialog = ref(false);
 const isEdit = ref(false);
@@ -498,7 +577,7 @@ async function toggleStatus(row) {
 
 onMounted(() => {
   lookupStore.fetchLookUp();
-  fetchUsers();
+  // fetchUsers();
   fetchRole();
 });
 </script>
@@ -508,5 +587,8 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+.custom-style .el-segmented {
+  --el-segmented-item-selected-bg-color: #626aef;
 }
 </style>

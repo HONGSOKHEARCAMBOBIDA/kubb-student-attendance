@@ -173,4 +173,8 @@ const (
 	AddStudentDocument    = "add.student.Document"
 	ViewStudentDocument   = "view.student.Document/:id"
 	UpdateStudentDocument = "update.student.Document/:id"
+
+	AddTeacherProfile    = "add.Teacher.Profile"
+	ViewTeacherProfile   = "view.Teacher.Profile/:id"
+	UpdateTeacherProfile = "update.Teacher.Profile"
 )

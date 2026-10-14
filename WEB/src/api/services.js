@@ -226,3 +226,10 @@ export const getStudentDocuments = (id) =>
   api.get(`/view.student.Document/${id}`);
 export const updateStudentDocument = (id, data) =>
   api.put(`/update.student.Document/${id}`, data);
+
+export const addTeacherProfile = (data) =>
+  api.post("/add.Teacher.Profile", data);
+export const getTeacherProfile = (id) =>
+  api.get(`/view.Teacher.Profile/${id}`);
+export const updateTeacherProfile = (id, data) =>
+  api.put(`/update.Teacher.Profile`, data);

@@ -25,7 +25,7 @@ type ClassScheduleService interface {
 	// major for the class's own year/semester.
 	GetAvailableSubjects(ctx context.Context, classID int) ([]response.SubjectOption, error)
 
-	Create(ctx context.Context, classID int, input request.ClassScheduleRequestCreate) error
+	Create(ctx context.Context, classID int, input request.ClassScheduleRequestCreate, userID int) error
 	Toggle(ctx context.Context, id int) error
 }
 
@@ -45,6 +45,9 @@ func (s *classScheduleService) GetByClass(ctx context.Context, classID int) ([]r
 	err := s.db.WithContext(ctx).
 		Table("class_schedule cs").
 		Joins("JOIN subject sub ON sub.id = cs.subject_id").
+		Joins("LEFT JOIN teacher_rates tr ON tr.class_schedule_id = cs.id").
+		Joins("LEFT JOIN user t ON t.id = tr.user_id").
+		Joins("LEFT JOIN user cr ON cr.id = tr.created_by").
 		Where("cs.class_id = ?", classID).
 		Select(`
 			cs.id AS id,
@@ -55,7 +58,11 @@ func (s *classScheduleService) GetByClass(ctx context.Context, classID int) ([]r
 			cs.day_of_week AS day_of_week,
 			cs.is_active AS is_active,
 			cs.schedule_date AS schedule_date,
-			cs.total_session AS total_session
+			cs.total_session AS total_session,
+			t.name_kh AS name_kh,
+			t.name_en AS name_en,
+			tr.hourly_rate AS hourly_rate,
+			cr.name_kh AS created_by
 		`).
 		Order("cs.id DESC").
 		Scan(&data).Error
@@ -98,7 +105,7 @@ func (s *classScheduleService) GetAvailableSubjects(ctx context.Context, classID
 	return data, nil
 }
 
-func (s *classScheduleService) Create(ctx context.Context, classID int, input request.ClassScheduleRequestCreate) error {
+func (s *classScheduleService) Create(ctx context.Context, classID int, input request.ClassScheduleRequestCreate, userID int) error {
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
 	defer cancel()
 
@@ -148,6 +155,19 @@ func (s *classScheduleService) Create(ctx context.Context, classID int, input re
 		}
 		if err := tx.Create(&newdata).Error; err != nil {
 			return apperror.New(apperror.CodeInternal, "failed to create class schedule", nil)
+		}
+		newteacherRate := model.TeacherRate{
+			UserID:          int64(input.TeacherID),
+			ClassID:         int64(classID),
+			HourlyRate:      input.HourlyRate,
+			EffectiveDate:   input.EffectiveDate,
+			EndDate:         input.EndDate,
+			Active:          true,
+			CreatedBy:       userID,
+			ClassScheduleID: newdata.ID,
+		}
+		if err := tx.Create(&newteacherRate).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to create teacher rate", nil)
 		}
 		return nil
 	})

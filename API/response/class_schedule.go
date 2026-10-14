@@ -3,15 +3,19 @@ package response
 // ClassScheduleResponse is a class_schedule row joined with subject, so the
 // table can show the subject code/name without a second round trip.
 type ClassScheduleResponse struct {
-	ID           int64  `json:"id"`
-	ClassID      int64  `json:"class_id"`
-	SubjectID    int64  `json:"subject_id"`
-	SubjectCode  string `json:"subject_code"`
-	SubjectName  string `json:"subject_name_kh"`
-	DayOfWeek    int8   `json:"day_of_week"`
-	TotalSession int    `json:"total_session"`
-	ScheduleDate string `json:"schedule_date"`
-	IsActive     bool   `json:"is_active"`
+	ID           int64   `json:"id"`
+	ClassID      int64   `json:"class_id"`
+	SubjectID    int64   `json:"subject_id"`
+	SubjectCode  string  `json:"subject_code"`
+	SubjectName  string  `json:"subject_name_kh"`
+	DayOfWeek    int8    `json:"day_of_week"`
+	TotalSession int     `json:"total_session"`
+	ScheduleDate string  `json:"schedule_date"`
+	IsActive     bool    `json:"is_active"`
+	NameKh       string  `json:"name_kh"`
+	NameEn       string  `json:"name_en"`
+	HourlyRate   float64 `gorm:"type:decimal(12,2);not null;default:0.00" json:"hourly_rate"`
+	CreatedBy    string  `json:"created_by"`
 }
 
 // SubjectOption is the trimmed-down shape used to populate the "add

@@ -231,9 +231,9 @@
             </div>
 
             <div class="action-content">
-              <span class="action-title">អ្នកប្រើប្រាស់/និស្សិត</span>
+              <span class="action-title">អ្នកប្រើប្រាស់/និស្សិត/សាស្រ្តាចារ្យ</span>
               <span class="action-description">
-                អ្នកប្រើប្រាស់/និស្សិត
+                អ្នកប្រើប្រាស់/និស្សិត/សាស្រ្តាចារ្យ
               </span>
             </div>
 

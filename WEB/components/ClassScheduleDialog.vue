@@ -11,9 +11,10 @@ import {
   getClassAvailableSubjects,
   createClassSchedule,
   toggleClassSchedule,
+  getUsers,
 } from "../src/api/services.js";
 import AppInput from "./AppInput.vue";
-
+import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   classRow: { type: Object, default: null },
@@ -47,14 +48,49 @@ const togglingId = ref(null);
 const subjectOptions = ref([]);
 const subjectsLoading = ref(false);
 
+const Teachers = ref([]);
+
 const formRef = ref();
-const defaultForm = () => ({ subject_id: null, day_of_week: null,schedule_date:"",total_session:0 });
+const defaultForm = () => ({
+  subject_id: null,
+  day_of_week: null,
+  schedule_date: "",
+  total_session: 0,
+  teacher_id: null,
+  hourly_rate: 0,
+  effective_date: "",
+  end_date: "",
+});
 const form = reactive(defaultForm());
 const rules = {
-  subject_id: [{ required: true, message: "សូមជ្រើសរើសមុខវិជ្ជា", trigger: "change" }],
-  day_of_week: [{ required: true, message: "សូមជ្រើសរើសថ្ងៃ", trigger: "change" }],
-  schedule_date: [{ required: true, message: "សូមជ្រើសរើសថ្ងៃទី", trigger: "change" }],
-  total_session: [{ required: true, message: "សូម Session សរុបដែលសិស្សត្រូវរៀន", trigger: "change" }],
+  subject_id: [
+    { required: true, message: "សូមជ្រើសរើសមុខវិជ្ជា", trigger: "change" },
+  ],
+  day_of_week: [
+    { required: true, message: "សូមជ្រើសរើសថ្ងៃ", trigger: "change" },
+  ],
+  schedule_date: [
+    { required: true, message: "សូមជ្រើសរើសថ្ងៃទី", trigger: "change" },
+  ],
+  total_session: [
+    {
+      required: true,
+      message: "សូម Session សរុបដែលសិស្សត្រូវរៀន",
+      trigger: "change",
+    },
+  ],
+  teacher_id: [
+    { required: true, message: "សូមជ្រើសរើសគ្រូបង្រៀន", trigger: "change" },
+  ],
+  hourly_rate: [
+    { required: true, message: "សូមបញ្ចូលតម្លៃម៉ោងគ្រូ", trigger: "change" },
+  ],
+  effective_date: [
+    { required: true, message: "សូមរើសថ្ងៃមានប្រសិទ្ធភាព", trigger: "change" },
+  ],
+  end_date: [
+    { required: true, message: "សូមរើសថ្ងៃអស់ប្រសិទ្ធភាព", trigger: "change" },
+  ],
 };
 const submitting = ref(false);
 
@@ -64,9 +100,26 @@ async function fetchSchedules() {
   try {
     const res = await getClassSchedule(props.classRow.id);
     schedules.value = res.data.data || [];
-    console.log(schedules.value)
   } catch (e) {
     notify.error(e.response?.data?.error || "Failed to load schedule");
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function fetchTeacher() {
+  loading.value = true;
+  try {
+    const params = { page: 1, page_size: 100 };
+    params.role_id = 3;
+    const res = await getUsers(params);
+    Teachers.value = (res.data.data || []).map((s) => ({
+      label: `${s.name_kh} — ${s.name_en}`,
+      value: s.id,
+    }));
+    console.log(Teachers.value)
+  } catch (e) {
+    ElMessage.error("Failed to load employees");
   } finally {
     loading.value = false;
   }
@@ -128,6 +181,7 @@ watch(
       Object.assign(form, defaultForm());
       fetchSchedules();
       fetchSubjectOptions();
+      fetchTeacher();
     }
   },
 );
@@ -158,28 +212,83 @@ watch(
             clearable
           />
         </el-form-item>
+
         <el-form-item label="ថ្ងៃ" prop="day_of_week">
-          <el-select v-model="form.day_of_week" placeholder="ជ្រើសរើសថ្ងៃ" size="large">
-            <el-option v-for="d in DAYS" :key="d.value" :label="d.label" :value="d.value" />
+          <el-select
+            v-model="form.day_of_week"
+            placeholder="ជ្រើសរើសថ្ងៃ"
+            size="large"
+          >
+            <el-option
+              v-for="d in DAYS"
+              :key="d.value"
+              :label="d.label"
+              :value="d.value"
+            />
           </el-select>
         </el-form-item>
-       <el-form-item label="ថ្ងៃទី" prop="schedule_date">
-  <AppDatePicker
-    v-model="form.schedule_date"
-    placeholder="ជ្រើសរើសថ្ងៃទី"
-    size="large"
-    clearable
-  />
-</el-form-item>
-<el-form-item label="Session សរុប" prop="total_session">
-  <AppInput
-    type="number"
-    v-model.number="form.total_session"
-    placeholder="Session សរុប"
-    size="large"
-    clearable
-  />
-</el-form-item>
+
+        <el-form-item label="ថ្ងៃទី" prop="schedule_date">
+          <AppDatePicker
+            v-model="form.schedule_date"
+            placeholder="ជ្រើសរើសថ្ងៃទី"
+            size="large"
+            clearable
+          />
+        </el-form-item>
+
+        <el-form-item label="Session សរុប" prop="total_session">
+          <AppInput
+            type="number"
+            v-model.number="form.total_session"
+            placeholder="Session សរុប"
+            size="large"
+            clearable
+          />
+        </el-form-item>
+      </div>
+
+      <div class="form-row">
+        <el-form-item label="គ្រូបង្រៀន" prop="teacher_id">
+          <AppSelect
+            v-model="form.teacher_id"
+            :options="Teachers"
+            :loading="loading"
+            placeholder="ជ្រើសរើសគ្រូបង្រៀន"
+            size="large"
+            filterable
+            clearable
+          />
+        </el-form-item>
+
+        <el-form-item label="តម្លៃម៉ោងគ្រូ" prop="hourly_rate">
+          <AppInput
+            suffix="$"
+            type="number"
+            v-model.number="form.hourly_rate"
+            placeholder="តម្លៃម៉ោងគ្រូ"
+            size="large"
+          >
+        </AppInput>
+        </el-form-item>
+
+        <el-form-item label="ថ្ងៃមានប្រសិទ្ធភាព" prop="effective_date">
+          <AppDatePicker
+            v-model="form.effective_date"
+            placeholder="ថ្ងៃមានប្រសិទ្ធភាព"
+            size="large"
+            clearable
+          />
+        </el-form-item>
+
+        <el-form-item label="ថ្ងៃអស់ប្រសិទ្ធភាព" prop="end_date">
+          <AppDatePicker
+            v-model="form.end_date"
+            placeholder="ថ្ងៃអស់ប្រសិទ្ធភាព"
+            size="large"
+            clearable
+          />
+        </el-form-item>
       </div>
 
       <AppButton type="primary" :loading="submitting" @click="handleAdd">
@@ -199,13 +308,25 @@ watch(
         { label: 'ថ្ងៃ', slot: 'day', width: 120 },
         { label: 'កាលបរិច្ឆេទ', prop: 'schedule_date', width: 120 },
         { label: 'Session សរុប', prop: 'total_session', width: 120 },
+        { label: 'សាស្រ្តាចារ្យ', slot: 'name_kh', minWidth: 120 },
+        { label: 'តម្លៃម៉ោង', slot: 'hourly_rate', width: 120 },
+        { label: 'បង្កើតដោយ', prop: 'created_by', width: 120 },
         { label: 'ស្ថានភាព', slot: 'status', width: 110 },
       ]"
     >
+      <template #name_kh="{row}">
+        <el-text>{{ row.name_kh }} - {{ row.name_en }}</el-text>
+      </template>
       <template #day="{ row }">
         <el-text>{{ dayLabel(row.day_of_week) }}</el-text>
       </template>
-
+      <template #hourly_rate="{row}">
+            <el-statistic
+              :value="row.hourly_rate"
+              :formatter="(val) => `${Number(val).toFixed(2)}$`"
+              :value-style="{ fontSize: '20px', color: '#FF0000' }"
+            />
+      </template>
       <template #status="{ row }">
         <el-switch
           :model-value="row.is_active"
@@ -214,12 +335,13 @@ watch(
         />
       </template>
     </AppTable>
-
-
   </AppDialog>
 </template>
 
 <style scoped>
+.form-row + .form-row {
+  margin-top: 4px;
+}
 .add-schedule-form {
   margin-bottom: 16px;
 }

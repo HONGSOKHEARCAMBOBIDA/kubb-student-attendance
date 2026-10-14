@@ -220,7 +220,7 @@ const availableTypes = computed(() => {
 function statusOf(row) {
   if (row.received_qty >= row.required_qty)
     return { label: "គ្រប់", type: "success" };
-  if (row.received_qty > 0) return { label: "មិនទាន់គ្រប់", type: "warning" };
+  if (row.received_qty > 0) return { label: "មិនទាន់គ្រប់", type: "error" };
   return { label: "មិនទាន់ទទួល", type: "danger" };
 }
 

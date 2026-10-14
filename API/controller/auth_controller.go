@@ -518,3 +518,42 @@ func (cr *AuthController) GetStudentDocuments(c *gin.Context) {
 	}
 	share.RespondDate(c, http.StatusOK, data)
 }
+
+func (cr *AuthController) AddTeacherProfile(c *gin.Context) {
+	var input request.TeacherProfile
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.AddTeacherProfile(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "user create")
+}
+
+func (cr *AuthController) GetTeacherProfile(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.GetTeacherProfile(c.Request.Context(), id)
+	if err != nil {
+		share.ResponseError(c, http.StatusNotFound, err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr *AuthController) UpdateTeacherProfile(c *gin.Context) {
+	var input request.TeacherProfile
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateTeacherProfile(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "user create")
+}

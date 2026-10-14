@@ -52,6 +52,9 @@ type AuthService interface {
 	AddStudentDocument(ctx context.Context, input request.StudentDocumentRequestCreate) error
 	UpdateStudentDocument(ctx context.Context, id int, input request.StudentDocumentRequestUpdate) error
 	GetStudentDocuments(ctx context.Context, id int) ([]response.StudentDocument, error)
+	AddTeacherProfile(ctx context.Context, input request.TeacherProfile) error
+	UpdateTeacherProfile(ctx context.Context, input request.TeacherProfile) error
+	GetTeacherProfile(ctx context.Context, id int) (*response.TeacherProfile, error)
 }
 
 type authservice struct {
@@ -521,7 +524,8 @@ func (s *authservice) GetUserIncludeStudent(ctx context.Context, id int, pf requ
 		u.gender AS gender,
 		u.code AS code,
 		r.id AS role_id,
-		r.display_name AS role_name
+		r.display_name AS role_name,
+		r.name AS role_for_check
 	`).
 		Joins("LEFT JOIN role r ON r.id = u.role_id")
 	q = applyAccessFilterUserIncludeStudent(q, s.db, user)
@@ -1108,4 +1112,69 @@ func (s *authservice) GetStudentDocuments(ctx context.Context, id int) ([]respon
 	}
 
 	return docs, nil
+}
+
+func (s *authservice) AddTeacherProfile(ctx context.Context, input request.TeacherProfile) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newdata := model.TeacherProfile{
+			UserID:       input.UserID,
+			DateOfBirth:  input.DateOfBirth,
+			PlaceOfBirth: input.PlaceOfBirth,
+			Nationality:  input.Nationality,
+			Address:      input.Address,
+			Phone:        input.Phone,
+		}
+		if err := tx.Create(&newdata).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to create student document", nil)
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *authservice) UpdateTeacherProfile(ctx context.Context, input request.TeacherProfile) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		data := model.TeacherProfile{
+			DateOfBirth:  input.DateOfBirth,
+			PlaceOfBirth: input.PlaceOfBirth,
+			Nationality:  input.Nationality,
+			Address:      input.Address,
+			Phone:        input.Phone,
+		}
+		update := tx.Model(&model.TeacherProfile{}).Where("user_id =?", input.UserID).Updates(&data)
+		if update.Error != nil {
+			return apperror.New(
+				apperror.CodeInternal,
+				"failed to update teacher profile",
+				nil,
+			)
+		}
+
+		if update.RowsAffected == 0 {
+			return apperror.New(
+				apperror.CodeNotFound,
+				"teacher profile not found",
+				nil,
+			)
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *authservice) GetTeacherProfile(ctx context.Context, id int) (*response.TeacherProfile, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	var data response.TeacherProfile
+	err := s.db.WithContext(ctx).Table("teacher_profile").
+		Where("user_id =?", id).First(&data).Error
+	if err != nil {
+		return nil, err
+	}
+	*data.DateOfBirth = helper.FormatDate(*data.DateOfBirth)
+	return &data, nil
 }

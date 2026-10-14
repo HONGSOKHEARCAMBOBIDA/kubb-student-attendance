@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"mysql/helper"
 	"mysql/request"
 	"mysql/service"
 
@@ -63,6 +64,10 @@ func (ctl *ClassScheduleController) GetAvailableSubjects(c *gin.Context) {
 
 // POST /class/:id/schedule
 func (ctl *ClassScheduleController) Create(c *gin.Context) {
+	userID, ok := helper.GetUserID(c)
+	if !ok {
+		return
+	}
 	classID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid class id"})
@@ -75,7 +80,7 @@ func (ctl *ClassScheduleController) Create(c *gin.Context) {
 		return
 	}
 
-	if err := ctl.service.Create(c.Request.Context(), classID, input); err != nil {
+	if err := ctl.service.Create(c.Request.Context(), classID, input, userID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

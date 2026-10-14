@@ -13,28 +13,33 @@
       :clearable="clearable"
       :autofocus="autofocus"
       :readonly="readonly"
-    />
+    >
+      <template v-if="suffix" #suffix>
+        {{ suffix }}
+      </template>
+    </el-input>
   </el-form-item>
 </template>
 
 <script setup>
 const props = defineProps({
-  modelValue: { type: String, default: '' },
-  label: { type: String, default: '' },
-  prop: { type: String, default: '' },
-  type: { type: String, default: 'text' },
-  placeholder: { type: String, default: '' },
+  modelValue: { type: String, default: "" },
+  label: { type: String, default: "" },
+  prop: { type: String, default: "" },
+  type: { type: String, default: "text" },
+  placeholder: { type: String, default: "" },
   prefixIcon: { type: [String, Object], default: null },
   disabled: { type: Boolean, default: false },
   clearable: { type: Boolean, default: false },
   autofocus: { type: Boolean, default: false },
   readonly: { type: Boolean, default: false },
-  trim: { type: Boolean, default: false } // true = trim spaces, false = keep as typed
-})
+  trim: { type: Boolean, default: false }, // true = trim spaces, false = keep as typed
+  suffix: { type: String, default: "" },
+});
 
-const emit = defineEmits(['update:modelValue', 'enter'])
+const emit = defineEmits(["update:modelValue", "enter"]);
 
 function handleInput(value) {
-  emit('update:modelValue', props.trim ? value.trim() : value)
+  emit("update:modelValue", props.trim ? value.trim() : value);
 }
 </script>
