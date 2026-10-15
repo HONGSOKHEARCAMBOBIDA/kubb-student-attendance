@@ -50,7 +50,7 @@ export const logoutUser = () => api.post("/logout");
 export const adduserclass = (data) => api.post("/add.user.class", data);
 export const editUserClass = (id, data) =>
   api.put(`/update.user.class/${id}`, data);
-
+export const getStaft = () => api.get('/view.staft')
 // Shift
 export const createShift = (data) => api.post("/add.shift", data);
 export const updateShift = (data) => api.put("/edit.shift", data);

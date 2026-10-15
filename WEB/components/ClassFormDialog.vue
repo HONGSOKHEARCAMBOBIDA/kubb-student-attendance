@@ -8,11 +8,11 @@
     <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
       <div class="form-row">
         <AppInput label="ឈ្មោះថ្នាក់" prop="name" v-model.trim="form.name" size="large" placeholder="បញ្ចូលឈ្មោះថ្នាក់"></AppInput>
-        <AppSelect label="កាន់ដោយ"  v-model="form.controlled_by" size="large" placeholder="ជ្រើសរើសអ្នកកាន់ថ្នាក់" :options="users"></AppSelect>
+        <AppSelect label="កាន់ដោយ" filterable v-model="form.controlled_by" size="large" placeholder="ជ្រើសរើសអ្នកកាន់ថ្នាក់" :options="users"></AppSelect>
       </div>
 
       <div class="form-row">
-        <AppSelect label="ជំនាញ" prop="major_id" v-model="form.major_id" size="large" placeholder="ជ្រើសរើសជំនាញ" :options="majors"></AppSelect>
+        <AppSelect label="ជំនាញ" prop="major_id" filterable v-model="form.major_id" size="large" placeholder="ជ្រើសរើសជំនាញ" :options="majors"></AppSelect>
         <AppSelect label="វេន" prop="shift_id" v-model="form.shift_id" size="large" placeholder="ជ្រើសរើសវេន" :options="shifts"></AppSelect>
       </div>
 
@@ -28,7 +28,7 @@
 
       <div class="form-row">
         <AppInput type="number" label="ក្រុម" prop="group" v-model.number="form.group" size="large" placeholder="1"></AppInput>
-         <AppInput type="number" label="Term" prop="term" v-model.number="form.term" size="large" placeholder="1"></AppInput>
+         <AppInput type="number" label="វគ្គ" prop="term" v-model.number="form.term" size="large" placeholder="1"></AppInput>
         <AppSelect
           size="large"
           v-model="form.type"
@@ -37,7 +37,7 @@
           placeholder="ប្រភេទថ្នាក់"
         />
       </div>
-       <AppInput clearable label="Map Link" v-model.trim="form.map_link" size="large" placeholder="https://maps.google.com/..."></AppInput>
+       <AppInput clearable label="Map Link(Optional)" v-model.trim="form.map_link" size="large" placeholder="https://maps.google.com/..."></AppInput>
       <div class="form-row">
         <AppInput type="number" clearable label="ចម្ងាយអាចស្កែនបាន (ម៉េត្រ)" v-model.number="form.radius" size="large" placeholder="e.g. 100"></AppInput>
         <el-form-item label="អាចស្កែនក្រៅតំបន់" prop="can_scan_outsize">

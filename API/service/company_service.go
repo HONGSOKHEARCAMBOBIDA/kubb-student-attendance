@@ -303,6 +303,8 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		u.id AS controlled_by,
 		u.name_kh AS controlled_by_name
 	`)
+
+	dataQuery = helper.ManageClassFilter(dataQuery, s.db, user)
 	if err := dataQuery.Offset(offset).Limit(pf.PageSize).Order("id DESC").Scan(&data).Error; err != nil {
 		return nil, nil, fmt.Errorf("fetch class: %w", err)
 	}
@@ -360,8 +362,9 @@ func (s *companyservice) GetClassScan(ctx context.Context, id int) ([]response.C
 			c.id AS id,
 			c.name AS name,
 			c.year AS year,
-			c.semester AS semester
-		`)
+			c.semester AS semester,
+			p.name AS programme_name
+		`).Joins("LEFT JOIN programmes p ON p.id = c.programme_id")
 	query = helper.ManageClassFilter(query, s.db, user)
 
 	if err := query.Scan(&class).Error; err != nil {

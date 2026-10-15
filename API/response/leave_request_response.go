@@ -25,7 +25,7 @@ type LeaveRequestResponse struct {
 type NotPermissionLeave struct {
 	UserID         int    `json:"user_id" gorm:"column:user_id"`
 	UserGender     int    `json:"gender" gorm:"column:gender"`
-	UserNamekh     string `json:"user_name_kh"`
+	UserNamekh     string `json:"user_name_kh" gorm:"column:user_name_kh"`
 	UserNameEn     string `json:"user_name_en"`
 	UserCode       string `json:"user_code"`
 	ClassID        int    `json:"class_id"`

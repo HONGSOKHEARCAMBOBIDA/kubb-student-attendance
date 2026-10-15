@@ -56,6 +56,7 @@ type AuthService interface {
 	UpdateTeacherProfile(ctx context.Context, input request.TeacherProfile) error
 	GetTeacherProfile(ctx context.Context, id int) (*response.TeacherProfile, error)
 	UpdateTeacherRate(ctx context.Context, classscheduleID int, input request.TeacherRate) error
+	GetStaft(ctx context.Context) ([]response.UserResponseNotStudent, error)
 }
 
 type authservice struct {
@@ -69,13 +70,13 @@ func NewAuthService() AuthService {
 }
 
 var requiredPermissions = []string{
-	"add.payroll", "edit.payroll", "add.backup", "view.backup",
+	"add.backup", "view.backup",
 	"view.download.backup", "delete.backup", "add.company",
 	"edit.company", "edit.user", "add.user", "edit.leave.type",
 	"add.leave.type", "edit.leave.request", "edit.status.leave.request",
 	"add.role.has.permission", "add.leave.request", "edit.leave.request",
 	"edit.status.leave.request", "delete.leave.request", "add.subject", "edit.subject",
-	"add.Major", "edit.Major",
+	"add.Major", "edit.Major", "add.score",
 }
 
 func (s *authservice) RegisterMain(ctx context.Context, input request.UserInput) error {
@@ -1216,4 +1217,24 @@ func (s *authservice) UpdateTeacherRate(
 
 		return nil
 	})
+}
+
+func (s *authservice) GetStaft(ctx context.Context) ([]response.UserResponseNotStudent, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	var data []response.UserResponseNotStudent
+	err := s.db.WithContext(ctx).Table("user u").
+		Joins("LEFT JOIN role r ON r.id = u.role_id").
+		Where("r.level >= ?", 2).
+		Select(`
+		u.id AS id,
+		u.name_kh AS name_kh,
+		u.name_en AS name_en,
+		u.gender AS gender,
+		r.display_name AS role_name
+	`).Scan(&data).Error
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

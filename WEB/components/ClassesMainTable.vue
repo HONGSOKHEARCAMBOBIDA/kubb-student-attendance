@@ -12,30 +12,33 @@
       @page-change="$emit('page-change')"
       actions-width="380px"
       :columns="[
-        { prop: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
+        { slot: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
         { slot: 'major_name', label: 'ជំនាញ', Width: 100 },
         { slot: 'generation_name', label: 'ជំនាន់', width: 260 },
         { slot: 'programme_name', label: 'កម្មវិធីសិក្សា', Width: 60 },
-        { prop: 'year', label: 'ឆ្នាំ', width: 60 },
-        { prop: 'semester', label: 'ឆមាស', width: 70 },
-        { prop: 'group', label: 'ក្រុម', width: 60 },
-        { prop: 'term', label: 'វគ្គ', width: 60 },
-        { slot: 'type', label: 'ប្រភេទ', width: 100 },
+        { prop: 'year', label: 'ឆ្នាំ', width: 60,align: 'center' },
+        { prop: 'semester', label: 'ឆមាស', width: 70,align: 'center' },
+        { prop: 'group', label: 'ក្រុម', width: 60,align: 'center' },
+        { prop: 'term', label: 'វគ្គ', width: 60,align: 'center' },
+        { slot: 'type', label: 'ប្រភេទ', width: 100,align: 'center' },
         { prop: 'radius', label: 'អាចស្កែន (m)', width: 150 },
         { label: 'អាចស្កែនក្រៅតំបន់', slot: 'outsize', width: 150 },
-        { label: 'ស្ថានភាព', slot: 'status', width: 100 },
+        { label: 'ស្ថានភាព', slot: 'status', width: 120 },
         { label: 'សិស្សសរុប', slot: 'total', width: 100 },
         { label: 'កាន់ដោយ', prop: 'controlled_by_name', minwidth: 100 },
       ]"
     >
+      <template #name="{row}">
+        <el-text>{{ row.name }}-{{ row.programme_name }}-ឆ្នាំទី{{ row.year }}-ឆមាសទី{{ row.semester }}</el-text>
+      </template>
       <template #major_name="{ row }">
-        <el-text style="color: red">{{ row.major_name }}</el-text>
+        <el-text tag="b" type="primary">{{ row.major_name }}</el-text>
       </template>
       <template #generation_name="{ row }">
-        <el-text style="color: red">{{ row.generation_name }} | {{ row.generation_start }}-{{ row.generation_end }} ({{ row.shift_name }})</el-text>
+        <el-text tag="b" type="primary">{{ row.generation_name }} | {{ row.generation_start }}-{{ row.generation_end }} ({{ row.shift_name }})</el-text>
       </template>
       <template #programme_name="{ row }">
-        <el-text style="color: red">{{ row.programme_name }}</el-text>
+        <el-text tag="b" type="primary">{{ row.programme_name }}</el-text>
       </template>
       <template #outsize="{ row }">
         <el-tag :type="row.can_scan_outsize ? 'success' : 'danger'">
@@ -44,7 +47,7 @@
       </template>
       <template #status="{ row }">
         <el-tag :type="row.is_active ? 'success' : 'danger'" size="small">
-          {{ row.is_active ? "Active" : "Inactive" }}
+          {{ row.is_active ? "កំពុងរៀន" : "ថ្នាក់បានបញ្ចប់" }}
         </el-tag>
       </template>
       <template #total="{ row }">
@@ -146,6 +149,7 @@
         <ClassStudentsTable
           :class-row="row"
           :can-edit-class="canEditClass"
+          :can-add-score="canAddScore"
           @edit-student="(s) => $emit('edit-student', s)"
           @edit-status="(s) => $emit('edit-status', s)"
           @score-student="(s) => $emit('score-student', row, s)"
@@ -168,6 +172,7 @@ defineProps({
   total: { type: Number, default: 0 },
   canEditClass: { type: Boolean, default: false },
   adminLevel: { type: Boolean, default: false },
+   canAddScore: { type: Boolean, default: false},
 });
 
 defineEmits([

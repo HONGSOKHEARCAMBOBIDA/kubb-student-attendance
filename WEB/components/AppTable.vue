@@ -1,5 +1,15 @@
 <template>
   <div class="app-table" >
+        <div v-if="showPagination" class="app-table-pagination">
+      <span>សរុប {{ total }}</span>
+      <el-pagination
+        v-model:current-page="currentPageProxy"
+        v-model:page-size="pageSizeProxy"
+        :total="total"
+        :layout="isMobile ? 'prev, next' : 'prev, pager, next'"
+        @change="$emit('page-change')"
+      />
+    </div>
     <el-table
       v-if="!isMobile"
       :data="data"
@@ -75,15 +85,7 @@
       </div>
     </div>
 
-    <div v-if="showPagination" class="app-table-pagination">
-      <el-pagination
-        v-model:current-page="currentPageProxy"
-        v-model:page-size="pageSizeProxy"
-        :total="total"
-        :layout="isMobile ? 'total, prev, next' : 'total, prev, pager, next'"
-        @change="$emit('page-change')"
-      />
-    </div>
+
   </div>
 </template>
 
@@ -224,7 +226,7 @@ watch(
 }
 
 .app-table-pagination {
-  margin-top: 16px;
+  margin-bottom: 6px;
   display: flex;
   justify-content: flex-end;
 }

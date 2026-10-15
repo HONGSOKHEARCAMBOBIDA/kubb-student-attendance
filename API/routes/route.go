@@ -87,6 +87,7 @@ func SetupRoutes(r *gin.Engine) {
 		auth.PUT(route.UpdateUserClass, middleware.PermissionMiddleware(permission.EditCompany), authcontroller.UpdateUserClass)
 		auth.GET(route.ViewUser, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetUserNotStudent)
 		//auth.DELETE(route.DeleteUser, middleware.PermissionMiddleware(permission.EditUser), authcontroller.DeleteUser)
+		auth.GET(route.ViewStaft, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetStaft)
 
 		// Shift
 		// auth.PUT(route.EditShift, middleware.PermissionMiddleware(permission.EditUser), shiftcontroller.UpdateShift)

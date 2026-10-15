@@ -5,6 +5,7 @@
         { slot: 'name', span: 5 },
         // { slot: 'role', span: 5 },
         { slot: 'quick', span: 6 },
+        { slot: 'add', span: 6 },
       ]"
     >
       <template #name>
@@ -45,7 +46,7 @@
         </div>
       </template>
 
-      <template #actions>
+      <template #add>
         <AppButton v-if="candadd" type="primary" @click="openCreate">
           បន្ថែម
         </AppButton>

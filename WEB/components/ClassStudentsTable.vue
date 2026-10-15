@@ -26,7 +26,7 @@
 
       <template #actions="{ row: student }">
         <el-tooltip content="បញ្ចូលពិន្ទុ" placement="top">
-          <AppButton size="small" icon="EditPen" type="primary" circle @click="$emit('score-student', student)" />
+          <AppButton v-if="canAddScore" size="small" icon="EditPen" type="primary" circle @click="$emit('score-student', student)" />
         </el-tooltip>
         <el-tooltip content="កែប្រែសិស្ស" placement="top">
           <AppButton
@@ -237,6 +237,7 @@ const gpax = computed(() => {
 const props = defineProps({
   classRow: { type: Object, required: true },
   canEditClass: { type: Boolean, default: false },
+  canAddScore: { type: Boolean, default: false},
 });
 defineEmits(["edit-student", "edit-status", "score-student"]);
 

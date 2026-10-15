@@ -574,3 +574,12 @@ func (cr *AuthController) UpdateTeacherRate(c *gin.Context) {
 	}
 	share.ResponseSuccess(c, http.StatusOK, "Udpated")
 }
+
+func (cr *AuthController) GetStaft(c *gin.Context) {
+	data, err := cr.service.GetStaft(c)
+	if err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}

@@ -2,9 +2,9 @@
   <div class="layout">
     <aside class="sidebar" :class="{ collapsed }">
       <div class="sidebar-header">
-        <el-icon size="26" color="#626aef">
-          <UserFilled />
-        </el-icon>
+      <div class="login-logo">
+        <el-image src="/logo.png" alt="University Logo" fit="contain" />
+      </div>
 
         <span v-if="!collapsed" class="brand">
           សាកលវិទ្យាល័យខេរាវិទូ
@@ -154,6 +154,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
+.login-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+.login-logo .el-image {
+  width: 35px;
+  height: 35px;
+}
+
 .layout {
   height: 100vh;
   display: flex;

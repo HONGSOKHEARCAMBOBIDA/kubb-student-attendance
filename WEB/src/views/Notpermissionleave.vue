@@ -33,20 +33,15 @@
       </template>
 
       <template #class>
-        <el-select
+        <AppSelect
           v-model="filters.class_id"
           placeholder="ថ្នាក់"
           clearable
           filterable
           size="large"
+          :options="classOptions"
         >
-          <el-option
-            v-for="item in classOptions"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
-        </el-select>
+        </AppSelect>
       </template>
 
       <template #major>
@@ -104,42 +99,59 @@
       <template #header>
         <div class="card-header">
           <el-text tag="b">
-            សិស្សមិនបានស្កែនវត្តមាន និងមិនបានសុំច្បាប់ — {{ filters.check_date }} សិស្សសរុប {{ total }}នាក់
+            សិស្សមិនបានស្កែនវត្តមាន និងមិនបានសុំច្បាប់ —
+            {{ filters.check_date }} សិស្សសរុប {{ total }}នាក់
           </el-text>
-           <AppButton size="small" icon="Upload" type="primary" :loading="submitting" :disabled="!selectedRows.length" @click="handleAddNotPermission">
-      បញ្ចូនទិន្ន័យ
-    </AppButton>
+          <AppButton
+            size="small"
+            icon="Upload"
+            type="primary"
+            :loading="submitting"
+            :disabled="!selectedRows.length"
+            @click="handleAddNotPermission"
+          >
+            បញ្ចូនទិន្ន័យ
+          </AppButton>
         </div>
       </template>
 
       <AppTable
         :data="list"
         :loading="loading"
-        show-index
         selectable
         v-model:current-page="page"
         v-model:page-size="pageSize"
         :total="total"
         @page-change="fetchData"
         :columns="[
-          { prop: 'user_code', label: 'អត្តលេខ', width: 100 },
-          { prop: 'user_name_kh', label: 'ឈ្មោះខ្មែរ', minWidth: 140 },
-          { prop: 'user_name_en', label: 'ឈ្មោះឡាតាំង', minWidth: 140 },
+          { prop: 'user_code', label: 'អត្តលេខ', width: 150 },
+          { slot: 'name', label: 'ឈ្មោះ', minWidth: 140 },
           { slot: 'gender', label: 'ភេទ', width: 80 },
-          { prop: 'class_name', label: 'ថ្នាក់', minWidth: 120 },
-          { prop: 'major_name', label: 'ជំនាញ', minWidth: 110 },
+          { slot: 'class', label: 'ថ្នាក់', minWidth: 120 },
+          { slot: 'major', label: 'ជំនាញ', minWidth: 110 },
           { prop: 'shift_name', label: 'វេន', width: 100 },
           { prop: 'generation_name', label: 'ជំនាន់', width: 110 },
           { prop: 'programme_name', label: 'កម្មវិធីសិក្សា', minWidth: 130 },
           { prop: 'year', label: 'ឆ្នាំ', width: 80 },
           { prop: 'semester', label: 'ឆមាស', width: 80 },
+          { prop: 'group', label: 'ក្រុម', width: 80 },
+          { prop: 'term', label: 'វគ្គ', width: 80 },
         ]"
         @selection-change="(rows) => (selectedRows = rows)"
       >
+        <template #name="{row}">
+          <el-text size="large" tag="b" type="primary">{{ row.user_name_kh }} | <el-text>{{ row.user_name_en }}</el-text></el-text>
+        </template>
         <template #gender="{ row }">
-          <el-tag :type="row.gender === 1 ? 'primary' : 'danger'" size="small">
+          <el-text :type="row.gender === 1 ? 'primary' : 'danger'" size="small">
             {{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}
-          </el-tag>
+          </el-text>
+        </template>
+        <template #class="{row}">
+          <el-text>{{ row.class_name }}-{{ row.programme_name }}-ឆ្នាំទី{{ row.year }}-ឆមាសទី{{ row.semester }}</el-text>
+        </template>
+        <template #major="{row}">
+          <el-text size="large" type="primary" tag="b">{{ row.major_name }}</el-text>
         </template>
       </AppTable>
     </el-card>
@@ -155,13 +167,13 @@ import {
   getMajor,
   getShift,
   getGeneration,
-  addNotPermissionLeave
+  addNotPermissionLeave,
 } from "../api/services";
 import AppTable from "../../components/AppTable.vue";
 import AppButton from "../../components/AppButton.vue";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import { useNotification } from "../../composables/useNotification.js";
-
+import AppSelect from "../../components/AppSelect.vue";
 const notify = useNotification();
 const selectedRows = ref([]);
 const submitting = ref(false);
@@ -236,6 +248,7 @@ async function fetchData() {
     });
     list.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;
+    console.log(list.value)
   } catch (e) {
     notify.error(e.response?.data?.error || "");
   } finally {
@@ -251,7 +264,10 @@ async function fetchLookups() {
       getShift(),
       getGeneration(),
     ]);
-    classOptions.value = classRes.data.data || [];
+    classOptions.value = (classRes.data.data || []).map((s) => ({
+      label: `${s.name}-${s.programme_name}-ឆ្នាំទី${s.year}-ឆមាសទី${s.semester}`,
+      value: s.id,
+    }))
     majors.value = majorRes.data.data || [];
     shifts.value = shiftRes.data.data || [];
     generations.value = generationRes.data.data || [];
@@ -263,21 +279,24 @@ async function fetchLookups() {
 async function handleExport() {
   exporting.value = true;
   try {
-    const res = await exportNotPermissionLeave({
-      name: filters.name || undefined,
-      check_date: filters.check_date || undefined,
-      class_id: filters.class_id || undefined,
-      major_id: filters.major_id || undefined,
-      shift_id: filters.shift_id || undefined,
-      generation_id: filters.generation_id || undefined,
-    }, { responseType: "blob" });
+    const res = await exportNotPermissionLeave(
+      {
+        name: filters.name || undefined,
+        check_date: filters.check_date || undefined,
+        class_id: filters.class_id || undefined,
+        major_id: filters.major_id || undefined,
+        shift_id: filters.shift_id || undefined,
+        generation_id: filters.generation_id || undefined,
+      },
+      { responseType: "blob" },
+    );
 
     const url = window.URL.createObjectURL(new Blob([res.data]));
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute(
       "download",
-      `not-permission-leave-${filters.check_date}.xlsx`
+      `not-permission-leave-${filters.check_date}.xlsx`,
     );
     document.body.appendChild(link);
     link.click();
@@ -295,7 +314,7 @@ watch(
   () => {
     page.value = 1;
     debounce(() => fetchData());
-  }
+  },
 );
 
 watch(
@@ -309,7 +328,7 @@ watch(
   () => {
     page.value = 1;
     fetchData();
-  }
+  },
 );
 
 onMounted(() => {

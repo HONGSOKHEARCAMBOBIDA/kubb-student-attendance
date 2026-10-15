@@ -2,40 +2,82 @@
   <div>
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 3  },
-        { slot: 'major', span: 3   },
-        { slot: 'shift', span: 3   },
-        { slot: 'generation', span: 3  },
-        { slot: 'programm', span: 3  },
-         {slot: 'controll', span: 3  },
+        { slot: 'name', span: 3 },
+        { slot: 'programm', span: 3 },
+        { slot: 'generation', span: 3 },
+        { slot: 'major', span: 3 },
+        { slot: 'shift', span: 3 },
+        { slot: 'controll', span: 3 },
       ]"
     >
       <template #name>
-        <AppInput v-model.trim="filters.name" placeholder="ស្វែងរកតាមឈ្មោះថ្នាក់" clearable size="large"></AppInput>
+        <AppInput
+          v-model.trim="filters.name"
+          placeholder="ស្វែងរកតាមឈ្មោះថ្នាក់"
+          clearable
+          size="large"
+        ></AppInput>
       </template>
 
       <template #major>
-        <AppSelect v-model="filters.major_id" placeholder="ជំនាញ" clearable size="large" :options="majors"></AppSelect>
+        <AppSelect
+          filterable
+          v-model="filters.major_id"
+          placeholder="ជំនាញ"
+          clearable
+          size="large"
+          :options="majors"
+        ></AppSelect>
       </template>
 
       <template #shift>
-        <AppSelect v-model="filters.shift_id" placeholder="វេន" clearable size="large" :options="shifts"></AppSelect>
+        <AppSelect
+          v-model="filters.shift_id"
+          placeholder="វេន"
+          clearable
+          size="large"
+          :options="shifts"
+        ></AppSelect>
       </template>
 
       <template #generation>
-        <AppSelect v-model="filters.generation_id" placeholder="ជំនាន់" clearable size="large" :options="generations"></AppSelect>
+        <AppSelect
+          v-model="filters.generation_id"
+          placeholder="ជំនាន់"
+          clearable
+          size="large"
+          :options="generations"
+        ></AppSelect>
       </template>
 
       <template #programm>
-        <AppSelect v-model="filters.programme_id" placeholder="កម្មវិធីសិក្សា" clearable size="large" :options="programmes"></AppSelect>
+        <AppSelect
+          v-model="filters.programme_id"
+          placeholder="កម្មវិធីសិក្សា"
+          clearable
+          size="large"
+          :options="programmes"
+        ></AppSelect>
       </template>
 
       <template #controll>
-        <AppSelect v-model="filters.controlled_by" placeholder="អ្នកកាន់ថ្នាក់" clearable size="large" :options="users"></AppSelect>
+        <AppSelect
+          filterable
+          v-model="filters.controlled_by"
+          placeholder="អ្នកកាន់ថ្នាក់"
+          clearable
+          size="large"
+          :options="users"
+        ></AppSelect>
       </template>
 
       <template #actions>
-        <AppButton v-if="canAddClass" type="primary" @click="openCreate" :block="false">
+        <AppButton
+          v-if="canAddClass"
+          type="primary"
+          @click="openCreate"
+          :block="false"
+        >
           បន្ថែមថ្នាក់
         </AppButton>
       </template>
@@ -49,6 +91,7 @@
       :total="total"
       :can-edit-class="canEditClass"
       :admin-level="adminLevel"
+      :can-add-score="canAddScore"
       @page-change="fetchClasses"
       @edit="openEdit"
       @edit-telegram="openEditTelegram"
@@ -103,9 +146,17 @@
 
     <ClassScheduleDialog v-model="scheduleDialog" :class-row="scheduleClass" />
 
-    <StudentEditDialog v-model="studentDialogVisible" :student="editStudent" @saved="fetchClasses" />
+    <StudentEditDialog
+      v-model="studentDialogVisible"
+      :student="editStudent"
+      @saved="fetchClasses"
+    />
 
-    <UserClassStatusDialog v-model="userClassStatusDialogVisible" :student="editStatusStudent" @saved="fetchClasses" />
+    <UserClassStatusDialog
+      v-model="userClassStatusDialogVisible"
+      :student="editStatusStudent"
+      @saved="fetchClasses"
+    />
 
     <ScoreEntryDialog
       v-model="scoreDialogVisible"
@@ -115,7 +166,11 @@
       @saved="fetchClasses"
     />
 
-    <ScoreImportDialog v-model="scoreImportDialog" :class-row="scoreImportClassRow" @saved="fetchClasses" />
+    <ScoreImportDialog
+      v-model="scoreImportDialog"
+      :class-row="scoreImportClassRow"
+      @saved="fetchClasses"
+    />
 
     <ScoreViewDialog v-model="scoreViewDialog" :class-row="scoreViewClassRow" />
   </div>
@@ -133,7 +188,7 @@ import {
   getProgramme,
   getGradecomponent,
   getclassnopagination,
-  getUsers
+  getStaft,
 } from "../api/services";
 import AppButton from "../../components/AppButton.vue";
 import AppFilterBar from "../../components/AppFilterBar.vue";
@@ -159,7 +214,7 @@ const userDataStore = useUserDataStore();
 /* ---------------- lookups & list ---------------- */
 
 const classes = ref([]);
-const classnopagination = ref([])
+const classnopagination = ref([]);
 const majors = ref([]);
 const shifts = ref([]);
 const generations = ref([]);
@@ -182,9 +237,15 @@ const filters = reactive({
 });
 
 const adminLevel = computed(() => userDataStore.level === 7);
-const canAddClass = computed(() => userDataStore.permissions?.some((p) => p.name === "add.company"));
-const canEditClass = computed(() => userDataStore.permissions?.some((p) => p.name === "edit.company"));
-
+const canAddClass = computed(() =>
+  userDataStore.permissions?.some((p) => p.name === "add.company"),
+);
+const canEditClass = computed(() =>
+  userDataStore.permissions?.some((p) => p.name === "edit.company"),
+);
+const canAddScore = computed(() =>
+  userDataStore.permissions?.some((p) => p.name === "add.score"),
+);
 async function fetchClasses() {
   loading.value = true;
   try {
@@ -196,11 +257,11 @@ async function fetchClasses() {
       shift_id: filters.shift_id || undefined,
       generation_id: filters.generation_id || undefined,
       programme_id: filters.programme_id || undefined,
-      controlled_by: filters.controlled_by || undefined
+      controlled_by: filters.controlled_by || undefined,
     });
     classes.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;
-    console.log(classes.value)
+    console.log(classes.value);
   } catch (e) {
     notify.error(e.response?.data?.error || "");
   } finally {
@@ -210,38 +271,47 @@ async function fetchClasses() {
 
 async function fetchLookups() {
   try {
-    const [majorRes, shiftRes, generationRes, programmeRes,classnopaginationRef,userRef] = await Promise.all([
+    const [
+      majorRes,
+      shiftRes,
+      generationRes,
+      programmeRes,
+      classnopaginationRef,
+      userRef,
+    ] = await Promise.all([
       getMajor(),
       getShift(),
       getGeneration(),
       getProgramme(),
       getclassnopagination(),
-      getUsers()
+      getStaft(),
     ]);
-    majors.value = (majorRes.data.data || []).map((s)=> ({
+    majors.value = (majorRes.data.data || []).map((s) => ({
       label: `${s.name_kh}`,
-      value: s.id
-    }))
-    shifts.value = (shiftRes.data.data || []).map((s)=> ({
+      value: s.id,
+    }));
+    shifts.value = (shiftRes.data.data || []).map((s) => ({
       label: `${s.name}`,
-      value: s.id
-    }))
-    generations.value = (generationRes.data.data || []).map((s)=> ({
+      value: s.id,
+    }));
+    generations.value = (generationRes.data.data || []).map((s) => ({
       label: `${s.name_kh}`,
-      value: s.id
-    }))
-    programmes.value = (programmeRes.data.data || []).map((s)=> ({
+      value: s.id,
+    }));
+    programmes.value = (programmeRes.data.data || []).map((s) => ({
       label: `${s.name}`,
-      value: s.id
-    }))
-    classnopagination.value = (classnopaginationRef.data.data || []).map((s)=> ({
-      label: `${s.name} - ${s.type} - ឆ្នាំទី${s.year} - ឆមាសទី${s.semester}`,
-      value: s.id
-    }))
+      value: s.id,
+    }));
+    classnopagination.value = (classnopaginationRef.data.data || []).map(
+      (s) => ({
+        label: `${s.name} - ${s.type} - ឆ្នាំទី${s.year} - ឆមាសទី${s.semester}`,
+        value: s.id,
+      }),
+    );
     users.value = (userRef.data.data || []).map((s) => ({
-      label: `${s.name_kh} - ${s.name_en}`,
-      value: s.id   
-    }))
+      label: `${s.name_kh} - ${s.name_en} | ${s.role_name}` ,
+      value: s.id,
+    }));
   } catch (e) {
     notify.error(e.response?.data?.error || "");
   }
@@ -252,7 +322,9 @@ async function fetchGradeComponents() {
     const res = await getGradecomponent();
     gradeComponents.value = res.data.data || [];
   } catch (e) {
-    notify.error(e.response?.data?.error || "មិនអាចទាញយក Grade Component បានទេ");
+    notify.error(
+      e.response?.data?.error || "មិនអាចទាញយក Grade Component បានទេ",
+    );
   }
 }
 
@@ -265,7 +337,13 @@ watch(
 );
 
 watch(
-  [() => filters.major_id, () => filters.shift_id, () => filters.generation_id, () => filters.programme_id,() => filters.controlled_by],
+  [
+    () => filters.major_id,
+    () => filters.shift_id,
+    () => filters.generation_id,
+    () => filters.programme_id,
+    () => filters.controlled_by,
+  ],
   () => {
     page.value = 1;
     fetchClasses();
@@ -322,11 +400,11 @@ async function handleToggleStatus(row) {
 const importDialog = ref(false);
 const importClassId = ref(null);
 const importClassName = ref("");
-const importGenerationName = ref("")
-const importProgrammeName = ref("")
-const importYearName = ref("")
-const importSemesterName = ref("")
-const importMajorName = ref("")
+const importGenerationName = ref("");
+const importProgrammeName = ref("");
+const importYearName = ref("");
+const importSemesterName = ref("");
+const importMajorName = ref("");
 function openImport(row) {
   importClassId.value = row.id;
   importClassName.value = row.name;
@@ -342,7 +420,9 @@ function openImport(row) {
 
 const copyDialog = ref(false);
 const copySourceClass = ref(null);
-const copyTargetOptions = computed(() => classnopagination.value.filter((c) => c.value !== copySourceClass.value?.id));
+const copyTargetOptions = computed(() =>
+  classnopagination.value.filter((c) => c.value !== copySourceClass.value?.id),
+);
 
 function openCopy(row) {
   copySourceClass.value = row;

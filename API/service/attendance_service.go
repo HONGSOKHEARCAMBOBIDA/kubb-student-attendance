@@ -371,13 +371,14 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
 	}
 
 	var classSchedule model.ClassSchedule
-
+	var currentdate = helper.CurrentDate()
 	if err := s.db.WithContext(ctx).
 		Preload("Subject").
 		Where(
-			"class_id = ?  AND is_active = ?",
+			"class_id = ?  AND is_active = ? AND schedule_date = ?",
 			userclass.Class.ID,
 			true,
+			currentdate,
 		).
 		First(&classSchedule).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

@@ -605,8 +605,6 @@ func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, pf requ
 	var data []response.NotPermissionLeave
 	helper.NormalizePagination(&pf)
 	var total int64
-
-	// check_date drives both joins below, so pull it out first (default = today)
 	checkDate := filter["check_date"]
 	if checkDate == "" {
 		checkDate = time.Now().Format("2006-01-02")
@@ -625,6 +623,7 @@ func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, pf requ
 			Joins("LEFT JOIN (SELECT attendance_id, COUNT(*) AS cnt FROM attendance_record GROUP BY attendance_id) ad ON ad.attendance_id = a.id").
 			Joins("LEFT JOIN class_schedule cs ON cs.class_id = uc.class_id AND cs.schedule_date = ?", checkDate).
 			Where("uc.is_active = ?", 1).
+			Where("uc.fee_status =?", model.FeeStatusUserClassACTIVE).
 			Where("COALESCE(ad.cnt, 0) < cs.total_session")
 	}
 
@@ -661,7 +660,7 @@ func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, pf requ
 		Select(`
 			u.id            AS user_id,
 			u.gender        AS user_gender,
-			u.name_kh       AS user_namekh,
+			u.name_kh       AS user_name_kh,
 			u.name_en       AS user_name_en,
 			u.code          AS user_code,
 			c.id            AS class_id,
