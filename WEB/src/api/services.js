@@ -28,7 +28,16 @@ export const updateClassTelegram = (id, data) =>
 export const viewmanagecompany = () => api.get(`/view.manage.company`);
 export const viewcompanycolor = () => api.get(`/view.company.color`);
 export const viewcompanyscan = () => api.get(`/view.company.scan`);
-
+export const updateexamfinal = (id) => api.put(`/update.exam.final/${id}`);
+export const createExamPlatform = (data) => api.post("/create.exam.platform", data);
+export const getExamPlatforms = (id) => api.get(`/get.exam.platform/${id}`)
+export const uploadExamDocument = (file) => {
+  const fd = new FormData();
+  fd.append("file", file);
+  return api.post("/exam-documents/upload", fd, {   // use your axios instance name
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};
 // User
 export const getUsers = (params) => api.get("/view.user", { params });
 export const registerUsers = (data) => api.post("/add.user", data);
@@ -50,7 +59,7 @@ export const logoutUser = () => api.post("/logout");
 export const adduserclass = (data) => api.post("/add.user.class", data);
 export const editUserClass = (id, data) =>
   api.put(`/update.user.class/${id}`, data);
-export const getStaft = () => api.get('/view.staft')
+export const getStaft = () => api.get("/view.staft");
 // Shift
 export const createShift = (data) => api.post("/add.shift", data);
 export const updateShift = (data) => api.put("/edit.shift", data);
@@ -229,8 +238,8 @@ export const updateStudentDocument = (id, data) =>
 
 export const addTeacherProfile = (data) =>
   api.post("/add.Teacher.Profile", data);
-export const getTeacherProfile = (id) =>
-  api.get(`/view.Teacher.Profile/${id}`);
+export const getTeacherProfile = (id) => api.get(`/view.Teacher.Profile/${id}`);
 export const updateTeacherProfile = (id, data) =>
   api.put(`/update.Teacher.Profile`, data);
-export const updateTeacherRate = (id,data) => api.put(`/update.Teacher.Rate/${id}`,data)
+export const updateTeacherRate = (id, data) =>
+  api.put(`/update.Teacher.Rate/${id}`, data);

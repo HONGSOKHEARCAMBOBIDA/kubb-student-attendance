@@ -42,6 +42,7 @@ func SetupRoutes(r *gin.Engine) {
 	feecontroller := controller.NewFeeController(feeservice)
 	incomecontroller := controller.NewIncomeController(incomeservice)
 	r.Static("/clientimage", "./public/clientimage")
+	r.Static("/uploads", "./uploads")
 	r.GET("/health", func(ctx *gin.Context) {
 		if db, err := config.DB.DB(); err != nil || db.Ping() != nil {
 			share.ResponseError(ctx, 500, "Down")
@@ -75,6 +76,10 @@ func SetupRoutes(r *gin.Engine) {
 		auth.POST(route.AddGeneration, middleware.PermissionMiddleware(permission.AddGeneration), companycontroller.CreateGeneration)
 		auth.PUT(route.UpdateGeneration, middleware.PermissionMiddleware(permission.UpdateGeneration), companycontroller.UpdateGeneration)
 		auth.PUT(route.ToggleGeneration, middleware.PermissionMiddleware(permission.UpdateGeneration), companycontroller.ToggleGeneration)
+		auth.PUT(route.UpdateExamFinal, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.UpdateExamFinal)
+		auth.POST(route.CreateExamPlatform, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.CreateExamPlatform)
+		auth.GET(route.GetExamPlatform, middleware.PermissionMiddleware(permission.ViewCompany), companycontroller.ListExamPlatforms)
+		//	auth.POST(route.UploadExamDocument, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.UploadExamDocument)
 		// User
 		auth.POST(route.AddUserClass, middleware.PermissionMiddleware(permission.AddUser), authcontroller.CreateUserClass)
 		auth.POST(route.AddUser, middleware.PermissionMiddleware(permission.AddUser), authcontroller.Register)

@@ -33,6 +33,7 @@ type ClassResponse struct {
 	ProgrammeName    string         `json:"programme_name"`
 	ControlledBy     int            `gorm:"column:controlled_by" json:"controlled_by"`
 	ControlledByName string         `gorm:"column:controlled_by_name" json:"controlled_by_name"`
+	ExamFinal        bool           `gorm:"column:exam_final" json:"exam_final"`
 	UserResponse     []UserResponse `json:"students" gorm:"-"`
 }
 

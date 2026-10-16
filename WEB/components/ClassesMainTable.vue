@@ -10,32 +10,54 @@
       @update:page-size="$emit('update:pageSize', $event)"
       :total="total"
       @page-change="$emit('page-change')"
-      actions-width="380px"
+      actions-width="410px"
       :columns="[
         { slot: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
         { slot: 'major_name', label: 'ជំនាញ', Width: 100 },
         { slot: 'generation_name', label: 'ជំនាន់', width: 260 },
         { slot: 'programme_name', label: 'កម្មវិធីសិក្សា', Width: 60 },
-        { prop: 'year', label: 'ឆ្នាំ', width: 60,align: 'center' },
-        { prop: 'semester', label: 'ឆមាស', width: 70,align: 'center' },
-        { prop: 'group', label: 'ក្រុម', width: 60,align: 'center' },
-        { prop: 'term', label: 'វគ្គ', width: 60,align: 'center' },
-        { slot: 'type', label: 'ប្រភេទ', width: 100,align: 'center' },
-        { prop: 'radius', label: 'អាចស្កែន (m)', width: 150 },
+        { prop: 'year', label: 'ឆ្នាំ', width: 60, align: 'center' },
+        { prop: 'semester', label: 'ឆមាស', width: 70, align: 'center' },
+        { prop: 'group', label: 'ក្រុម', width: 60, align: 'center' },
+        { prop: 'term', label: 'វគ្គ', width: 60, align: 'center' },
+        { slot: 'type', label: 'ប្រភេទ', width: 100, align: 'center' },
+        {
+          slot: 'exam_final',
+          label: 'ប្រឡង Final',
+          width: 110,
+          align: 'center',
+        },
         { label: 'អាចស្កែនក្រៅតំបន់', slot: 'outsize', width: 150 },
         { label: 'ស្ថានភាព', slot: 'status', width: 120 },
         { label: 'សិស្សសរុប', slot: 'total', width: 100 },
         { label: 'កាន់ដោយ', prop: 'controlled_by_name', minwidth: 100 },
       ]"
     >
-      <template #name="{row}">
-        <el-text>{{ row.name }}-{{ row.programme_name }}-ឆ្នាំទី{{ row.year }}-ឆមាសទី{{ row.semester }}</el-text>
+      <template #exam_final="{ row }">
+        <el-checkbox
+          size="large"
+          :model-value="!!row.exam_final"
+          :disabled="row.is_active === false || !canEditClass"
+          @change="$emit('toggle-exam-final', row)"
+        />
+      </template>
+      <template #name="{ row }">
+        <el-text
+          >{{ row.name }}-{{ row.programme_name }}-ឆ្នាំទី{{
+            row.year
+          }}-ឆមាសទី{{ row.semester }}</el-text
+        >
       </template>
       <template #major_name="{ row }">
         <el-text tag="b" type="primary">{{ row.major_name }}</el-text>
       </template>
       <template #generation_name="{ row }">
-        <el-text tag="b" type="primary">{{ row.generation_name }} | {{ row.generation_start }}-{{ row.generation_end }} ({{ row.shift_name }})</el-text>
+        <el-text tag="b" type="primary"
+          >{{ row.generation_name }} | {{ row.generation_start }}-{{
+            row.generation_end
+          }}
+          ({{ row.shift_name }})</el-text
+        >
       </template>
       <template #programme_name="{ row }">
         <el-text tag="b" type="primary">{{ row.programme_name }}</el-text>
@@ -143,6 +165,17 @@
             @click="$emit('score-view', row)"
           />
         </el-tooltip>
+        <el-tooltip content="កម្មវិធីប្រឡង" placement="top">
+          <AppButton
+            :disabled="row.is_active === false"
+            v-if="adminLevel"
+            size="small"
+            icon="ChatDotSquare"
+            type="primary"
+            circle
+            @click="$emit('exam', row)"
+          />
+        </el-tooltip>
       </template>
 
       <template #expand="{ row }">
@@ -172,7 +205,7 @@ defineProps({
   total: { type: Number, default: 0 },
   canEditClass: { type: Boolean, default: false },
   adminLevel: { type: Boolean, default: false },
-   canAddScore: { type: Boolean, default: false},
+  canAddScore: { type: Boolean, default: false },
 });
 
 defineEmits([
@@ -189,7 +222,9 @@ defineEmits([
   "score-view",
   "edit-student",
   "edit-status",
-  "score-student", // emitted as (classRow, student)
+  "score-student",
+  "toggle-exam-final",
+  "exam"
 ]);
 </script>
 

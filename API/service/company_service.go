@@ -35,6 +35,9 @@ type CompanyService interface {
 	ToggleGeneration(ctx context.Context, id int) error
 	GetProgramme(ctx context.Context) ([]model.Programme, error)
 	GetFaculty(ctx context.Context) ([]model.Faculty, error)
+	UpdateExamFinal(ctx context.Context, id int) error
+	CreateExamPlatform(ctx context.Context, input request.ExamPlatform, userID int) error
+	ListExamPlatforms(ctx context.Context, classID int) ([]response.ExamPlatform, error)
 }
 
 type companyservice struct {
@@ -299,6 +302,7 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		c.` + "`group`" + ` AS ` + "`group`" + `,
 		c.term AS term,
 		c.programme_id AS programme_id,
+		c.exam_final AS exam_final,
 		p.name AS programme_name,
 		u.id AS controlled_by,
 		u.name_kh AS controlled_by_name
@@ -411,6 +415,7 @@ func (s *companyservice) CreateClass(ctx context.Context, input request.ClassReq
 		Term:           input.Term,
 		ProgrammeID:    input.ProgrammeID,
 		ControlledBy:   input.ControlledBy,
+		ExamFinal:      false,
 	}
 
 	if err := tx.Create(&newClass).Error; err != nil {
@@ -504,4 +509,121 @@ func (s *companyservice) ShowManageCompany(ctx context.Context, id int) ([]helpe
 	managecompany := helper.ShowManageCompany(user)
 
 	return managecompany, nil
+}
+
+func (s *companyservice) UpdateExamFinal(ctx context.Context, id int) error {
+	result := s.db.WithContext(ctx).Model(&model.Class{}).Where("id =?", id).Update("exam_final", gorm.Expr("NOT exam_final"))
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (s *companyservice) CreateExamPlatform(ctx context.Context, input request.ExamPlatform, userID int) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newexamplatform := model.ExamPlatform{
+			ClassID:    input.ClassID,
+			Type:       string(model.ExamPlatformTypeFINAL),
+			StartUse:   input.StartUse,
+			ExpireDate: input.ExpireDate,
+			ShowResult: input.ShowResult,
+			CreateBy:   userID,
+			CheckBy:    input.CheckBy,
+		}
+		if err := tx.Create(&newexamplatform).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "Faild to create", err)
+		}
+		details := make([]model.ExamPlatformDetail, 0, len(input.ExamPlatformDetail))
+		for _, d := range input.ExamPlatformDetail {
+			detail := model.ExamPlatformDetail{
+				ExamPlatformID: int64(newexamplatform.ID),
+				SubjectID:      d.SubjectID,
+				ExamDate:       d.ExamDate,
+				StartTime:      d.StartTime,
+				EndTime:        d.EndTime,
+				TeacherID:      d.TeacherID,
+				DocumentURL:    d.DocumentURL,
+			}
+			details = append(details, detail)
+		}
+		if err := tx.Create(&details).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "Faild to create detail", err)
+		}
+		return nil
+	})
+	return err
+}
+
+type ExamPlatformWithDetails struct {
+	model.ExamPlatform
+	Details []model.ExamPlatformDetail `json:"details"`
+}
+
+func (s *companyservice) ListExamPlatforms(ctx context.Context, classID int) ([]response.ExamPlatform, error) {
+	var data []response.ExamPlatform
+
+	if err := s.db.WithContext(ctx).
+		Table("exam_platform ep").
+		Joins("LEFT JOIN user cr ON cr.id = ep.create_by").
+		Joins("LEFT JOIN user cb ON cb.id = ep.check_by").
+		Where("ep.class_id = ?", classID).
+		Select(`
+			ep.id AS id,
+			ep.class_id AS class_id,
+			ep.type AS type,
+			ep.start_use AS start_use,
+			ep.expire_date AS expire_date,
+			ep.show_result AS show_result,
+			cr.id AS create_by,
+			cr.name_kh AS create_by_name,
+			cb.id AS check_by,
+			cb.name_kh AS check_by_name
+		`).
+		Scan(&data).Error; err != nil {
+		return nil, err
+	}
+
+	if len(data) == 0 {
+		return data, nil
+	}
+
+	platformIDs := make([]int, len(data))
+	for i, p := range data {
+		platformIDs[i] = p.ID
+	}
+
+	var details []response.ExamPlatformDetail
+	if err := s.db.WithContext(ctx).
+		Table("exam_platform_detail epd").
+		Joins("LEFT JOIN subject s ON s.id = epd.subject_id").
+		Joins("LEFT JOIN user t ON t.id = epd.teacher_id").
+		Where("epd.exam_platform_id IN ?", platformIDs).
+		Select(`
+			epd.id AS id,
+			epd.exam_platform_id AS exam_platform_id,
+			s.id AS subject_id,
+			s.code AS subject_code,
+			s.name_kh AS subject_name,
+			epd.exam_date AS exam_date,
+			epd.start_time AS start_time,
+			epd.end_time AS end_time,
+			t.id AS teacher_id,
+			t.name_kh AS teacher_name
+		`).
+		Scan(&details).Error; err != nil {
+		return nil, err
+	}
+
+	detailsByPlatform := make(map[int][]response.ExamPlatformDetail, len(data))
+	for _, d := range details {
+		detailsByPlatform[int(d.ExamPlatformID)] = append(detailsByPlatform[int(d.ExamPlatformID)], d)
+	}
+
+	for i := range data {
+		data[i].ExamPlatformDetail = detailsByPlatform[data[i].ID]
+	}
+
+	return data, nil
 }

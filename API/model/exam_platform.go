@@ -13,7 +13,7 @@ const (
 
 type ExamPlatform struct {
 	base.ModelBase
-	ClassID    int64   `gorm:"not null" json:"class_id"`
+	ClassID    int     `gorm:"not null" json:"class_id"`
 	Type       string  `gorm:"type:enum('MIDTERM','FINAL');not null" json:"type"`
 	StartUse   string  `gorm:"type:date;not null" json:"start_use"`
 	ExpireDate string  `gorm:"type:date;not null" json:"expire_date"`

@@ -26,7 +26,10 @@ const (
 	ViewCompanyColor      = "view.company.color"
 	ViewCompanyScan       = "view.company.scan"
 	ToggleClassStatus     = "toggle.status.class/:id"
-
+	UpdateExamFinal       = "update.exam.final/:id"
+	CreateExamPlatform    = "create.exam.platform"
+	GetExamPlatform       = "get.exam.platform/:id"
+	UploadExamDocument    = "upload.exam.document"
 	// User
 	AddUser          = "add.user"
 	AddUserMain      = "add.user.main"

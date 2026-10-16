@@ -104,6 +104,8 @@
       @edit-student="openEditStudent"
       @edit-status="openUserClassStatusEditor"
       @score-student="openScoreDialog"
+      @toggle-exam-final="handleToggleExamFinal"
+      @exam="openExamPlatform"
     />
 
     <ClassFormDialog
@@ -145,7 +147,7 @@
     />
 
     <ClassScheduleDialog v-model="scheduleDialog" :class-row="scheduleClass" />
-
+    <ExamPlatform v-model="examDialog" :class-row="examclassraw"></ExamPlatform>
     <StudentEditDialog
       v-model="studentDialogVisible"
       :student="editStudent"
@@ -207,7 +209,8 @@ import ScoreImportDialog from "../../components/ScoreImportDialog.vue";
 import ScoreViewDialog from "../../components/ScoreViewDialog.vue";
 import AppInput from "../../components/AppInput.vue";
 import AppSelect from "../../components/AppSelect.vue";
-
+import { updateexamfinal } from "../api/services";
+import ExamPlatform from "../../components/ExamPlatform.vue";
 const notify = useNotification();
 const userDataStore = useUserDataStore();
 
@@ -246,6 +249,17 @@ const canEditClass = computed(() =>
 const canAddScore = computed(() =>
   userDataStore.permissions?.some((p) => p.name === "add.score"),
 );
+
+async function handleToggleExamFinal(row) {
+  try {
+    await updateexamfinal(row.id);
+    notify.success("ផ្លាស់ប្តូរស្ថានភាពបានជោគជ័យ");
+    fetchClasses();
+  } catch (e) {
+    notify.error(e.response?.data?.error || "");
+  }
+};
+
 async function fetchClasses() {
   loading.value = true;
   try {
@@ -261,7 +275,6 @@ async function fetchClasses() {
     });
     classes.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;
-    console.log(classes.value);
   } catch (e) {
     notify.error(e.response?.data?.error || "");
   } finally {
@@ -437,6 +450,16 @@ const scheduleClass = ref(null);
 function openSchedule(row) {
   scheduleClass.value = row;
   scheduleDialog.value = true;
+}
+
+
+// exam
+const examDialog = ref(false)
+const examclassraw = ref(null)
+
+function openExamPlatform(row) {
+  examDialog.value = true
+  examclassraw.value = row
 }
 
 /* ---------------- student edit ---------------- */
