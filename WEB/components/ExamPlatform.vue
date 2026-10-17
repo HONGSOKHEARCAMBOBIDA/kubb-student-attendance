@@ -38,7 +38,7 @@ const errorMessage = (e, fallback) => e.response?.data?.error || fallback;
 // ---------- Formatters (backend may return "2026-10-16T00:00:00Z") ----------
 const typeOptions = [
   { label: "ពាក់កណ្តាលឆមាស", value: "MIDTERM" },
-  { label: "ចុងឆមាស", value: "FINAL" },
+  { label: "បញ្ចប់ឆមាស", value: "FINAL" },
 ];
 const typeLabels = Object.fromEntries(
   typeOptions.map((t) => [t.value, t.label]),
@@ -190,6 +190,19 @@ const defaultForm = () => ({
   details: [newDetail()],
 });
 
+const availableSubjects = (currentKey) => {
+  const usedIds = form.details
+    .filter((d) => d._key !== currentKey && d.subject_id)
+    .map((d) => d.subject_id);
+
+  return subjectOptions.value.filter((s) => !usedIds.includes(s.value));
+};
+
+const availableSubject = (key) =>
+  subjectOptions.value.filter(
+    (s) => !form.details.some((d) => d._key !== key && d.subject_id === s.value),
+  );
+
 const form = reactive(defaultForm());
 
 const required = (message) => [{ required: true, message, trigger: "change" }];
@@ -322,7 +335,7 @@ watch(
           :prop="`details.${i}.subject_id`"
           label="មុខវិជ្ជា"
           v-model="d.subject_id"
-          :options="subjectOptions"
+          :options="availableSubjects(d._key)"
           placeholder="មុខវិជ្ជា"
           size="large"
           filterable
