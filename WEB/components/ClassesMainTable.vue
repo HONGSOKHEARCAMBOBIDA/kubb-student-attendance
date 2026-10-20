@@ -35,6 +35,7 @@
     >
       <template #exam_final="{ row }">
         <el-checkbox
+          border
           size="large"
           :model-value="!!row.exam_final"
           :disabled="row.is_active === false || !canEditClass"

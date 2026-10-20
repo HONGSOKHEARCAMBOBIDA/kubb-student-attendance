@@ -38,6 +38,9 @@ type CompanyService interface {
 	UpdateExamFinal(ctx context.Context, id int) error
 	CreateExamPlatform(ctx context.Context, input request.ExamPlatform, userID int) error
 	ListExamPlatforms(ctx context.Context, classID int) ([]response.ExamPlatform, error)
+	UpdateExamPlatform(ctx context.Context, id int, input request.ExamPlatformRequestUpdate, userID int) error
+	DeleteExamPlatform(ctx context.Context, id int) error
+	UpdateExamPlatformDetail(ctx context.Context, id int, input request.ExamPlatformDetail) error
 }
 
 type companyservice struct {
@@ -626,4 +629,73 @@ func (s *companyservice) ListExamPlatforms(ctx context.Context, classID int) ([]
 	}
 
 	return data, nil
+}
+
+func (s *companyservice) UpdateExamPlatform(ctx context.Context, id int, input request.ExamPlatformRequestUpdate, userID int) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var data model.ExamPlatform
+		if err := tx.Where("id =?", id).First(&data).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return apperror.New(apperror.CodeNotFound, "exam template not found", nil)
+			}
+			return apperror.New(apperror.CodeInternal, "failed to fetch exam template", nil)
+		}
+		data.StartUse = input.StartUse
+		data.ExpireDate = input.ExpireDate
+		data.ShowResult = input.ShowResult
+		data.CheckBy = input.CheckBy
+		data.CreateBy = userID
+		if err := tx.Save(&data).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to update exam plateform", nil)
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *companyservice) DeleteExamPlatform(ctx context.Context, id int) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("exam_platform_id = ?", id).
+			Delete(&model.ExamPlatformDetail{}).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to delete exam details", nil)
+		}
+
+		res := tx.Where("id = ?", id).Delete(&model.ExamPlatform{})
+		if res.Error != nil {
+			return apperror.New(apperror.CodeInternal, "failed to delete exam platform", nil)
+		}
+		if res.RowsAffected == 0 {
+			return apperror.New(apperror.CodeNotFound, "exam platform not found", nil)
+		}
+		return nil
+	})
+}
+
+func (s *companyservice) UpdateExamPlatformDetail(ctx context.Context, id int, input request.ExamPlatformDetail) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var data model.ExamPlatformDetail
+		if err := tx.Where("id = ?", id).First(&data).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return apperror.New(apperror.CodeNotFound, "exam template not found", nil)
+			}
+			return apperror.New(apperror.CodeInternal, "failed to fetch exam template", nil)
+		}
+		data.SubjectID = input.SubjectID
+		data.ExamDate = input.ExamDate
+		data.StartTime = input.StartTime
+		data.EndTime = input.EndTime
+		data.TeacherID = input.TeacherID
+		if err := tx.Save(&data).Error; err != nil {
+			return apperror.New(apperror.CodeInternal, "failed to update exam plateform", nil)
+		}
+		return nil
+	})
+	return err
 }

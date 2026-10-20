@@ -17,3 +17,10 @@ type ExamPlatformDetail struct {
 	TeacherID   int    `json:"teacher_id"`
 	DocumentURL string `gorm:"type:text" json:"document_url"`
 }
+
+type ExamPlatformRequestUpdate struct {
+	StartUse   string  `gorm:"type:date;not null" json:"start_use"`
+	ExpireDate string  `gorm:"type:date;not null" json:"expire_date"`
+	ShowResult *string `gorm:"type:date" json:"show_result"`
+	CheckBy    int     `json:"check_by"`
+}

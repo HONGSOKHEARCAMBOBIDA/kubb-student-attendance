@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"errors"
+	"mysql/constant/apperror"
 	"mysql/constant/share"
 	"mysql/helper"
 	"mysql/request"
@@ -316,4 +317,62 @@ func (cr *CompanyController) ListExamPlatforms(c *gin.Context) {
 		return
 	}
 	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr *CompanyController) UpdateExamPlatform(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	userID, ok := helper.GetUserID(c)
+	if !ok {
+		return
+	}
+	var input request.ExamPlatformRequestUpdate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateExamPlatform(c, id, input, userID); err != nil {
+		share.ResponseError(
+			c,
+			apperror.HTTPStatus(err),
+			apperror.ClientMessage(err),
+		)
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "Updated")
+}
+
+func (cr *CompanyController) DeleteExamPlatform(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	if err := cr.service.DeleteExamPlatform(c, id); err != nil {
+		share.ResponseError(c, apperror.HTTPStatus(err), apperror.ClientMessage(err))
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "Deleted")
+}
+
+func (cr *CompanyController) UpdateExamPlatformDetail(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	var input request.ExamPlatformDetail
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateExamPlatformDetail(c, id, input); err != nil {
+		share.ResponseError(
+			c,
+			apperror.HTTPStatus(err),
+			apperror.ClientMessage(err),
+		)
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "Updated")
 }

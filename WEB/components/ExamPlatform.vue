@@ -10,8 +10,12 @@ import {
   getExamPlatforms,
   createExamPlatform,
   getClassAvailableSubjects,
+  deleteExamPlatform,
+  updateExamPlatform,
+  updateExamPlatformDetail
 } from "../src/api/services.js";
 import AppTable from "./AppTable.vue";
+import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
 
 const props = defineProps({
   modelValue: Boolean,
@@ -34,6 +38,129 @@ const subjectOptions = ref([]);
 const teacherOptions = ref([]);
 
 const errorMessage = (e, fallback) => e.response?.data?.error || fallback;
+
+async function handleDelete(row) {
+  try {
+    await ElMessageBox.confirm(
+      "តើអ្នកពិតជាចង់លុបការប្រឡងនេះមែនទេ?",
+      "បញ្ជាក់",
+      {
+        type: "warning",
+      },
+    );
+  } catch {
+    return; // cancelled
+  }
+  try {
+    await deleteExamPlatform(row.id);
+    notify.success("លុបការប្រឡងជោគជ័យ");
+    await fetchExams();
+  } catch (e) {
+    notify.error(errorMessage(e, "មិនអាចលុបការប្រឡងបានទេ"));
+  }
+}
+
+const editVisible = ref(false);
+const editSubmitting = ref(false);
+const editFormRef = ref();
+const editForm = reactive({
+  id: null,
+  start_use: "",
+  expire_date: "",
+  show_result: "",
+  check_by: null,
+});
+
+function openEdit(row) {
+  Object.assign(editForm, {
+    id: row.id,
+    start_use: fmtDate(row.start_use),
+    expire_date: fmtDate(row.expire_date),
+    show_result: row.show_result ? fmtDate(row.show_result) : "",
+    check_by: row.check_by,
+  });
+  editVisible.value = true;
+}
+
+async function handleUpdate() {
+  const valid = await editFormRef.value.validate().catch(() => false);
+  if (!valid) return;
+
+  editSubmitting.value = true;
+  try {
+    await updateExamPlatform(editForm.id, {
+      start_use: editForm.start_use,
+      expire_date: editForm.expire_date,
+      show_result: editForm.show_result || null,
+      check_by: editForm.check_by,
+    });
+    notify.success("កែប្រែជោគជ័យ");
+    editVisible.value = false;
+    await fetchExams();
+  } catch (e) {
+    notify.error(errorMessage(e, "មិនអាចកែប្រែបានទេ"));
+  } finally {
+    editSubmitting.value = false;
+  }
+}
+
+
+const toTime = (v) => (v ? fmtTime(v) + ":00" : "");
+const detailEditVisible = ref(false);
+const detailEditSubmitting = ref(false);
+const detailEditFormRef = ref();
+const detailEditForm = reactive({
+  id: null,
+  exam_platform_id: null,
+  subject_id: null,
+  exam_date: "",
+  start_time: "",
+  end_time: "",
+  teacher_id: null,
+  document_url: "",
+});
+const detailEditSubjects = computed(() => {
+  const exam = exams.value.find((e) => e.id === detailEditForm.exam_platform_id);
+  const usedIds = (exam?.details || [])
+    .filter((d) => d.id !== detailEditForm.id)
+    .map((d) => d.subject_id);
+  return subjectOptions.value.filter((s) => !usedIds.includes(s.value));
+});
+function openEditDetail(exam, row) {
+  Object.assign(detailEditForm, {
+    id: row.id,
+    exam_platform_id: exam.id,
+    subject_id: row.subject_id,
+    exam_date: fmtDate(row.exam_date),
+    start_time: toTime(row.start_time),
+    end_time: toTime(row.end_time),
+    teacher_id: row.teacher_id,
+    document_url: row.document_url || "",
+  });
+  detailEditVisible.value = true;
+}
+async function handleUpdateDetail() {
+  const valid = await detailEditFormRef.value.validate().catch(() => false);
+  if (!valid) return;
+
+  if (detailEditForm.end_time <= detailEditForm.start_time) {
+    notify.error("ម៉ោងបញ្ចប់ត្រូវធំជាងម៉ោងចាប់ផ្តើម");
+    return;
+  }
+
+  detailEditSubmitting.value = true;
+  try {
+    const { id, exam_platform_id, ...payload } = detailEditForm;
+    await updateExamPlatformDetail(id, payload);
+    notify.success("កែប្រែជោគជ័យ");
+    detailEditVisible.value = false;
+    await fetchExams();
+  } catch (e) {
+    notify.error(errorMessage(e, "មិនអាចកែប្រែបានទេ"));
+  } finally {
+    detailEditSubmitting.value = false;
+  }
+}
 
 // ---------- Formatters (backend may return "2026-10-16T00:00:00Z") ----------
 const typeOptions = [
@@ -130,6 +257,7 @@ async function fetchExams() {
   try {
     const res = await getExamPlatforms(props.classRow.id);
     exams.value = res.data.data || [];
+    console.log(exams.value)
   } catch (e) {
     notify.error(errorMessage(e, "Failed to load exams"));
   } finally {
@@ -200,7 +328,8 @@ const availableSubjects = (currentKey) => {
 
 const availableSubject = (key) =>
   subjectOptions.value.filter(
-    (s) => !form.details.some((d) => d._key !== key && d.subject_id === s.value),
+    (s) =>
+      !form.details.some((d) => d._key !== key && d.subject_id === s.value),
   );
 
 const form = reactive(defaultForm());
@@ -396,7 +525,7 @@ watch(
         />
       </div>
 
-      <AppButton type="primary" :loading="submitting" @click="handleSubmit">
+      <AppButton type="warning" :loading="submitting" @click="handleSubmit">
         បង្កើតការប្រឡង
       </AppButton>
     </el-form>
@@ -409,6 +538,7 @@ watch(
       :loading="loading"
       :columns="examColumns"
       :show-pagination="false"
+      actions-width="120px"
     >
       <template #expand="{ row }">
         <AppTable
@@ -416,9 +546,131 @@ watch(
           show-index
           :data="row.details || []"
           :columns="detailColumns"
-        />
+          actions-width="120px"
+        >
+          <template #actions="{ row }">
+            <el-tooltip content="កែប្រែ" placement="top"
+              ><AppButton
+                type="warning"
+                icon="Edit"
+                size="small"
+                circle
+                @click="openEditDetail(exams, row)"
+              ></AppButton
+            ></el-tooltip>
+            <el-tooltip content="ដាក់លេខតុ" placement="top"
+              ><AppButton
+                type="primary"
+                icon="Pointer"
+                size="small"
+                circle
+                @click="openEditDetail(exams, row)"
+              ></AppButton
+            ></el-tooltip>
+          </template>
+        </AppTable>
+      </template>
+      <template #actions="{ row }">
+        <el-tooltip content="កែប្រែ" placement="top"
+          ><AppButton
+            type="warning"
+            icon="Edit"
+            size="small"
+            circle
+            @click="openEdit(row)"
+          ></AppButton
+        ></el-tooltip>
+        <el-tooltip content="លុប" placement="top"
+          ><AppButton
+            type="danger"
+            icon="Delete"
+            size="small"
+            circle
+            @click="handleDelete(row)"
+          ></AppButton
+        ></el-tooltip>
       </template>
     </AppTable>
+
+    <AppDialog v-model="editVisible" title="កែប្រែការប្រឡង" width="500px">
+      <el-form
+        ref="editFormRef"
+        :model="editForm"
+        :rules="rules"
+        label-position="top"
+      >
+        <el-form-item label="ថ្ងៃចាប់ផ្តើមអនុវត្ត" prop="start_use">
+          <AppDatePicker v-model="editForm.start_use" size="large" />
+        </el-form-item>
+        <el-form-item label="ថ្ងៃបញ្ចប់កម្មវិធី" prop="expire_date">
+          <AppDatePicker v-model="editForm.expire_date" size="large" />
+        </el-form-item>
+        <el-form-item label="ថ្ងៃបង្ហាញលទ្ធផល" prop="show_result">
+          <AppDatePicker
+            v-model="editForm.show_result"
+            size="large"
+            clearable
+          />
+        </el-form-item>
+        <AppSelect
+          label="អ្នកត្រួតពិនិត្យ"
+          v-model="editForm.check_by"
+          :options="teacherOptions"
+          size="large"
+          filterable
+        />
+      </el-form>
+      <template #footer>
+        <AppButton
+          type="warning"
+          :loading="editSubmitting"
+          @click="handleUpdate"
+          >រក្សាទុក</AppButton
+        >
+      </template>
+    </AppDialog>
+    <AppDialog v-model="detailEditVisible" title="កែប្រែមុខវិជ្ជា" width="500px">
+  <el-form ref="detailEditFormRef" :model="detailEditForm" label-position="top">
+    <AppSelect
+      label="មុខវិជ្ជា"
+      prop="subject_id"
+      :rules="detailRules.subject_id"
+      v-model="detailEditForm.subject_id"
+      :options="detailEditSubjects"
+      size="large"
+      filterable
+    />
+    <AppDatePicker
+      label="ថ្ងៃប្រឡង"
+      prop="exam_date"
+      :rules="detailRules.exam_date"
+      v-model="detailEditForm.exam_date"
+      size="large"
+    />
+    <el-form-item label="ម៉ោងចាប់ផ្តើម" prop="start_time" :rules="detailRules.start_time">
+      <el-time-picker v-model="detailEditForm.start_time"
+        value-format="HH:mm:ss" format="HH:mm" size="large" />
+    </el-form-item>
+    <el-form-item label="ម៉ោងបញ្ចប់" prop="end_time" :rules="detailRules.end_time">
+      <el-time-picker v-model="detailEditForm.end_time"
+        value-format="HH:mm:ss" format="HH:mm" size="large" />
+    </el-form-item>
+    <AppSelect
+      label="គ្រូបង្រៀន"
+      prop="teacher_id"
+      :rules="detailRules.teacher_id"
+      v-model="detailEditForm.teacher_id"
+      :options="teacherOptions"
+      size="large"
+      filterable
+    />
+  </el-form>
+  <template #footer>
+    <AppButton type="warning" :loading="detailEditSubmitting" @click="handleUpdateDetail">
+      រក្សាទុក
+    </AppButton>
+  </template>
+</AppDialog>
   </AppDialog>
 </template>
 

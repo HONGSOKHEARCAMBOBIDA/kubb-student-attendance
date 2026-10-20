@@ -38,6 +38,9 @@ export const uploadExamDocument = (file) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
+export const deleteExamPlatform = (id) => api.delete(`/delete.exam.platform/${id}`)
+export const updateExamPlatform = (id,data) => api.put(`/update.exam.platform/${id}`,data)
+export const updateExamPlatformDetail = (id,data) => api.put(`/update.exam.platform.detail/${id}`,data)
 // User
 export const getUsers = (params) => api.get("/view.user", { params });
 export const registerUsers = (data) => api.post("/add.user", data);

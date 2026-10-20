@@ -79,6 +79,9 @@ func SetupRoutes(r *gin.Engine) {
 		auth.PUT(route.UpdateExamFinal, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.UpdateExamFinal)
 		auth.POST(route.CreateExamPlatform, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.CreateExamPlatform)
 		auth.GET(route.GetExamPlatform, middleware.PermissionMiddleware(permission.ViewCompany), companycontroller.ListExamPlatforms)
+		auth.PUT(route.UpdateExamPlatform, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.UpdateExamPlatform)
+		auth.PUT(route.UpdateExamPlatformDetail, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.UpdateExamPlatformDetail)
+		auth.DELETE(route.DeleteExamPlatform, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.DeleteExamPlatform)
 		//	auth.POST(route.UploadExamDocument, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.UploadExamDocument)
 		// User
 		auth.POST(route.AddUserClass, middleware.PermissionMiddleware(permission.AddUser), authcontroller.CreateUserClass)
