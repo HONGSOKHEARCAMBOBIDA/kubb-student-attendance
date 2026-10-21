@@ -7,6 +7,7 @@ import (
 	"mysql/constant/apperror"
 	"mysql/constant/share"
 	"mysql/helper"
+	"mysql/pattern/res"
 	"mysql/request"
 	"mysql/service"
 	"net/http"
@@ -579,6 +580,32 @@ func (cr *AuthController) GetStaft(c *gin.Context) {
 	data, err := cr.service.GetStaft(c)
 	if err != nil {
 		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr *AuthController) AddStudentExam(c *gin.Context) {
+	var input request.StudentExam
+	if err := c.ShouldBindJSON(&input); err != nil {
+		res.Fail(c, 400, "BAD_REQUEST", err.Error())
+		return
+	}
+	if err := cr.service.AddStudentExam(c, input); err != nil {
+		res.Fail(c, 500, "", err.Error())
+		return
+	}
+	res.OK(c, 200)
+}
+
+func (cr *AuthController) GetStudentExam(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.GetStudentExam(c, id)
+	if err != nil {
+		res.Fail(c, http.StatusNoContent, "NOT_FOUND", err.Error())
 		return
 	}
 	share.RespondDate(c, http.StatusOK, data)

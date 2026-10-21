@@ -47,7 +47,8 @@ const (
 	ViewUserData     = "view.user.data"
 	ViewUserApprove  = "view.user.approve"
 	VerifyUser       = "verify.user/:id"
-
+	AddStudentExam   = "add.student.exam"
+	ViewStudentExam  = "view.student.exam/:id"
 	// Shift
 	EditShift = "edit.shift/:id"
 	AddShift  = "add.shift"

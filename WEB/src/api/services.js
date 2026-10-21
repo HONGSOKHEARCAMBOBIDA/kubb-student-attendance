@@ -246,3 +246,6 @@ export const updateTeacherProfile = (id, data) =>
   api.put(`/update.Teacher.Profile`, data);
 export const updateTeacherRate = (id, data) =>
   api.put(`/update.Teacher.Rate/${id}`, data);
+
+export const addStudentExam = (data) => api.post("/add.student.exam", data);
+export const getStudentExams = (id) => api.get(`/view.student.exam/${id}`);

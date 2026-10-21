@@ -23,6 +23,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	// "gorm.io/gorm/clause"
 )
 
@@ -57,6 +58,8 @@ type AuthService interface {
 	GetTeacherProfile(ctx context.Context, id int) (*response.TeacherProfile, error)
 	UpdateTeacherRate(ctx context.Context, classscheduleID int, input request.TeacherRate) error
 	GetStaft(ctx context.Context) ([]response.UserResponseNotStudent, error)
+	AddStudentExam(ctx context.Context, input request.StudentExam) error
+	GetStudentExam(ctx context.Context, detailID int) ([]model.StudentExam, error)
 }
 
 type authservice struct {
@@ -1237,4 +1240,35 @@ func (s *authservice) GetStaft(ctx context.Context) ([]response.UserResponseNotS
 		return nil, err
 	}
 	return data, nil
+}
+
+func (s *authservice) AddStudentExam(ctx context.Context, input request.StudentExam) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	data := make([]model.StudentExam, 0, len(input.Student))
+	for _, st := range input.Student {
+		data = append(data, model.StudentExam{
+			ExamPlatformDetailID: input.ExamPlatformDetailID,
+			ClassID:              st.ClassID,
+			StudentID:            st.StudentID,
+			TableNumber:          st.TableNumber, // pointer, may be nil
+			Room:                 input.Room,
+		})
+	}
+
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return tx.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "exam_platform_detail_id"}, {Name: "student_id"}},
+			DoUpdates: clause.AssignmentColumns([]string{"table_number", "room", "class_id"}),
+		}).Create(&data).Error
+	})
+}
+
+func (s *authservice) GetStudentExam(ctx context.Context, detailID int) ([]model.StudentExam, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	var rows []model.StudentExam
+	err := s.db.WithContext(ctx).Where("exam_platform_detail_id = ?", detailID).Find(&rows).Error
+	return rows, err
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"mysql/constant/share"
 	"mysql/helper"
+	"mysql/pattern/res"
 	"mysql/request"
 	"mysql/service"
 	"net/http"
@@ -25,10 +26,10 @@ func NewIncomeController(s service.IncomeService) *IncomeController {
 func (cr *IncomeController) GetIncomeCategory(c *gin.Context) {
 	data, err := cr.service.GetIncomeCategory(c.Request.Context())
 	if err != nil {
-		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		res.Fail(c, http.StatusInternalServerError, "INCOME_CATEGORY_NOT_FOUND", err.Error())
 		return
 	}
-	share.RespondDate(c, http.StatusOK, data)
+	res.OK(c, data)
 }
 
 func (cr *IncomeController) AddIncome(c *gin.Context) {

@@ -12,7 +12,9 @@ import {
   getClassAvailableSubjects,
   deleteExamPlatform,
   updateExamPlatform,
-  updateExamPlatformDetail
+  updateExamPlatformDetail,
+  addStudentExam,
+  getStudentExams
 } from "../src/api/services.js";
 import AppTable from "./AppTable.vue";
 import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
@@ -393,6 +395,76 @@ async function handleSubmit() {
   }
 }
 
+
+const tableVisible = ref(false);
+const tableSubmitting = ref(false);
+const tableLoading = ref(false);
+const tableDetail = ref(null);
+const tableRoom = ref("");
+const tableStudents = ref([])
+
+async function openTableNumber(detail) {
+  tableDetail.value = detail;
+  tableRoom.value = "";
+  // ⚠️ adjust field names to match your students payload
+  tableStudents.value = (props.classRow?.students || []).map((s) => ({
+    student_id: s.student_id ?? s.id,
+    name: s.name_kh || s.name_en || s.name || `#${s.id}`,
+    table_number: null,
+  }));
+  tableVisible.value = true;
+
+  tableLoading.value = true;
+  try {
+    const res = await getStudentExams(detail.id);
+    const saved = res.data.data || [];
+    if (saved.length) tableRoom.value = saved[0].room || "";
+    const map = new Map(saved.map((r) => [r.student_id, r.table_number]));
+    tableStudents.value.forEach((s) => {
+      if (map.has(s.student_id)) s.table_number = map.get(s.student_id);
+    });
+  } catch (e) {
+    notify.error(errorMessage(e, "មិនអាចទាញយកលេខតុបានទេ"));
+  } finally {
+    tableLoading.value = false;
+  }
+}
+
+function autoFillTables() {
+  tableStudents.value.forEach((s, i) => (s.table_number = i + 1));
+}
+function clearTables() {
+  tableStudents.value.forEach((s) => (s.table_number = null));
+}
+
+async function handleSaveTables() {
+  // client-side duplicate check
+  const nums = tableStudents.value.map((s) => s.table_number).filter((n) => n != null);
+  if (new Set(nums).size !== nums.length) {
+    notify.error("លេខតុមានស្ទួន");
+    return;
+  }
+
+  tableSubmitting.value = true;
+  try {
+    await addStudentExam({
+      exam_platform_detail_id: tableDetail.value.id,
+      room: tableRoom.value,
+      student: tableStudents.value.map((s) => ({
+        class_id: props.classRow.id,
+        student_id: s.student_id,
+        table_number: s.table_number ?? null,
+      })),
+    });
+    notify.success("ដាក់លេខតុជោគជ័យ");
+    tableVisible.value = false;
+  } catch (e) {
+    notify.error(errorMessage(e, "មិនអាចដាក់លេខតុបានទេ"));
+  } finally {
+    tableSubmitting.value = false;
+  }
+}
+
 // ---------- Open dialog ----------
 watch(
   () => [props.modelValue, props.classRow?.id],
@@ -548,26 +620,16 @@ watch(
           :columns="detailColumns"
           actions-width="120px"
         >
-          <template #actions="{ row }">
-            <el-tooltip content="កែប្រែ" placement="top"
-              ><AppButton
-                type="warning"
-                icon="Edit"
-                size="small"
-                circle
-                @click="openEditDetail(exams, row)"
-              ></AppButton
-            ></el-tooltip>
-            <el-tooltip content="ដាក់លេខតុ" placement="top"
-              ><AppButton
-                type="primary"
-                icon="Pointer"
-                size="small"
-                circle
-                @click="openEditDetail(exams, row)"
-              ></AppButton
-            ></el-tooltip>
-          </template>
+<template #actions="{ row: detail }">
+  <el-tooltip content="កែប្រែ" placement="top">
+    <AppButton type="warning" icon="Edit" size="small" circle
+      @click="openEditDetail(row, detail)" />
+  </el-tooltip>
+  <el-tooltip content="ដាក់លេខតុ" placement="top">
+    <AppButton type="primary" icon="Pointer" size="small" circle
+      @click="openTableNumber(detail)" />
+  </el-tooltip>
+</template>
         </AppTable>
       </template>
       <template #actions="{ row }">
@@ -671,6 +733,28 @@ watch(
     </AppButton>
   </template>
 </AppDialog>
+
+<AppDialog v-model="tableVisible" title="ដាក់លេខតុ" width="700px">
+  <div class="table-toolbar">
+    <el-input v-model.trim="tableRoom" placeholder="បន្ទប់ (Room)" size="large" style="max-width: 220px" />
+    <AppButton size="small" plain type="primary" @click="autoFillTables">លេខរៀងស្វ័យប្រវត្តិ</AppButton>
+    <AppButton size="small" plain type="danger" @click="clearTables">សម្អាត</AppButton>
+  </div>
+
+  <el-table :data="tableStudents" v-loading="tableLoading" max-height="450" border>
+    <el-table-column type="index" label="#" width="60" />
+    <el-table-column prop="name" label="ឈ្មោះសិស្ស" min-width="200" />
+    <el-table-column label="លេខតុ" width="160">
+      <template #default="{ row }">
+        <el-input-number v-model="row.table_number" :min="1" :controls="false" style="width: 100%" />
+      </template>
+    </el-table-column>
+  </el-table>
+
+  <template #footer>
+    <AppButton type="warning" :loading="tableSubmitting" @click="handleSaveTables">រក្សាទុក</AppButton>
+  </template>
+</AppDialog>
   </AppDialog>
 </template>
 
@@ -708,6 +792,8 @@ watch(
   min-width: 0;
   margin-bottom: 12px;
 }
+
+.table-toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
 
 @media (max-width: 768px) {
   .detail-card {
