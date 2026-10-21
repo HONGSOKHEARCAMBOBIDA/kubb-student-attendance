@@ -18,7 +18,48 @@ import {
 } from "../src/api/services.js";
 import AppTable from "./AppTable.vue";
 import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
+import PrintableTable from "./PrintableTable.vue";
+import { nextTick } from "vue";
+// print
+const printableRef = ref(null)
+const printTitle = ref('')
+const SecondprintTitle = ref('')
+const ThirdprintTitle = ref('')
+const printRows = ref([])
+const studentPrintColumns = [
+  { key: 'name', label: 'គោត្តនាម-នាម' },
+  {
+    key: 'gender',
+    label: 'ភេទ',
+    format: (v) => (v === 1 ? 'ប្រុស' : v === 2 ? 'ស្រី' : '-'),
+  },
+  { key: 'code', label: 'អត្តលេខ' },
+  { key: 'table_number', label: 'លេខតុ' },   // ✅ was 'tablenumber'
+  { key: 'score50', label: 'ពិន្ទុ50%' },
+  { key: 'sign', label: 'ហត្ថាលេខា' },
+  { key: 'other', label: 'ផ្សេងៗ' },
+]
 
+function printStudentList() {
+  const d = tableDetail.value
+  const subject = [d?.subject_code, d?.subject_name].filter(Boolean).join(' — ')
+  printTitle.value =
+    `បញ្ជីរាយនាមបេក្ខជនប្រឡងឆ្នាំទី${props.classRow?.year} ឆមាសទី${props.classRow?.semester}`
+  SecondprintTitle.value = `
+    ថ្នាក់${props.classRow?.programme_name} ជំនាញ${props.classRow?.major_name}
+  `
+  ThirdprintTitle.value = `
+    ${props.classRow?.generation_name} វគ្គទី${props.classRow?.term} ក្រុមទី${props.classRow?.group} ពេលសិក្សា${props.classRow?.shift_name} ឆ្នាំសិក្សា${props.classRow?.generation_start}-${props.classRow?.generation_end}
+  `
+  // sort by table number (empty ones last)
+  printRows.value = [...tableStudents.value].sort(
+    (a, b) => (a.table_number ?? 9999) - (b.table_number ?? 9999),
+  )
+
+  nextTick(() => printableRef.value?.print())
+}
+
+// print
 const props = defineProps({
   modelValue: Boolean,
   classRow: Object,
@@ -328,12 +369,6 @@ const availableSubjects = (currentKey) => {
   return subjectOptions.value.filter((s) => !usedIds.includes(s.value));
 };
 
-const availableSubject = (key) =>
-  subjectOptions.value.filter(
-    (s) =>
-      !form.details.some((d) => d._key !== key && d.subject_id === s.value),
-  );
-
 const form = reactive(defaultForm());
 
 const required = (message) => [{ required: true, message, trigger: "change" }];
@@ -403,14 +438,30 @@ const tableDetail = ref(null);
 const tableRoom = ref("");
 const tableStudents = ref([])
 
+const examdate = computed(() =>
+  tableDetail.value?.exam_date 
+);
+const subjects = computed(() =>
+  tableDetail.value?.subject_name 
+);
+const roomprop = computed(() =>
+  tableDetail.value?.room 
+);
+const examtime = computed(() =>
+  [tableDetail.value?.start_time, tableDetail.value?.end_time]
+    .filter(Boolean)
+    .join(' — ')
+);
+
 async function openTableNumber(detail) {
   tableDetail.value = detail;
   tableRoom.value = "";
-  // ⚠️ adjust field names to match your students payload
   tableStudents.value = (props.classRow?.students || []).map((s) => ({
     student_id: s.student_id ?? s.id,
     name: s.name_kh || s.name_en || s.name || `#${s.id}`,
     table_number: null,
+    gender: s.gender,
+    code: s.code
   }));
   tableVisible.value = true;
 
@@ -734,16 +785,19 @@ watch(
   </template>
 </AppDialog>
 
-<AppDialog v-model="tableVisible" title="ដាក់លេខតុ" width="700px">
+<AppDialog v-model="tableVisible" title="រៀបលេខតុ" width="30%">
   <div class="table-toolbar">
     <el-input v-model.trim="tableRoom" placeholder="បន្ទប់ (Room)" size="large" style="max-width: 220px" />
     <AppButton size="small" plain type="primary" @click="autoFillTables">លេខរៀងស្វ័យប្រវត្តិ</AppButton>
     <AppButton size="small" plain type="danger" @click="clearTables">សម្អាត</AppButton>
+    <AppButton size="small" plain type="success" @click="printStudentList()" >បោះពុម្ភ</AppButton>
   </div>
 
   <el-table :data="tableStudents" v-loading="tableLoading" max-height="450" border>
-    <el-table-column type="index" label="#" width="60" />
-    <el-table-column prop="name" label="ឈ្មោះសិស្ស" min-width="200" />
+    <el-table-column type="index" label="ល.រ" width="60" />
+    <el-table-column prop="name" label="គោត្តនាម-នាម" min-width="200" />
+    <el-table-column prop="gender" label="ភេទ" width="60"  :formatter="(row) => row.gender === 1 ? 'ប្រុស' : row.gender === 2 ? 'ស្រី' : '-'"/>
+    <el-table-column prop="code" label="អត្តលេខ" width="200" />
     <el-table-column label="លេខតុ" width="160">
       <template #default="{ row }">
         <el-input-number v-model="row.table_number" :min="1" :controls="false" style="width: 100%" />
@@ -755,10 +809,35 @@ watch(
     <AppButton type="warning" :loading="tableSubmitting" @click="handleSaveTables">រក្សាទុក</AppButton>
   </template>
 </AppDialog>
+
+<Teleport to="body">
+  <div class="print-only-wrapper">
+    <PrintableTable
+      ref="printableRef"
+      :title="printTitle"
+      :columns="studentPrintColumns"
+      :rows="printRows"
+      :subject="subjects"
+      :examdate="examdate"
+      :examtime="examtime"
+      :room="tableRoom"
+      :secondtitle="SecondprintTitle"
+      :thirdtitle="ThirdprintTitle"
+    />
+  </div>
+</Teleport>
   </AppDialog>
 </template>
 
 <style scoped>
+.print-only-wrapper {
+  display: none;
+}
+@media print {
+  .print-only-wrapper {
+    display: block;
+  }
+}
 .exam-form {
   margin-bottom: 16px;
 }

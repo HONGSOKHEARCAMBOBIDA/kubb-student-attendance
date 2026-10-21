@@ -621,7 +621,12 @@ func (s *companyservice) ListExamPlatforms(ctx context.Context, classID int) ([]
 
 	detailsByPlatform := make(map[int][]response.ExamPlatformDetail, len(data))
 	for _, d := range details {
-		detailsByPlatform[int(d.ExamPlatformID)] = append(detailsByPlatform[int(d.ExamPlatformID)], d)
+		d.ExamDate = helper.FormatDate(d.ExamDate)
+		d.StartTime = helper.FormatTime(d.StartTime)
+		d.EndTime = helper.FormatTime(d.EndTime)
+
+		id := int(d.ExamPlatformID)
+		detailsByPlatform[id] = append(detailsByPlatform[id], d)
 	}
 
 	for i := range data {

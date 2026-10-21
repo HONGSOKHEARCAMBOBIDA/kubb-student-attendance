@@ -1252,11 +1252,10 @@ func (s *authservice) AddStudentExam(ctx context.Context, input request.StudentE
 			ExamPlatformDetailID: input.ExamPlatformDetailID,
 			ClassID:              st.ClassID,
 			StudentID:            st.StudentID,
-			TableNumber:          st.TableNumber, // pointer, may be nil
+			TableNumber:          st.TableNumber,
 			Room:                 input.Room,
 		})
 	}
-
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		return tx.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "exam_platform_detail_id"}, {Name: "student_id"}},
