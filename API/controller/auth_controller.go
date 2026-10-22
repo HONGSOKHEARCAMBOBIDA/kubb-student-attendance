@@ -610,3 +610,15 @@ func (cr *AuthController) GetStudentExam(c *gin.Context) {
 	}
 	share.RespondDate(c, http.StatusOK, data)
 }
+
+func (cr *AuthController) DeleteStudentExam(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	if err := cr.service.DeleteStudentExam(c, id); err != nil {
+		res.Fail(c, http.StatusNoContent, "CAN NOT DELETE", err.Error())
+		return
+	}
+	res.OK(c, 200)
+}

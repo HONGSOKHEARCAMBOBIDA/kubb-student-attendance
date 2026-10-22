@@ -5,10 +5,11 @@ import "mysql/model/base"
 type UserClassStatus string
 
 const (
-	UserClassStatusSTUDY    UserClassStatus = "STUDY"
-	UserClassStatusSUSPEND  UserClassStatus = "SUSPEND"
-	UserClassStatusTRANSFER UserClassStatus = "TRANSFER"
-	UserClassStatusDROPPED  UserClassStatus = "DROPPED"
+	UserClassStatusSTUDY      UserClassStatus = "STUDY"
+	UserClassStatusSUSPEND    UserClassStatus = "SUSPEND"
+	UserClassStatusTRANSFER   UserClassStatus = "TRANSFER"
+	UserClassStatusDROPPED    UserClassStatus = "DROPPED"
+	UserClassStatusEXAMBANNED UserClassStatus = "EXAM_BANNED"
 )
 
 type FeeStatusUserClass string

@@ -60,6 +60,7 @@ type AuthService interface {
 	GetStaft(ctx context.Context) ([]response.UserResponseNotStudent, error)
 	AddStudentExam(ctx context.Context, input request.StudentExam) error
 	GetStudentExam(ctx context.Context, detailID int) ([]model.StudentExam, error)
+	DeleteStudentExam(ctx context.Context, id int) error
 }
 
 type authservice struct {
@@ -1270,4 +1271,14 @@ func (s *authservice) GetStudentExam(ctx context.Context, detailID int) ([]model
 	var rows []model.StudentExam
 	err := s.db.WithContext(ctx).Where("exam_platform_detail_id = ?", detailID).Find(&rows).Error
 	return rows, err
+}
+
+func (s *authservice) DeleteStudentExam(ctx context.Context, id int) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	if err := s.db.WithContext(ctx).Where("id = ?", id).Delete(&model.StudentExam{}).Error; err != nil {
+		return err
+	}
+	return nil
 }

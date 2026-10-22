@@ -14,6 +14,7 @@
       :columns="[
         { slot: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
         { slot: 'major_name', label: 'ជំនាញ', Width: 100 },
+        { label: 'មហាវិទ្យាល័យ', slot: 'faculty', width: 150 },
         { slot: 'generation_name', label: 'ជំនាន់', width: 260 },
         { slot: 'programme_name', label: 'កម្មវិធីសិក្សា', Width: 60 },
         { prop: 'year', label: 'ឆ្នាំ', width: 60, align: 'center' },
@@ -27,7 +28,6 @@
           width: 110,
           align: 'center',
         },
-        { label: 'អាចស្កែនក្រៅតំបន់', slot: 'outsize', width: 150 },
         { label: 'ស្ថានភាព', slot: 'status', width: 120 },
         { label: 'សិស្សសរុប', slot: 'total', width: 100 },
         { label: 'កាន់ដោយ', prop: 'controlled_by_name', minwidth: 100 },
@@ -52,6 +52,9 @@
       <template #major_name="{ row }">
         <el-text tag="b" type="primary">{{ row.major_name }}</el-text>
       </template>
+      <template #faculty="{ row }">
+         <span>{{ row.faculty_name }}</span>
+      </template>
       <template #generation_name="{ row }">
         <el-text tag="b" type="primary"
           >{{ row.generation_name }} | {{ row.generation_start }}-{{
@@ -62,11 +65,6 @@
       </template>
       <template #programme_name="{ row }">
         <el-text tag="b" type="primary">{{ row.programme_name }}</el-text>
-      </template>
-      <template #outsize="{ row }">
-        <el-tag :type="row.can_scan_outsize ? 'success' : 'danger'">
-          {{ row.can_scan_outsize ? "បាន" : "មិនបាន" }}
-        </el-tag>
       </template>
       <template #status="{ row }">
         <el-tag :type="row.is_active ? 'success' : 'danger'" size="small">

@@ -14,7 +14,8 @@ import {
   updateExamPlatform,
   updateExamPlatformDetail,
   addStudentExam,
-  getStudentExams
+  getStudentExams,
+  deleteStudentExam
 } from "../src/api/services.js";
 import AppTable from "./AppTable.vue";
 import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
@@ -34,7 +35,7 @@ const studentPrintColumns = [
     format: (v) => (v === 1 ? 'ប្រុស' : v === 2 ? 'ស្រី' : '-'),
   },
   { key: 'code', label: 'អត្តលេខ' },
-  { key: 'table_number', label: 'លេខតុ' },   // ✅ was 'tablenumber'
+  { key: 'table_number', label: 'លេខតុ', strikeIfEmpty: true },
   { key: 'score50', label: 'ពិន្ទុ50%' },
   { key: 'sign', label: 'ហត្ថាលេខា' },
   { key: 'other', label: 'ផ្សេងៗ' },
@@ -46,7 +47,7 @@ function printStudentList() {
   printTitle.value =
     `បញ្ជីរាយនាមបេក្ខជនប្រឡងឆ្នាំទី${props.classRow?.year} ឆមាសទី${props.classRow?.semester}`
   SecondprintTitle.value = `
-    ថ្នាក់${props.classRow?.programme_name} ជំនាញ${props.classRow?.major_name}
+    ថ្នាក់${props.classRow?.programme_name} មហាវិទ្យាល័យ ${props.classRow?.faculty_name} ជំនាញ ${props.classRow?.major_name}
   `
   ThirdprintTitle.value = `
     ${props.classRow?.generation_name} វគ្គទី${props.classRow?.term} ក្រុមទី${props.classRow?.group} ពេលសិក្សា${props.classRow?.shift_name} ឆ្នាំសិក្សា${props.classRow?.generation_start}-${props.classRow?.generation_end}
@@ -100,6 +101,31 @@ async function handleDelete(row) {
     await fetchExams();
   } catch (e) {
     notify.error(errorMessage(e, "មិនអាចលុបការប្រឡងបានទេ"));
+  }
+}
+
+
+async function handleDeleteStudentExam(row) {
+  if (!row.id) {
+    row.table_number = null;
+    return;
+  }
+
+  try {
+    await ElMessageBox.confirm("តើអ្នកពិតជាចង់លុបមែនទេ?", "បញ្ជាក់", {
+      type: "warning",
+    });
+  } catch {
+    return; // cancelled
+  }
+
+  try {
+    await deleteStudentExam(row.id);
+    notify.success("ជោគជ័យ");
+    row.id = null;
+    row.table_number = null;
+  } catch (e) {
+    notify.error(errorMessage(e, "មិនអាចលុបបានទេ"));
   }
 }
 
@@ -447,6 +473,11 @@ const subjects = computed(() =>
 const roomprop = computed(() =>
   tableDetail.value?.room 
 );
+
+const totalstudent = computed(() => tableStudents.value?.length)
+const totalstudentgirl = computed(() =>
+  tableStudents.value?.filter(s => s.gender === 2).length || 0
+)
 const examtime = computed(() =>
   [tableDetail.value?.start_time, tableDetail.value?.end_time]
     .filter(Boolean)
@@ -461,7 +492,8 @@ async function openTableNumber(detail) {
     name: s.name_kh || s.name_en || s.name || `#${s.id}`,
     table_number: null,
     gender: s.gender,
-    code: s.code
+    code: s.code,
+    id: null
   }));
   tableVisible.value = true;
 
@@ -470,10 +502,14 @@ async function openTableNumber(detail) {
     const res = await getStudentExams(detail.id);
     const saved = res.data.data || [];
     if (saved.length) tableRoom.value = saved[0].room || "";
-    const map = new Map(saved.map((r) => [r.student_id, r.table_number]));
-    tableStudents.value.forEach((s) => {
-      if (map.has(s.student_id)) s.table_number = map.get(s.student_id);
-    });
+    const map = new Map(saved.map((r) => [r.student_id, r]));
+tableStudents.value.forEach((s) => {
+  const rec = map.get(s.student_id);
+  if (rec) {
+    s.table_number = rec.table_number;
+    s.id = rec.id;
+  }
+});
   } catch (e) {
     notify.error(errorMessage(e, "មិនអាចទាញយកលេខតុបានទេ"));
   } finally {
@@ -785,7 +821,7 @@ watch(
   </template>
 </AppDialog>
 
-<AppDialog v-model="tableVisible" title="រៀបលេខតុ" width="30%">
+<AppDialog v-model="tableVisible" title="រៀបលេខតុ" width="40%">
   <div class="table-toolbar">
     <el-input v-model.trim="tableRoom" placeholder="បន្ទប់ (Room)" size="large" style="max-width: 220px" />
     <AppButton size="small" plain type="primary" @click="autoFillTables">លេខរៀងស្វ័យប្រវត្តិ</AppButton>
@@ -798,10 +834,15 @@ watch(
     <el-table-column prop="name" label="គោត្តនាម-នាម" min-width="200" />
     <el-table-column prop="gender" label="ភេទ" width="60"  :formatter="(row) => row.gender === 1 ? 'ប្រុស' : row.gender === 2 ? 'ស្រី' : '-'"/>
     <el-table-column prop="code" label="អត្តលេខ" width="200" />
-    <el-table-column label="លេខតុ" width="160">
+    <el-table-column label="លេខតុ" width="160" align="center">
       <template #default="{ row }">
         <el-input-number v-model="row.table_number" :min="1" :controls="false" style="width: 100%" />
       </template>
+    </el-table-column>
+    <el-table-column label="សកម្មភាព" width="160" align="center">
+        <template #default="{row}">
+          <el-tooltip content="លុប" placement="top"><AppButton @click="handleDeleteStudentExam(row)" size="small" circle icon="Delete" type="danger"></AppButton></el-tooltip>
+        </template>
     </el-table-column>
   </el-table>
 
@@ -823,6 +864,8 @@ watch(
       :room="tableRoom"
       :secondtitle="SecondprintTitle"
       :thirdtitle="ThirdprintTitle"
+      :totalstudent="totalstudent"
+      :totalstudentgirld="totalstudentgirl"
     />
   </div>
 </Teleport>

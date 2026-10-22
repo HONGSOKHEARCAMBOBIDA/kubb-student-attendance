@@ -243,6 +243,7 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		return s.db.WithContext(ctx).
 			Table("class c").
 			Joins("LEFT JOIN major AS m ON m.id = c.major_id").
+			Joins("LEFT JOIN faculties f ON f.id = m.faculty_id").
 			Joins("LEFT JOIN shift AS sh ON sh.id = c.shift_id").
 			Joins("LEFT JOIN generation AS g ON g.id = c.generation_id").
 			Joins("LEFT JOIN programmes AS p ON p.id = c.programme_id").
@@ -294,6 +295,7 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		c.can_scan_outsize AS can_scan_outsize,
 		c.major_id AS major_id,
 		m.name_kh AS major_name,
+		f.name AS faculty_name,
 		c.shift_id AS shift_id,
 		sh.name AS shift_name,
 		c.generation_id AS generation_id,

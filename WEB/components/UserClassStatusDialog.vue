@@ -45,6 +45,7 @@ const userClassStatus = [
   { value: "SUSPEND", label: "ព្យួរការសិក្សា" },
   { value: "TRANSFER", label: "ដូរ/ផ្ទេរជំនាញ" },
   { value: "DROPPED", label: "បោះបង់ការសិក្សា" },
+  { value: "EXAM_BANNED", label: "ដកសិទ្ធប្រឡង" },
 ];
 
 const statusForm = reactive({

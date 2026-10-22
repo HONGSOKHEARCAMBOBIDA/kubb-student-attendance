@@ -19,6 +19,7 @@ type ClassResponse struct {
 
 	MajorID          *int64         `gorm:"column:major_id" json:"major_id"`
 	MajorName        string         `json:"major_name"`
+	FacultyName      string         `json:"faculty_name"`
 	ShiftID          *int64         `gorm:"column:shift_id" json:"shift_id"`
 	ShiftName        string         `json:"shift_name"`
 	GenerationID     *int64         `gorm:"column:generation_id" json:"generation_id"`
