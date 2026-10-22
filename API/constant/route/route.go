@@ -189,4 +189,6 @@ const (
 	UpdateTeacherRate = "update.Teacher.Rate/:id"
 
 	ViewStaft = "view.staft"
+
+	ViewStudentStudyHistory = "view.student.study.history/:id"
 )

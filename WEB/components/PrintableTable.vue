@@ -59,7 +59,7 @@
           </tr>
         </tbody>
       </table>
-      <el-row :gutter="0" align="middle" class="doc-header">
+      <el-row :gutter="0" align="middle" class="doc-footer">
         <el-col :span="12">
           <h4 class="labelsr">
             បញ្ឃប់បញ្ជីឈ្មោះត្រឹម {{ totalstudent }}នាក់ ស្រីចំនួន
@@ -148,8 +148,11 @@ defineExpose({ print });
 @import url("https://fonts.googleapis.com/css2?family=Moul&display=swap");
 
 .doc-header {
-  margin-top: 10px;
   margin-bottom: 6px;
+}
+
+.doc-footer {
+  margin-top: 15px;
 }
 
 .header-logo {

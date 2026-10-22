@@ -61,6 +61,7 @@ type AuthService interface {
 	AddStudentExam(ctx context.Context, input request.StudentExam) error
 	GetStudentExam(ctx context.Context, detailID int) ([]model.StudentExam, error)
 	DeleteStudentExam(ctx context.Context, id int) error
+	GetStudentStudyHistory(ctx context.Context, id int) (response.StudentStudyHistory, error)
 }
 
 type authservice struct {
@@ -350,9 +351,10 @@ func (s *authservice) CreateUserClass(ctx context.Context, input request.UserCla
 			newdata := make([]model.UserClass, 0, len(input.UserIDs))
 			for _, n := range input.UserIDs {
 				newdata = append(newdata, model.UserClass{
-					UserID:  n.UserID,
-					ClassID: input.ClassID,
-					Status:  model.UserClassStatusSTUDY,
+					UserID:    n.UserID,
+					ClassID:   input.ClassID,
+					Status:    model.UserClassStatusSTUDY,
+					FeeStatus: model.FeeStatusUserClassACTIVE,
 				})
 			}
 
@@ -1281,4 +1283,117 @@ func (s *authservice) DeleteStudentExam(ctx context.Context, id int) error {
 		return err
 	}
 	return nil
+}
+
+func (s *authservice) GetStudentStudyHistory(ctx context.Context, id int) (response.StudentStudyHistory, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	var data response.StudentStudyHistory
+	res := s.db.WithContext(ctx).Table("user u").
+		Joins("LEFT JOIN role r ON r.id = u.role_id").
+		Joins("LEFT JOIN student_profile sp ON sp.user_id = u.id").
+		Joins("LEFT JOIN student_category sc ON sc.id = sp.student_category_id").
+		Joins("LEFT JOIN villages v ON v.id = sp.village_id").
+		Joins("LEFT JOIN communes c ON c.id = v.commune_id").
+		Joins("LEFT JOIN districts d ON d.id = c.district_id").
+		Joins("LEFT JOIN provinces p ON p.id = d.province_id").
+		Where("u.id = ?", id).
+		Select(`
+			u.id AS id,
+			u.name_kh AS name_kh,
+			u.name_en AS name_en,
+			u.gender AS gender,
+			u.code AS code,
+			r.display_name AS role_name,
+			sc.name AS student_category_name,
+			sp.date_of_birth AS date_of_birth,
+			sp.nationality AS nationality,
+			sp.phone AS phone,
+			CONCAT_WS(' - ', p.name_kh, p.name_en) AS province,
+			CONCAT_WS(' - ', d.name_kh, d.name_en) AS district,
+			CONCAT_WS(' - ', c.name_kh, c.name_en) AS communce,
+			CONCAT_WS(' - ', v.name_kh, v.name_en) AS village,
+			sp.occupation AS occupation,
+			sp.academic_stream AS academic_stream,
+			sp.telegram_username AS telegram_username,
+			sp.exam_in AS exam_in,
+			sp.exam_out AS exam_out
+		`).Scan(&data)
+	if res.Error != nil {
+		return response.StudentStudyHistory{}, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return response.StudentStudyHistory{}, gorm.ErrRecordNotFound
+	}
+
+	data.DateOfBirth = helper.FormatDate(data.DateOfBirth)
+
+	userClasses := make([]response.UserClassRes, 0)
+	if err := s.db.WithContext(ctx).
+		Table("user_class uc").
+		Joins("LEFT JOIN class c ON c.id = uc.class_id").
+		Joins("LEFT JOIN major m ON m.id = c.major_id").
+		Joins("LEFT JOIN shift s ON s.id = c.shift_id").
+		Joins("LEFT JOIN generation g ON g.id = c.generation_id").
+		Joins("LEFT JOIN programmes p ON p.id = c.programme_id").
+		Where("uc.user_id = ?", id).
+		Order("c.year ASC, c.semester ASC").
+		Select(`
+			uc.id AS user_class_id,
+			uc.user_id AS user_id,
+			c.name AS class_name,
+			c.type AS type,
+			c.is_active AS active,
+			m.id AS major_id,
+			CONCAT_WS(' ', m.name_kh, m.name_en) AS major_name,
+			s.id AS shift_id,
+			s.name AS shift_name,
+			g.id AS generation_id,
+			g.name_kh AS generation_name,
+			g.start_year AS generation_start,
+			g.end_year AS generation_end,
+			c.year AS year,
+			c.semester AS semester,
+			c.` + "`group`" + ` AS ` + "`group_name`" + `,
+			c.term AS term,
+			p.id AS programme_id,
+			p.name AS programme_name
+		`).Scan(&userClasses).Error; err != nil {
+		return response.StudentStudyHistory{}, err
+	}
+
+	for i := range userClasses {
+		uc := &userClasses[i]
+		uc.SubjectRes = make([]response.SubjectRes, 0)
+		if uc.MajorID == nil || uc.GenerationID == nil || uc.ProgrammeID == nil || uc.Year == nil {
+			continue
+		}
+
+		var subjects []response.SubjectRes
+		if err := s.db.WithContext(ctx).
+			Table("major_subject ms").
+			Joins("LEFT JOIN subject s ON s.id = ms.subject_id").
+			Where(`ms.major_id = ? AND ms.generation_id = ? AND ms.programme_id = ?
+			       AND ms.year = ? AND ms.semester = ?`,
+				*uc.MajorID, *uc.GenerationID, *uc.ProgrammeID, *uc.Year, uc.Semester).
+			Select(`
+				s.id AS subject_id,
+				s.code AS subject_code,
+				s.name_kh AS subject_name_kh,
+				s.name_en AS subject_name_en,
+				s.credit_hour AS credit_hour
+			`).Scan(&subjects).Error; err != nil {
+			return response.StudentStudyHistory{}, err
+		}
+
+		for j := range subjects {
+			subjects[j].UserClassID = uc.UserClassID
+		}
+		if subjects != nil {
+			uc.SubjectRes = subjects
+		}
+	}
+
+	data.UserClassRes = userClasses
+	return data, nil
 }

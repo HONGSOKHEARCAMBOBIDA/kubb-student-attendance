@@ -250,3 +250,5 @@ export const updateTeacherRate = (id, data) =>
 export const addStudentExam = (data) => api.post("/add.student.exam", data);
 export const getStudentExams = (id) => api.get(`/view.student.exam/${id}`);
 export const deleteStudentExam = (id) => api.delete(`/delete.student.exam/${id}`)
+
+export const getStudentStudyHistory  = (id) => api.get(`/view.student.study.history/${id}`)

@@ -3,7 +3,7 @@
    
     v-bind="$attrs"
     :type="type"
-    :size="size"
+     size="small"
     :loading="loading"
     :disabled="disabled || loading"
     :native-type="nativeType"

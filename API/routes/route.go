@@ -99,6 +99,7 @@ func SetupRoutes(r *gin.Engine) {
 		auth.POST(route.AddStudentExam, middleware.PermissionMiddleware(permission.AddUser), authcontroller.AddStudentExam)
 		auth.GET(route.ViewStudentExam, middleware.PermissionMiddleware(permission.AddUser), authcontroller.GetStudentExam)
 		auth.DELETE(route.DeleteStudentExam, middleware.PermissionMiddleware(permission.AddUser), authcontroller.DeleteStudentExam)
+		auth.GET(route.ViewStudentStudyHistory, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetStudentStudyHistory)
 		// Shift
 		// auth.PUT(route.EditShift, middleware.PermissionMiddleware(permission.EditUser), shiftcontroller.UpdateShift)
 		// auth.POST(route.AddShift, middleware.PermissionMiddleware(permission.EditUser), shiftcontroller.CreateShift)

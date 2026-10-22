@@ -63,7 +63,7 @@
         :total="total"
         @page-change="fetchUsers"
         :columns="columns"
-        actionsWidth="160"
+        actionsWidth="190"
       >
         <template #gender="{ row }">
           <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
@@ -151,6 +151,15 @@
                 type="primary"
                 circle
                 @click="openIncomeDialog(row)"
+              />
+            </el-tooltip>
+            <el-tooltip content="មើលលំអិតពីការសិក្សា" placement="top">
+              <AppButton
+                size="small"
+                icon="View"
+                type="success"
+                circle
+                 @click="openHistoryDialog(row)"
               />
             </el-tooltip>
           </template>
@@ -275,6 +284,10 @@
     />
     <TeacherProfile v-model="teacherdialogvisible" :teacher-raw="teacherRaw" />
   </div>
+  <Studentstudyhistory
+  v-model="historydialogvisible"
+  :student-raw="studentRaw"
+/>
 </template>
 
 <script setup>
@@ -303,6 +316,12 @@ import StudentFamily from "../../components/StudentFamily.vue";
 import StudentEducation from "../../components/Studenteducation.vue";
 import StudentDocument from "../../components/Studentdocument.vue";
 import TeacherProfile from "../../components/TeacherProfie.vue";
+import Studentstudyhistory from "../../components/Studentstudyhistory.vue";
+const historydialogvisible = ref(false);
+function openHistoryDialog(row) {
+  studentRaw.value = row;
+  historydialogvisible.value = true;
+}
 const teacherdialogvisible = ref(false);
 const teacherRaw = ref(null);
 function openTeacherDialog(row) {

@@ -622,3 +622,16 @@ func (cr *AuthController) DeleteStudentExam(c *gin.Context) {
 	}
 	res.OK(c, 200)
 }
+
+func (cr *AuthController) GetStudentStudyHistory(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.GetStudentStudyHistory(c, id)
+	if err != nil {
+		res.Fail(c, http.StatusNotFound, "CAN NOT FOUND", err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
+}
