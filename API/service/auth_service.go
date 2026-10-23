@@ -1349,7 +1349,7 @@ func (s *authservice) GetStudentStudyHistory(ctx context.Context, id int) (respo
 			s.id AS shift_id,
 			s.name AS shift_name,
 			g.id AS generation_id,
-			g.name_kh AS generation_name,
+			g.code AS generation_name,
 			g.start_year AS generation_start,
 			g.end_year AS generation_end,
 			c.year AS year,

@@ -2,7 +2,7 @@
   <el-button
    
     v-bind="$attrs"
-    :type="type"
+    type="default"
      size="small"
     :loading="loading"
     :disabled="disabled || loading"

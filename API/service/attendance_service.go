@@ -481,6 +481,18 @@ func applyCommonFilterAttendance(query *gorm.DB, filter map[string]string) *gorm
 			query = query.Where("a.check_date >=?", value)
 		case "subject_id":
 			query = query.Where("a.subject_id =?", value)
+		case "programme_id":
+			query = query.Where("c.programme_id =?", value)
+		case "generation_id":
+			query = query.Where("c.generation_id =?", value)
+		case "major_id":
+			query = query.Where("c.major_id =?", value)
+		case "shift_id":
+			query = query.Where("c.shift_id =?", value)
+		case "year":
+			query = query.Where("c.year =?", value)
+		case "semester":
+			query = query.Where("c.semester =?", value)
 		}
 	}
 	return query

@@ -109,10 +109,16 @@ func (cr *AttendanceController) GetAttendancePDF(c *gin.Context) {
 		return
 	}
 	filter := map[string]string{
-		"name":       c.Query("name"),
-		"class_id":   c.Query("class_id"),
-		"check_date": c.Query("check_date"),
-		"subject_id": c.Query("subject_id"),
+		"name":          c.Query("name"),
+		"class_id":      c.Query("class_id"),
+		"check_date":    c.Query("check_date"),
+		"subject_id":    c.Query("subject_id"),
+		"programme_id":  c.Query("programme_id"),
+		"generation_id": c.Query("generation_id"),
+		"major_id":      c.Query("major_id"),
+		"shift_id":      c.Query("shift_id"),
+		"year":          c.Query("year"),
+		"semester":      c.Query("semester"),
 	}
 
 	data, meta, err := cr.service.GetAttendancePDF(c.Request.Context(), userID, request.Pagination{

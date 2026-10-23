@@ -4,7 +4,7 @@
       <el-row :gutter="0" align="middle" class="doc-header">
         <el-col :span="4">
           <div class="header-logo">
-            <el-image :src="url" fit="contain" class="university-logo" />
+            <img :src="url" fit="contain" class="university-logo" />
             <h4 class="label">សាកលវិទ្យាល័យ ខេមរាវិទូ</h4>
             <h4 class="labelsr">KHEMARAK UNIVERSITY</h4>
             <h4 class="label">ខេត្តបាត់ដំបង</h4>
@@ -14,7 +14,7 @@
         <el-col :span="15">
           <h3 class="subtitle-kh">ព្រះរាជាណាចក្រកម្ពុជា</h3>
           <h4 class="subtitle-kh">ជាតិ សាសនា ព្រះមហាក្សត្រ</h4>
-          <el-image :src="taktieng" class="taktieng-logo" />
+          <img :src="taktieng" class="taktieng-logo" />
           <h3 class="title-kh">{{ title }}</h3>
           <h3 class="title-kh">{{ secondtitle }}</h3>
           <h3 class="title-khsr">{{ thirdtitle }}</h3>
@@ -137,7 +137,17 @@ defineProps({
   },
 });
 
-function print() {
+async function print() {
+  const images = document.querySelectorAll("#print-exam-area img");
+  for (const img of images) {
+    if (!img.complete) {
+      await new Promise(resolve => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+    }
+  }
+  await document.fonts.ready;
   window.print();
 }
 

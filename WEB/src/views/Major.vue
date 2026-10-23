@@ -441,7 +441,6 @@ onUnmounted(() => clearTimeout(searchTimer));
               v-if="canCreateMajor"
               size="small"
               icon="Money"
-              color="#626aef"
               circle
               @click="openPriceDialog(row)"
             />
