@@ -14,7 +14,8 @@ import {
   getUsers,
   updateTeacherRate,
   addClassDetail,
-  viewClassDetail
+  viewClassDetail,
+  updateClassDetail
 } from "../src/api/services.js";
 import AppInput from "./AppInput.vue";
 import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
@@ -153,7 +154,33 @@ async function fetchClassDetail() {
   }
 }
 
+const editDetailVisible = ref(false);
+const editSubjects = ref([]);
+const editDetail = reactive({ id: null, subject_id: null, credit: 0, teacher_id: null });
+
+function openEditDetail(row) {
+  Object.assign(editDetail, { id: row.id, subject_id: row.subject_id, credit: row.credit, teacher_id: row.teacher_id });
+  // available list excludes the current subject, so add it back
+  editSubjects.value = [{ label: row.subject_name, value: row.subject_id }, ...subjectOptions.value];
+  editDetailVisible.value = true;
+}
+
+async function handleUpdateClassDetail() {
+  const { id, ...body } = editDetail;
+  try {
+    await updateClassDetail(id, { ...body, class_id: props.classRow.id, credit: Number(body.credit) });
+    notify.success("កែប្រែជោគជ័យ");
+    editDetailVisible.value = false;
+    await Promise.all([fetchClassDetail(), fetchSubjectOptions()]);
+  } catch (e) {
+    notify.error(e.response?.data?.error || "មិនអាចកែប្រែបានទេ");
+  }
+}
+
 // class detail
+
+
+
 
 const form = reactive(defaultForm());
 const rules = {
@@ -413,18 +440,26 @@ watch(
       :data="classDetails"
       :loading="loading"
       :show-pagination="false"
-      actions-width="90px"
+      actions-width="150px"
       :columns="[
         { label: 'មុខវិជ្ជា', prop: 'subject_name', minWidth: 100 },
         { label: 'សាស្រ្តាចារ្យ', prop: 'teacher_name', minWidth: 100 },
         { label: 'ក្រេឌីតត្រូវបង្រៀន', prop: 'credit', minWidth: 100 },
-        { label: 'ម៉ោងសរុបនៅសល់', prop: 'remaining_hours', minWidth: 100 },
+        { label: 'ម៉ោងសរុបនៅសល់', slot: 'remaining_hours', minWidth: 100 },
       ]"
 >
-
+<template #remaining_hours="{row}">
+  <el-text size="large" style="color: black;">{{ row.remaining_hours }} ម៉ោង</el-text>
+</template>
 <template #actions="{ row }">
   <el-tooltip content="បញ្ចូលកាលវិភាគ" placement="top">
     <AppButton circle size="small" icon="Clock" @click="openScheduleForm(row)" />
+  </el-tooltip>
+  <el-tooltip content="កែប្រែ" placement="top">
+    <AppButton circle size="small" icon="Edit" @click="openEditDetail(row)" />
+  </el-tooltip>
+  <el-tooltip content="លុប" placement="top">
+    <AppButton circle size="small" icon="Delete" @click="openEditDetail(row)" />
   </el-tooltip>
 </template>
 </AppTable>
@@ -629,6 +664,15 @@ watch(
       </AppButton>
     </div>
   </el-form>
+</AppDialog>
+<AppDialog v-model="editDetailVisible" title="កែប្រែមុខវិជ្ជាក្នុងថ្នាក់" width="460px" append-to-body>
+  <AppSelect label="មុខវិជ្ជា" v-model="editDetail.subject_id" :options="editSubjects" size="large" filterable />
+  <AppInput label="ក្រេឌីត" type="number" v-model.number="editDetail.credit" size="large" />
+  <AppSelect label="គ្រូបង្រៀន" v-model="editDetail.teacher_id" :options="Teachers" size="large" filterable />
+  <div style="display:flex; justify-content:flex-end; gap:8px">
+    <AppButton @click="editDetailVisible = false">បោះបង់</AppButton>
+    <AppButton type="primary" @click="handleUpdateClassDetail">រក្សាទុក</AppButton>
+  </div>
 </AppDialog>
 </template>
 

@@ -85,6 +85,7 @@ func SetupRoutes(r *gin.Engine) {
 		//	auth.POST(route.UploadExamDocument, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.UploadExamDocument)
 		auth.POST(route.AddClassDetail, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.CreateClassDetail)
 		auth.GET(route.ViewClassDetail, middleware.PermissionMiddleware(permission.ViewCompany), companycontroller.GetClassDetail)
+		auth.PUT(route.UpdateClassDetail, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.UpdateClassDetail)
 		// User
 		auth.POST(route.AddUserClass, middleware.PermissionMiddleware(permission.AddUser), authcontroller.CreateUserClass)
 		auth.POST(route.AddUser, middleware.PermissionMiddleware(permission.AddUser), authcontroller.Register)

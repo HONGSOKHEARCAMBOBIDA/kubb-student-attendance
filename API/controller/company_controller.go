@@ -403,3 +403,20 @@ func (cr *CompanyController) GetClassDetail(c *gin.Context) {
 	}
 	share.RespondDate(c, http.StatusOK, data)
 }
+
+func (cr *CompanyController) UpdateClassDetail(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	var input request.ClassDetail
+	if err := c.ShouldBindJSON(&input); err != nil {
+		res.Fail(c, 400, "BAD_REQUEST", err.Error())
+		return
+	}
+	if err := cr.service.UpdateClassDetail(c, id, input); err != nil {
+		res.Fail(c, 400, "CAN NOT UPDATE", err.Error())
+		return
+	}
+	res.OK(c, 200)
+}

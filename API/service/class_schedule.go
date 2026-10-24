@@ -133,19 +133,6 @@ func (s *classScheduleService) Create(ctx context.Context, classID int, input re
 			return apperror.New(apperror.CodeInvalidInput, "subject is not part of this class's curriculum for its year/semester", nil)
 		}
 
-		// Prevent scheduling the same subject twice on the same day for
-		// this class.
-		var dup int64
-		if err := tx.Model(&model.ClassSchedule{}).
-			Where("class_id = ? AND subject_id = ? AND schedule_date = ?",
-				classID, input.SubjectID, input.ScheduleDate).
-			Count(&dup).Error; err != nil {
-			return apperror.New(apperror.CodeInternal, "failed to check existing schedule", nil)
-		}
-		if dup > 0 {
-			return apperror.New(apperror.CodeConflict, "this subject is already scheduled on that day for this class", nil)
-		}
-
 		newdata := model.ClassSchedule{
 			ClassID:       int64(classID),
 			SubjectID:     input.SubjectID,

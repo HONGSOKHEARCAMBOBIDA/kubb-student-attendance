@@ -43,6 +43,7 @@ type CompanyService interface {
 	UpdateExamPlatformDetail(ctx context.Context, id int, input request.ExamPlatformDetail) error
 	CreateClassDetail(ctx context.Context, input []request.ClassDetail) error
 	GetClassDetail(ctx context.Context, classID int) ([]response.ClassDetail, error)
+	UpdateClassDetail(ctx context.Context, id int, input request.ClassDetail) error
 }
 
 type companyservice struct {
@@ -762,4 +763,23 @@ func (s *companyservice) GetClassDetail(ctx context.Context, classID int) ([]res
 		return nil, err
 	}
 	return data, nil
+}
+
+func (s *companyservice) UpdateClassDetail(ctx context.Context, id int, input request.ClassDetail) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var data model.ClassDetail
+		if err := tx.Where("id =?", id).First(&data).Error; err != nil {
+			return err
+		}
+		data.SubjectID = input.SubjectID
+		data.Credit = input.Credit
+		data.TeacherID = input.TeacherID
+		if err := tx.Save(&data).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }

@@ -192,6 +192,7 @@ const (
 
 	ViewStudentStudyHistory = "view.student.study.history/:id"
 
-	AddClassDetail  = "add.class.detail"
-	ViewClassDetail = "view.class.detail/:id"
+	AddClassDetail    = "add.class.detail"
+	ViewClassDetail   = "view.class.detail/:id"
+	UpdateClassDetail = "updaste.class.detail/:id"
 )

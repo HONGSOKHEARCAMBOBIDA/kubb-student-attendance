@@ -262,3 +262,4 @@ export const getStudentStudyHistory = (id) =>
 
 export const addClassDetail = (data) => api.post("/add.class.detail", data);
 export const viewClassDetail = (id) => api.get(`/view.class.detail/${id}`)
+export const updateClassDetail = (id,data) => api.put(`/updaste.class.detail/${id}`,data)
