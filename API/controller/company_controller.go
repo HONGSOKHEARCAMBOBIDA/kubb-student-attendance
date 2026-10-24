@@ -6,6 +6,7 @@ import (
 	"mysql/constant/apperror"
 	"mysql/constant/share"
 	"mysql/helper"
+	"mysql/pattern/res"
 	"mysql/request"
 	"mysql/service"
 	"net/http"
@@ -375,4 +376,30 @@ func (cr *CompanyController) UpdateExamPlatformDetail(c *gin.Context) {
 		return
 	}
 	share.ResponseSuccess(c, http.StatusOK, "Updated")
+}
+
+func (cr *CompanyController) CreateClassDetail(c *gin.Context) {
+	var input []request.ClassDetail
+	if err := c.ShouldBindJSON(&input); err != nil {
+		res.Fail(c, 400, "BAD_REQUEST", err.Error())
+		return
+	}
+	if err := cr.service.CreateClassDetail(c, input); err != nil {
+		res.Fail(c, 400, "CAN NOT CREATE", err.Error())
+		return
+	}
+	res.OK(c, 200)
+}
+
+func (cr *CompanyController) GetClassDetail(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.GetClassDetail(c, id)
+	if err != nil {
+		res.Fail(c, http.StatusNotFound, "NOT FOUND", err.Error())
+		return
+	}
+	share.RespondDate(c, http.StatusOK, data)
 }

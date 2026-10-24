@@ -147,12 +147,13 @@ func (s *classScheduleService) Create(ctx context.Context, classID int, input re
 		}
 
 		newdata := model.ClassSchedule{
-			ClassID:      int64(classID),
-			SubjectID:    input.SubjectID,
-			DayOfWeek:    input.DayOfWeek,
-			ScheduleDate: input.ScheduleDate,
-			TotalSession: input.TotalSession,
-			IsActive:     true,
+			ClassID:       int64(classID),
+			SubjectID:     input.SubjectID,
+			DayOfWeek:     input.DayOfWeek,
+			ScheduleDate:  input.ScheduleDate,
+			TotalSession:  input.TotalSession,
+			IsActive:      true,
+			ClassDetailID: input.ClassDetailID,
 		}
 		if err := tx.Create(&newdata).Error; err != nil {
 			return apperror.New(apperror.CodeInternal, "failed to create class schedule", nil)

@@ -41,6 +41,8 @@ type CompanyService interface {
 	UpdateExamPlatform(ctx context.Context, id int, input request.ExamPlatformRequestUpdate, userID int) error
 	DeleteExamPlatform(ctx context.Context, id int) error
 	UpdateExamPlatformDetail(ctx context.Context, id int, input request.ExamPlatformDetail) error
+	CreateClassDetail(ctx context.Context, input []request.ClassDetail) error
+	GetClassDetail(ctx context.Context, classID int) ([]response.ClassDetail, error)
 }
 
 type companyservice struct {
@@ -705,4 +707,59 @@ func (s *companyservice) UpdateExamPlatformDetail(ctx context.Context, id int, i
 		return nil
 	})
 	return err
+}
+
+func (s *companyservice) CreateClassDetail(ctx context.Context, input []request.ClassDetail) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		datas := make([]model.ClassDetail, 0, len(input))
+		for _, d := range input {
+			data := model.ClassDetail{
+				ClassID:   d.ClassID,
+				SubjectID: d.SubjectID,
+				Credit:    d.Credit,
+				TeacherID: d.TeacherID,
+			}
+			datas = append(datas, data)
+		}
+		if err := tx.Create(&datas).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *companyservice) GetClassDetail(ctx context.Context, classID int) ([]response.ClassDetail, error) {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	scheduleSub := s.db.WithContext(ctx).
+		Table("class_schedule").
+		Select("class_detail_id, COALESCE(SUM(total_session), 0) AS total_session").
+		Group("class_detail_id")
+
+	data := make([]response.ClassDetail, 0)
+	if err := s.db.WithContext(ctx).
+		Table("class_detail AS cd").
+		Select(`
+			cd.id AS id,
+			cd.class_id AS class_id,
+			s.id AS subject_id,
+			s.name_kh AS subject_name,
+			cd.credit AS credit,
+			u.id AS teacher_id,
+			u.name_kh AS teacher_name,
+			COALESCE(cs.total_session, 0) AS total_session,
+			(cd.credit * 9) - (COALESCE(cs.total_session, 0) * 1.5) AS remaining_hours
+		`).
+		Joins("LEFT JOIN subject s ON s.id = cd.subject_id").
+		Joins("LEFT JOIN user u ON u.id = cd.teacher_id").
+		Joins("LEFT JOIN (?) AS cs ON cs.class_detail_id = cd.id", scheduleSub).
+		Where("cd.class_id = ?", classID).
+		Scan(&data).Error; err != nil {
+		return nil, err
+	}
+	return data, nil
 }

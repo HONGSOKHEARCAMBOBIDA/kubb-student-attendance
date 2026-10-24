@@ -705,10 +705,24 @@ func (s *attendanceservice) GetAttendancePDF(ctx context.Context, id int, pf req
 			c.name AS class_name,
 			a.check_date AS check_date,
 			a.status AS status,
-			s.name_kh AS subject_name
+			s.name_kh AS subject_name,
+			CONCAT_WS(' - ', m.name_kh, m.name_en) AS major_name,
+			CONCAT_WS(' - ', f.name, f.code) AS faculty_name,
+			sf.name AS shift_name,
+			g.name_kh AS generation_name,
+			c.year AS year,
+			c.semester AS semester,
+			c.` + "`group`" + ` AS ` + "`group`" + `,
+			c.term AS term,
+			p.name AS programme_name
 		`).
 		Joins("LEFT JOIN user u ON u.id = a.user_id").
 		Joins("LEFT JOIN class c ON c.id = a.class_id").
+		Joins("LEFT JOIN major m ON m.id = c.major_id").
+		Joins("LEFT JOIN faculties f ON f.id = m.faculty_id").
+		Joins("LEFT JOIN shift sf ON sf.id = c.shift_id").
+		Joins("LEFT JOIN generation g ON g.id = c.generation_id").
+		Joins("LEFT JOIN programmes p ON p.id = c.programme_id").
 		Joins("LEFT JOIN subject s ON s.id = a.subject_id")
 
 	attendancequery = attendancequery.Order("a.id DESC")

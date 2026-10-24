@@ -12,7 +12,9 @@ import {
   createClassSchedule,
   toggleClassSchedule,
   getUsers,
-  updateTeacherRate
+  updateTeacherRate,
+  addClassDetail,
+  viewClassDetail
 } from "../src/api/services.js";
 import AppInput from "./AppInput.vue";
 import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
@@ -50,7 +52,7 @@ const subjectOptions = ref([]);
 const subjectsLoading = ref(false);
 
 const Teachers = ref([]);
-
+const selectedDetail = ref(null);
 const formRef = ref();
 const defaultForm = () => ({
   subject_id: null,
@@ -61,7 +63,98 @@ const defaultForm = () => ({
   hourly_rate: 0,
   effective_date: "",
   end_date: "",
+  class_detail_id: null,
 });
+
+async function openScheduleForm(detail) {
+  selectedDetail.value = detail;
+  Object.assign(form, defaultForm(), {
+    class_detail_id: detail.id,
+    teacher_id: detail.teacher_id ?? null, // prefill, still editable
+    subject_id: detail.subject_id ?? null
+  });
+  await nextTick(); // formRef exists only after v-if renders
+  formRef.value?.clearValidate();
+}
+function closeScheduleForm() {
+  selectedDetail.value = null;
+  Object.assign(form, defaultForm());
+}
+
+// class detail
+const detailFormRef = ref();
+const detailSubmitting = ref(false);
+const newDetailRow = () => ({ subject_id: null, credit: 0, teacher_id: null });
+const detailForm = reactive({ rows: [newDetailRow()] });
+function addDetailRow() {
+  detailForm.rows.push(newDetailRow());
+}
+function removeDetailRow(index) {
+  if (detailForm.rows.length === 1) return;
+  detailForm.rows.splice(index, 1);
+}
+
+function subjectOptionsFor(index) {
+  const picked = detailForm.rows
+    .filter((_, i) => i !== index)
+    .map((r) => r.subject_id)
+    .filter(Boolean);
+  return subjectOptions.value.filter((o) => !picked.includes(o.value));
+}
+
+const detailRules = {
+  subject_id: [{ required: true, message: "សូមជ្រើសរើសមុខវិជ្ជា", trigger: "change" }],
+  credit: [
+    { required: true, type: "number", min: 0, message: "សូមបញ្ចូលក្រេឌីត", trigger: "change" },
+  ],
+  teacher_id: [{ required: true, message: "សូមជ្រើសរើសគ្រូបង្រៀន", trigger: "change" }],
+};
+
+async function handleAddClassDetail() {
+  if (!detailFormRef.value || !props.classRow) return;
+  const valid = await detailFormRef.value.validate().catch(() => false);
+  if (!valid) return;
+
+  const payload = detailForm.rows.map((r) => ({
+    class_id: props.classRow.id,
+    subject_id: r.subject_id,
+    credit: Number(r.credit),
+    teacher_id: r.teacher_id,
+  }));
+
+  detailSubmitting.value = true;
+  try {
+    await addClassDetail(payload);
+    notify.success("បន្ថែមមុខវិជ្ជាក្នុងថ្នាក់ជោគជ័យ");
+    detailForm.rows = [newDetailRow()];
+    detailFormRef.value.clearValidate();
+    await fetchSubjectOptions(); // added subjects are no longer "available"
+    fetchClassDetail()
+  } catch (e) {
+    notify.error(e.response?.data?.error || "មិនអាចបន្ថែមបានទេ");
+  } finally {
+    detailSubmitting.value = false;
+  }
+}
+
+const classDetails = ref([])
+
+async function fetchClassDetail() {
+  if (!props.classRow) return;
+  loading.value = true;
+  try {
+    const res = await viewClassDetail(props.classRow.id);
+    classDetails.value = res.data.data || [];
+    console.log(classDetails.value)
+  } catch (e) {
+    notify.error(e.response?.data?.error || "Failed to load schedule");
+  } finally {
+    loading.value = false;
+  }
+}
+
+// class detail
+
 const form = reactive(defaultForm());
 const rules = {
   subject_id: [
@@ -154,6 +247,7 @@ async function handleAdd() {
     Object.assign(form, defaultForm());
     formRef.value.clearValidate();
     await fetchSchedules();
+    fetchClassDetail()
   } catch (e) {
     notify.error(e.response?.data?.error || "មិនអាចបន្ថែមកាលវិភាគបានទេ");
   } finally {
@@ -220,6 +314,8 @@ watch(
   ([open]) => {
     if (open && props.classRow) {
       Object.assign(form, defaultForm());
+      detailForm.rows = [newDetailRow()];
+      fetchClassDetail();
       fetchSchedules();
       fetchSubjectOptions();
       fetchTeacher();
@@ -234,7 +330,119 @@ watch(
     :title="classRow ? `កាលវិភាគសម្រាប់ ${classRow.name}` : 'កាលវិភាគ'"
     width="78%"
   >
-    <el-form
+
+<el-form
+  ref="detailFormRef"
+  :model="detailForm"
+  label-position="top"
+  class="add-schedule-form"
+>
+  <el-card shadow="always">
+    <template #header>
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span>បន្ថែមមុខវិជ្ជាក្នុងថ្នាក់</span>
+        <AppButton size="small" type="primary" icon="Plus" @click="addDetailRow">
+          បន្ថែមជួរ
+        </AppButton>
+      </div>
+    </template>
+
+    <div v-for="(row, i) in detailForm.rows" :key="i" class="form-row detail-row">
+      <el-form-item
+        label="មុខវិជ្ជា"
+        :prop="`rows.${i}.subject_id`"
+        class="grow"
+      >
+        <AppSelect
+          v-model="row.subject_id"
+          :options="subjectOptionsFor(i)"
+          :loading="subjectsLoading"
+          placeholder="ជ្រើសរើសមុខវិជ្ជា"
+          size="large"
+          filterable
+          clearable
+        />
+      </el-form-item>
+
+      <el-form-item
+        label="ក្រេឌីត"
+        :prop="`rows.${i}.credit`"
+        :rules="detailRules.credit"
+      >
+        <AppInput
+          type="number"
+          v-model.number="row.credit"
+          placeholder="ក្រេឌីត"
+          size="large"
+        />
+      </el-form-item>
+
+      <el-form-item
+        label="គ្រូបង្រៀន"
+        :prop="`rows.${i}.teacher_id`"
+        :rules="detailRules.teacher_id"
+      >
+        <AppSelect
+          v-model="row.teacher_id"
+          :options="Teachers"
+          placeholder="ជ្រើសរើសគ្រូបង្រៀន"
+          size="large"
+          filterable
+          clearable
+        />
+      </el-form-item>
+
+      <el-form-item label=" " class="remove-col">
+        <AppButton
+          circle
+          type="danger"
+          icon="Delete"
+          :disabled="detailForm.rows.length === 1"
+          @click="removeDetailRow(i)"
+        />
+      </el-form-item>
+    </div>
+
+    <AppButton type="primary" :loading="detailSubmitting" @click="handleAddClassDetail">
+      រក្សាទុក
+    </AppButton>
+
+    <AppTable
+      class="schedule-table"
+      show-index
+      :data="classDetails"
+      :loading="loading"
+      :show-pagination="false"
+      actions-width="90px"
+      :columns="[
+        { label: 'មុខវិជ្ជា', prop: 'subject_name', minWidth: 100 },
+        { label: 'សាស្រ្តាចារ្យ', prop: 'teacher_name', minWidth: 100 },
+        { label: 'ក្រេឌីតត្រូវបង្រៀន', prop: 'credit', minWidth: 100 },
+        { label: 'ម៉ោងសរុបនៅសល់', prop: 'remaining_hours', minWidth: 100 },
+      ]"
+>
+
+<template #actions="{ row }">
+  <el-tooltip content="បញ្ចូលកាលវិភាគ" placement="top">
+    <AppButton circle size="small" icon="Clock" @click="openScheduleForm(row)" />
+  </el-tooltip>
+</template>
+</AppTable>
+  </el-card>
+</el-form>
+
+
+<el-card v-if="selectedDetail" shadow="always" class="add-schedule-form">
+    <template #header>
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <span>
+        បញ្ចូលកាលវិភាគ: {{ selectedDetail.subject_name }}
+        — {{ selectedDetail.teacher_name }}
+      </span>
+      <AppButton size="small" icon="Close" circle @click="closeScheduleForm" />
+    </div>
+  </template>
+      <el-form
       ref="formRef"
       :model="form"
       :rules="rules"
@@ -242,7 +450,7 @@ watch(
       class="add-schedule-form"
     >
       <div class="form-row">
-        <el-form-item label="មុខវិជ្ជា" prop="subject_id" class="grow">
+        <!-- <el-form-item label="មុខវិជ្ជា" prop="subject_id" class="grow">
           <AppSelect
             v-model="form.subject_id"
             :options="subjectOptions"
@@ -252,7 +460,7 @@ watch(
             filterable
             clearable
           />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="ថ្ងៃ" prop="day_of_week">
           <el-select
@@ -290,7 +498,7 @@ watch(
       </div>
 
       <div class="form-row">
-        <el-form-item label="គ្រូបង្រៀន" prop="teacher_id">
+        <!-- <el-form-item label="គ្រូបង្រៀន" prop="teacher_id">
           <AppSelect
             v-model="form.teacher_id"
             :options="Teachers"
@@ -300,7 +508,7 @@ watch(
             filterable
             clearable
           />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="តម្លៃម៉ោងគ្រូ" prop="hourly_rate">
           <AppInput
@@ -336,6 +544,7 @@ watch(
         បន្ថែមកាលវិភាគ
       </AppButton>
     </el-form>
+</el-card>
 
     <AppTable
       class="schedule-table"
@@ -440,5 +649,8 @@ watch(
 }
 .schedule-table {
   margin-top: 8px;
+}
+.detail-row .remove-col {
+  flex: 0 0 48px;
 }
 </style>

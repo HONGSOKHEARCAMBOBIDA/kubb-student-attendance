@@ -40,6 +40,15 @@ type AttendanceResponseGenerate struct {
 	ClassName   string `json:"class_name"`
 	SubjectName string `json:"subject_name"`
 
+	MajorName        string         `json:"major_name"`
+	FacultyName      string         `json:"faculty_name"`
+	ShiftName        string         `json:"shift_name"`
+	GenerationName   string         `json:"generation_name"`
+	Year             *int8          `gorm:"column:year" json:"year"`
+	Semester         *int8          `gorm:"column:semester" json:"semester"`
+	Group            *int8          `gorm:"column:group" json:"group"`
+	Term             *int8          `gorm:"column:term" json:"term"`
+	ProgrammeName    string         `json:"programme_name"`
 	CheckDate string `json:"check_date"`
 	Status    string `json:"status"`
 

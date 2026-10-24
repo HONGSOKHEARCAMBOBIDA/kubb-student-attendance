@@ -29,18 +29,23 @@ export const viewmanagecompany = () => api.get(`/view.manage.company`);
 export const viewcompanycolor = () => api.get(`/view.company.color`);
 export const viewcompanyscan = () => api.get(`/view.company.scan`);
 export const updateexamfinal = (id) => api.put(`/update.exam.final/${id}`);
-export const createExamPlatform = (data) => api.post("/create.exam.platform", data);
-export const getExamPlatforms = (id) => api.get(`/get.exam.platform/${id}`)
+export const createExamPlatform = (data) =>
+  api.post("/create.exam.platform", data);
+export const getExamPlatforms = (id) => api.get(`/get.exam.platform/${id}`);
 export const uploadExamDocument = (file) => {
   const fd = new FormData();
   fd.append("file", file);
-  return api.post("/exam-documents/upload", fd, {   // use your axios instance name
+  return api.post("/exam-documents/upload", fd, {
+    // use your axios instance name
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
-export const deleteExamPlatform = (id) => api.delete(`/delete.exam.platform/${id}`)
-export const updateExamPlatform = (id,data) => api.put(`/update.exam.platform/${id}`,data)
-export const updateExamPlatformDetail = (id,data) => api.put(`/update.exam.platform.detail/${id}`,data)
+export const deleteExamPlatform = (id) =>
+  api.delete(`/delete.exam.platform/${id}`);
+export const updateExamPlatform = (id, data) =>
+  api.put(`/update.exam.platform/${id}`, data);
+export const updateExamPlatformDetail = (id, data) =>
+  api.put(`/update.exam.platform.detail/${id}`, data);
 // User
 export const getUsers = (params) => api.get("/view.user", { params });
 export const registerUsers = (data) => api.post("/add.user", data);
@@ -249,6 +254,11 @@ export const updateTeacherRate = (id, data) =>
 
 export const addStudentExam = (data) => api.post("/add.student.exam", data);
 export const getStudentExams = (id) => api.get(`/view.student.exam/${id}`);
-export const deleteStudentExam = (id) => api.delete(`/delete.student.exam/${id}`)
+export const deleteStudentExam = (id) =>
+  api.delete(`/delete.student.exam/${id}`);
 
-export const getStudentStudyHistory  = (id) => api.get(`/view.student.study.history/${id}`)
+export const getStudentStudyHistory = (id) =>
+  api.get(`/view.student.study.history/${id}`);
+
+export const addClassDetail = (data) => api.post("/add.class.detail", data);
+export const viewClassDetail = (id) => api.get(`/view.class.detail/${id}`)

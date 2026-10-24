@@ -3,38 +3,34 @@
     <!-- Filters -->
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 3 },
+        { slot: 'name', span: 2 },
         { slot: 'programm', span: 2 },
         { slot: 'generation', span: 2 },
-                { slot: 'major', span: 2 },
-                        { slot: 'shift', span: 2 },
-{ slot: 'class', span: 5 },
-        
+        { slot: 'major', span: 2 },
+        { slot: 'shift', span: 2 },
+        { slot: 'year', span: 2 },
+        { slot: 'semester', span: 2 },
+        { slot: 'class', span: 5 },
 
-
-        { slot: 'year', span: 3 },
-        { slot: 'semester', span: 3 },
-
-        {slot:'subject',span: 3},
+        { slot: 'subject', span: 2 },
         { slot: 'date', span: 3 },
       ]"
       :action-span="3"
     >
       <template #name>
         <AppInput
-                 v-model="filters.name"
+          v-model="filters.name"
           placeholder="ស្វែងរក"
           prefix-icon="Search"
           clearable
           @change="fetchAttendance"
           size="large"
         >
-
         </AppInput>
       </template>
       <template #date>
         <AppDatePicker
-                  v-model="filters.check_date"
+          v-model="filters.check_date"
           type="date"
           placeholder="ជ្រេីសរេីសថ្ងៃទី"
           value-format="YYYY-MM-DD"
@@ -43,14 +39,12 @@
           style="width: 100%"
           size="large"
         >
-
         </AppDatePicker>
       </template>
-<template #class>
-
-  <AppSelect
-        :options="classes"
-           v-model="filters.class_id"
+      <template #class>
+        <AppSelect
+          :options="classes"
+          v-model="filters.class_id"
           placeholder="ថ្នាក់"
           filterable
           clearable
@@ -58,68 +52,87 @@
           size="large"
           @change="onclasschange"
         >
-
         </AppSelect>
-</template>
+      </template>
       <template #subject>
-            <AppSelect
-            v-model="filters.subject_id"
-            :options="subjectOptions"
-            :loading="subjectsLoading"
-            placeholder="ជ្រើសរើសមុខវិជ្ជា"
-            size="large"
-            filterable
-            clearable
-            @change="fetchAttendance"
-          />
+        <AppSelect
+          v-model="filters.subject_id"
+          :options="subjectOptions"
+          :loading="subjectsLoading"
+          placeholder="ជ្រើសរើសមុខវិជ្ជា"
+          size="large"
+          filterable
+          clearable
+          @change="fetchAttendance"
+        />
       </template>
       <template #programm>
-            <AppSelect
-            v-model="filters.programme_id"
-            :options="programmes"
-            placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
-            size="large"
-            filterable
-            clearable
-            @change="onProgrammchange"
-          />
+        <AppSelect
+          v-model="filters.programme_id"
+          :options="programmes"
+          placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
+          size="large"
+          filterable
+          clearable
+          @change="onProgrammchange"
+        />
       </template>
       <template #generation>
-            <AppSelect
-            v-model="filters.generation_id"
-            :options="generations"
-            placeholder="ជ្រើសរើសជំនាន់"
-            size="large"
-            filterable
-            clearable
-            @change="onGenerationchange"
-          />
+        <AppSelect
+          v-model="filters.generation_id"
+          :options="generations"
+          placeholder="ជ្រើសរើសជំនាន់"
+          size="large"
+          filterable
+          clearable
+          @change="onGenerationchange"
+        />
       </template>
-            <template #major>
-            <AppSelect
-            v-model="filters.major_id"
-            :options="majors"
-            placeholder="ជ្រើសរើសជំនាញ"
-            size="large"
-            filterable
-            clearable
-            @change="onMajorchange"
-          />
+      <template #major>
+        <AppSelect
+          v-model="filters.major_id"
+          :options="majors"
+          placeholder="ជ្រើសរើសជំនាញ"
+          size="large"
+          filterable
+          clearable
+          @change="onMajorchange"
+        />
       </template>
-                  <template #shift>
-            <AppSelect
-            v-model="filters.shift_id"
-            :options="shifts"
-            placeholder="ជ្រើសរើសវេនសិក្សា"
-            size="large"
-            filterable
-            clearable
-            @change="onShiftchange"
-          />
+      <template #shift>
+        <AppSelect
+          v-model="filters.shift_id"
+          :options="shifts"
+          placeholder="ជ្រើសរើសវេនសិក្សា"
+          size="large"
+          filterable
+          clearable
+          @change="onShiftchange"
+        />
       </template>
-      <template #actions>
+      <template #year>
+        <AppSelect
+          v-model="filters.year"
+          :options="years"
+          placeholder="ជ្រើសរើសឆ្នាំសិក្សា"
+          size="large"
+          clearable
+          @change="onYearchange"
+        />
+      </template>
+      <template #semester>
+        <AppSelect
+          v-model="filters.semester"
+          :options="semesters"
+          placeholder="ជ្រើសរើសឆមាស"
+          size="large"
+          clearable
+          @change="onSemesterchange"
+        />
+      </template>
+      <!-- <template #actions>
         <AppButton type="primary" @click="fetchAttendance"> ស្វែងរក </AppButton>
-      </template>
+      </template> -->
     </AppFilterBar>
 
     <el-card>
@@ -132,38 +145,69 @@
         :total="total"
         @page-change="fetchAttendance"
         :columns="[
-          { prop: 'name_kh', label: 'ឈ្មោះ', minWidth: 130 },
-          { prop: 'code', label: 'កូដ', minWidth: 90 },
-          { label: 'ភេទ', slot: 'gender', minWidth: 80 },
+          { slot: 'name', label: 'ឈ្មោះ', minWidth: 200 },
+          { prop: 'programme_name', label: 'កម្រិត', minWidth: 90 },
           { prop: 'class_name', label: 'ថ្នាក់', minWidth: 110 },
-          { prop: 'subject_name', label: 'មុខវិជ្ជា', minWidth: 110 },
-          { prop: 'check_date', label: 'ថ្ងៃស្កែន', minWidth: 110 },
-          { label: 'ម៉ោងទី ១', slot: 'session1', minWidth: 100 },
-          { label: 'ម៉ោងទី ២', slot: 'session2', minWidth: 100 },
-          { label: 'ម៉ោងទី ៣', slot: 'session3', minWidth: 100 },
-          { label: 'ម៉ោងទី ៤', slot: 'session4', minWidth: 100 },
-          { label: 'ម៉ោងទី ៥', slot: 'session5', minWidth: 100 },
-          { prop: 'reason', label: 'មូលហេតុ', minWidth: 100 },
+          { prop: 'major_name', label: 'ជំនាញ', minWidth: 110 },
+          { prop: 'faculty_name', label: 'មហាវិទ្យាល័យ', minWidth: 110 },
+          { prop: 'shift_name', label: 'វេនសិក្សា', minWidth: 100,align:'center'  },
+          { prop: 'generation_name', label: 'ជំនាន់', minWidth: 90,align:'center'  },
+          { prop: 'year', label: 'ឆ្នាំ', minWidth: 40,align:'center' },
+          { prop: 'semester', label: 'ឆមាស', minWidth: 50,align:'center' },
+          { prop: 'group', label: 'ក្រុម', minWidth: 50,align:'center' },
+          { prop: 'term', label: 'វគ្គ', minWidth:50,align:'center' },
+          { prop: 'subject_name', label: 'មុខវិជ្ជា', minWidth: 120 },
+          { prop: 'check_date', label: 'ថ្ងៃស្កែន', minWidth: 80,align:'center' },
+          { label: 'ម៉ោងទី ១', slot: 'session1', minWidth: 60,align:'center'  },
+          { label: 'ម៉ោងទី ២', slot: 'session2', minWidth: 60,align:'center'  },
+          { label: 'ម៉ោងទី ៣', slot: 'session3', minWidth: 60,align:'center'  },
+          { label: 'ម៉ោងទី ៤', slot: 'session4', minWidth: 60,align:'center'  },
+          { label: 'ម៉ោងទី ៥', slot: 'session5', minWidth: 60,align:'center'  },
         ]"
       >
-        <template #gender="{ row }">
-          {{ genderLabel(row.gender) }}
-        </template>
+<template #name="{ row }">
+  <div style="display: flex; flex-direction: column; text-align: start; gap: 2px;">
+    <div>
+      <el-text type="primary" tag="b">
+        {{ row.name_kh }} |
+      </el-text>
+      <el-text type="default">
+        {{ row.name_en }} | {{ genderLabel(row.gender) }}
+      </el-text>
+    </div>
+
+    <div>
+      <el-text type="info" size="small">
+      {{ row.code }}
+    </el-text>
+    </div>
+  </div>
+</template>
 
         <template #status="{ row }">
           <el-tag
             :type="row.status === 'COMPLETE' ? 'success' : 'warning'"
             size="small"
           >
-            {{ row.status  }}
+            {{ row.status }}
           </el-tag>
         </template>
 
-        <template #session1="{ row }"><CheckCell :time="row.session1" /></template>
-        <template #session2="{ row }"><CheckCell :time="row.session2" /></template>
-        <template #session3="{ row }"><CheckCell :time="row.session3" /></template>
-        <template #session4="{ row }"><CheckCell :time="row.session4" /></template>
-        <template #session5="{ row }"><CheckCell :time="row.session5" /></template>
+        <template #session1="{ row }"
+          ><CheckCell :time="row.session1"
+        /></template>
+        <template #session2="{ row }"
+          ><CheckCell :time="row.session2"
+        /></template>
+        <template #session3="{ row }"
+          ><CheckCell :time="row.session3"
+        /></template>
+        <template #session4="{ row }"
+          ><CheckCell :time="row.session4"
+        /></template>
+        <template #session5="{ row }"
+          ><CheckCell :time="row.session5"
+        /></template>
 
         <!-- <template #actions="{ row }">
           <AppButton
@@ -183,7 +227,18 @@
 <script setup>
 import { ref, reactive, onMounted, h, computed } from "vue";
 import { ElMessage } from "element-plus";
-import { getAttendance, exportAttendancePDF, viewcompanyscan, deleteattendance,getClassAvailableSubjects, getProgramme, getClass, getGeneration, getMajor, getShift } from "../api/services";
+import {
+  getAttendance,
+  exportAttendancePDF,
+  viewcompanyscan,
+  deleteattendance,
+  getClassAvailableSubjects,
+  getProgramme,
+  getClass,
+  getGeneration,
+  getMajor,
+  getShift,
+} from "../api/services";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppButton from "../../components/AppButton.vue";
 import AppTable from "../../components/AppTable.vue";
@@ -203,13 +258,25 @@ const pageSize = ref(20);
 const total = ref(0);
 const classes = ref([]);
 const subjectOptions = ref([]);
-const subjectsLoading = ref(false)
+const subjectsLoading = ref(false);
 
 // state filter
 const programmes = ref([]);
 const generations = ref([]);
 const shifts = ref([]);
 const majors = ref([]);
+
+const years = [
+  { label: "ឆ្នាំទី 1", value: 1 },
+  { label: "ឆ្នាំទី 2", value: 2 },
+  { label: "ឆ្នាំទី 3", value: 3 },
+  { label: "ឆ្នាំទី 4", value: 4 },
+];
+
+const semesters = [
+  { label: "ឆមាសទី 1", value: 1 },
+  { label: "ឆមាសទី 2", value: 2 },
+];
 // state filter
 const filters = reactive({
   name: "",
@@ -221,20 +288,20 @@ const filters = reactive({
   major_id: null,
   shift_id: null,
   year: null,
-  semester: null
+  semester: null,
 });
 
 const filterClass = reactive({
   major_id: "",
   shift_id: "",
   generation_id: "",
-  programme_id: "", 
+  programme_id: "",
   year: "",
-  semester: ""
-})
+  semester: "",
+});
 
 const candeleteattendance = computed(() =>
-  userDataStore.permissions?.some((p) => p.name === "delete.backup")
+  userDataStore.permissions?.some((p) => p.name === "delete.backup"),
 );
 
 // gender comes back as an int from the backend — adjust mapping to match your DB convention
@@ -256,10 +323,10 @@ CheckCell.props = ["time"];
 async function fetchProgramme() {
   try {
     const res = await getProgramme();
-    programmes.value = (res.data.data || []).map((s)=> ({
+    programmes.value = (res.data.data || []).map((s) => ({
       label: `${s.name}`,
-      value: s.id
-    }))
+      value: s.id,
+    }));
   } catch {
     ElMessage.error("Failed to load programme");
   }
@@ -268,10 +335,10 @@ async function fetchProgramme() {
 async function fetchGeneration() {
   try {
     const res = await getGeneration();
-    generations.value = (res.data.data || []).map((s)=> ({
+    generations.value = (res.data.data || []).map((s) => ({
       label: `${s.name_kh}`,
-      value: s.id
-    }))
+      value: s.id,
+    }));
   } catch {
     ElMessage.error("Failed to load programme");
   }
@@ -280,10 +347,10 @@ async function fetchGeneration() {
 async function fetchMajor() {
   try {
     const res = await getMajor();
-    majors.value = (res.data.data || []).map((s)=> ({
+    majors.value = (res.data.data || []).map((s) => ({
       label: `${s.name_kh}`,
-      value: s.id
-    }))
+      value: s.id,
+    }));
   } catch {
     ElMessage.error("Failed to load programme");
   }
@@ -292,64 +359,86 @@ async function fetchMajor() {
 async function fetchShift() {
   try {
     const res = await getShift();
-    shifts.value = (res.data.data || []).map((s)=> ({
+    shifts.value = (res.data.data || []).map((s) => ({
       label: `${s.name}`,
-      value: s.id
-    }))
+      value: s.id,
+    }));
   } catch {
     ElMessage.error("Failed to load programme");
   }
 }
 
 async function onProgrammchange(programmID) {
-  filterClass.programme_id = programmID
+  filterClass.programme_id = programmID;
   filters.class_id = null;
-  filters.subject_id = null;      
+  filters.subject_id = null;
   classes.value = [];
   subjectOptions.value = [];
-  await fetchClasses();           // 
+  await fetchClasses(); //
   page.value = 1;
   fetchAttendance();
 }
 
 async function onGenerationchange(generationID) {
-  filterClass.generation_id = generationID
+  filterClass.generation_id = generationID;
   filters.class_id = null;
-  filters.subject_id = null;      
+  filters.subject_id = null;
   classes.value = [];
   subjectOptions.value = [];
-  await fetchClasses();           // 
+  await fetchClasses(); //
   page.value = 1;
   fetchAttendance();
 }
 
 async function onMajorchange(majorID) {
-  filterClass.major_id = majorID
+  filterClass.major_id = majorID;
   filters.class_id = null;
-  filters.subject_id = null;      
+  filters.subject_id = null;
   classes.value = [];
   subjectOptions.value = [];
-  await fetchClasses();           // 
+  await fetchClasses(); //
   page.value = 1;
   fetchAttendance();
 }
 
 async function onShiftchange(shiftID) {
-  filterClass.shift_id = shiftID
+  filterClass.shift_id = shiftID;
   filters.class_id = null;
-  filters.subject_id = null;      
+  filters.subject_id = null;
   classes.value = [];
   subjectOptions.value = [];
-  await fetchClasses();           // 
+  await fetchClasses(); //
+  page.value = 1;
+  fetchAttendance();
+}
+
+async function onYearchange(yearID) {
+  filterClass.year = yearID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchAttendance();
+}
+
+async function onSemesterchange(semesterID) {
+  filterClass.semester = semesterID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
   page.value = 1;
   fetchAttendance();
 }
 
 async function onclasschange(classID) {
-  filters.subject_id = null
-  subjectOptions.value = []
-  if (classID){
-    await fetchSubjectOptions(classID)
+  filters.subject_id = null;
+  subjectOptions.value = [];
+  if (classID) {
+    await fetchSubjectOptions(classID);
   }
   fetchAttendance();
 }
@@ -371,18 +460,20 @@ async function fetchSubjectOptions(classID) {
 
 async function fetchClasses() {
   try {
-    const params = {}
-    if(filterClass.programme_id) params.programme_id = filterClass.programme_id;
-    if(filterClass.major_id) params.major_id = filterClass.major_id;
-    if(filterClass.shift_id) params.shift_id = filterClass.shift_id;
-    if(filterClass.generation_id) params.generation_id = filterClass.generation_id;
-    if(filterClass.year) params.year = filterClass.year;
-    if(filterClass.semester) params.semester = filterClass.semester;
+    const params = {};
+    if (filterClass.programme_id)
+      params.programme_id = filterClass.programme_id;
+    if (filterClass.major_id) params.major_id = filterClass.major_id;
+    if (filterClass.shift_id) params.shift_id = filterClass.shift_id;
+    if (filterClass.generation_id)
+      params.generation_id = filterClass.generation_id;
+    if (filterClass.year) params.year = filterClass.year;
+    if (filterClass.semester) params.semester = filterClass.semester;
     const res = await getClass(params);
-    classes.value = (res.data.data || []).map((s)=> ({
+    classes.value = (res.data.data || []).map((s) => ({
       label: `${s.programme_name} - ${s.major_name} - ${s.shift_name} - ឆ្នាំទី${s.year} - ឆមាសទី${s.semester}`,
-      value: s.id
-    }))
+      value: s.id,
+    }));
   } catch {
     ElMessage.error("Failed to load classes");
   }
@@ -394,7 +485,9 @@ async function deleteattendancev1(row) {
     notify.success("Delete success");
     await fetchAttendance();
   } catch (e) {
-    notify.error(e.response?.data?.error || "មិនអាចធ្វើបច្ចុប្បន្នភាពស្ថានភាពបានទេ");
+    notify.error(
+      e.response?.data?.error || "មិនអាចធ្វើបច្ចុប្បន្នភាពស្ថានភាពបានទេ",
+    );
   }
 }
 
@@ -410,6 +503,8 @@ async function fetchAttendance() {
     if (filters.generation_id) params.generation_id = filters.generation_id;
     if (filters.major_id) params.major_id = filters.major_id;
     if (filters.shift_id) params.shift_id = filters.shift_id;
+    if (filters.year) params.year = filters.year;
+    if (filters.semester) params.semester = filters.semester;
     const res = await exportAttendancePDF(params);
     attendance.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;
@@ -426,14 +521,27 @@ onMounted(() => {
   fetchProgramme();
   fetchGeneration();
   fetchMajor();
-  fetchShift()
+  fetchShift();
 });
 </script>
 
 <style scoped>
-.checkin-card { border-radius: 6px; }
-.filter-card { border-radius: 6px; }
-.card-title { font-weight: 600; font-size: 15px; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
-.detail-action { padding: 10px 0; }
+.checkin-card {
+  border-radius: 6px;
+}
+.filter-card {
+  border-radius: 6px;
+}
+.card-title {
+  font-weight: 600;
+  font-size: 15px;
+}
+.pagination-wrap {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+.detail-action {
+  padding: 10px 0;
+}
 </style>

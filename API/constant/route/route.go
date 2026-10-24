@@ -191,4 +191,7 @@ const (
 	ViewStaft = "view.staft"
 
 	ViewStudentStudyHistory = "view.student.study.history/:id"
+
+	AddClassDetail  = "add.class.detail"
+	ViewClassDetail = "view.class.detail/:id"
 )
