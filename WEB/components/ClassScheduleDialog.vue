@@ -300,7 +300,14 @@ const editVisible = ref(false);
 const editRow = ref(null);
 const editFormRef = ref();
 const editSubmitting = ref(false);
-const editForm = reactive({ user_id: null, hourly_rate: 0 });
+const editForm = reactive({ 
+user_id: null, 
+hourly_rate: 0,
+subject_id: null,
+day_of_week: null,
+schedule_date: "",
+total_session: 0
+});
 const editRules = {
   user_id: [{ required: true, message: "សូមជ្រើសរើសគ្រូបង្រៀន", trigger: "change" }],
   hourly_rate: [{ required: true, message: "សូមបញ្ចូលតម្លៃម៉ោងគ្រូ", trigger: "change" }],
@@ -311,6 +318,10 @@ function openEdit(row) {
   // make sure your GET schedule API returns the teacher's user id (teacher_id / user_id)
   editForm.user_id = row.teacher_id ?? row.user_id ?? null;
   editForm.hourly_rate = Number(row.hourly_rate) || 0;
+  editForm.subject_id = row.subject_id ?? null;
+  editForm.day_of_week = row.day_of_week ?? null;
+  editForm.schedule_date = row.schedule_date ?? null;
+  editForm.total_session = row.total_session ?? null;
   editVisible.value = true;
   editFormRef.value?.clearValidate();
 }
@@ -324,6 +335,10 @@ async function handleUpdateRate() {
     await updateTeacherRate(editRow.value.id, {
       user_id: editForm.user_id,
       hourly_rate: editForm.hourly_rate,
+      subject_id: editForm.subject_id,
+      day_of_week: editForm.day_of_week,
+      schedule_date: editForm.schedule_date,
+      total_session: editForm.total_session
     });
     notify.success("កែប្រែតម្លៃម៉ោងគ្រូជោគជ័យ");
     editVisible.value = false;
@@ -449,7 +464,9 @@ watch(
       ]"
 >
 <template #remaining_hours="{row}">
-  <el-text size="large" style="color: black;">{{ row.remaining_hours }} ម៉ោង</el-text>
+ <el-text size="large" style="color: black;" :tag="row.remaining_hours === 0 ? 'mark' : 'b'">
+  {{ row.remaining_hours }} ម៉ោង
+</el-text>
 </template>
 <template #actions="{ row }">
   <el-tooltip content="បញ្ចូលកាលវិភាគ" placement="top">
@@ -636,7 +653,7 @@ watch(
     </AppTable>
   </AppDialog>
 
-  <AppDialog v-model="editVisible" title="កែប្រែតម្លៃម៉ោងគ្រូ" width="420px" append-to-body>
+  <AppDialog v-model="editVisible" title="កែប្រែម៉ោងបង្រៀន និងតម្លៃម៉ោងគ្រូ" width="420px" append-to-body>
   <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-position="top">
 
       <AppSelect
@@ -648,6 +665,41 @@ watch(
         filterable
       />
 
+      <AppSelect
+        label="មុខវិជ្ជា"
+        v-model="editForm.subject_id"
+        :options="subjectOptions"
+        placeholder="ជ្រើសរើសមុខវិជ្ជា"
+        size="large"
+        filterable
+      />
+
+      <AppSelect
+        label="ថ្ងៃ"
+        v-model="editForm.day_of_week"
+        :options="DAYS"
+        placeholder="ជ្រើសរើសថ្ងៃ"
+        size="large"
+        filterable
+      />
+
+      <AppDatePicker
+        label="ថ្ងៃបង្រៀន"
+        v-model="editForm.schedule_date"
+        placeholder="ជ្រើសរើសថ្ងៃបង្រៀន"
+        size="large"
+        filterable  
+    >
+
+      </AppDatePicker>
+      <AppInput
+        label="Session សរុប"
+        suffix="$"
+        type="number"
+        v-model.number="editForm.total_session"
+        placeholder="Session សរុប  "
+        size="large"
+      />
       <AppInput
         label="តម្លៃម៉ោងគ្រូ"
         suffix="$"

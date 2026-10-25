@@ -400,7 +400,7 @@ onUnmounted(() => clearTimeout(searchTimer));
           { label: 'លេខកូដ', prop: 'code', minWidth: 100 },
           { label: 'ឈ្មោះខ្មែរ', prop: 'name_kh', minWidth: 160 },
           { label: 'ឈ្មោះអង់គ្លេស', prop: 'name_en', minWidth: 160 },
-          { label: 'មហាវិទ្យាល័យ', prop: 'faculty_name', minWidth: 160 },
+          { label: 'មហាវិទ្យាល័យ', slot: 'faculty_name', minWidth: 160 },
           { label: 'ស្ថានភាព', slot: 'status', width: 120 },
         ]"
       >
@@ -411,6 +411,9 @@ onUnmounted(() => clearTimeout(searchTimer));
             :disabled="!canEditMajor"
             @change="handleToggle(row)"
           />
+        </template>
+        <template #faculty_name="{row}">
+          <el-text>{{ row.faculty_name }} - {{ row.faculty_code }}</el-text>
         </template>
 
         <template #actions="{ row }">
@@ -469,6 +472,7 @@ onUnmounted(() => clearTimeout(searchTimer));
             size="large"
             placeholder="មហាវិទ្យាល័យ"
             :options="facultys"
+            filterable
           ></AppSelect>
         </div>
 

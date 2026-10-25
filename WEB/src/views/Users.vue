@@ -2,10 +2,10 @@
   <div>
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 5 },
+        { slot: 'name', span: 8 },
         // { slot: 'role', span: 5 },
-        { slot: 'quick', span: 6 },
-        { slot: 'add', span: 6 },
+        { slot: 'quick', span: 8 },
+        { slot: 'add', span: 5 },
       ]"
     >
       <template #name>
@@ -46,7 +46,7 @@
         </div>
       </template>
 
-      <template #add>
+      <template #actions>
         <AppButton v-if="candadd" type="primary" @click="openCreate">
           បន្ថែម
         </AppButton>

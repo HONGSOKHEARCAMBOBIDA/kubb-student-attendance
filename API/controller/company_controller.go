@@ -6,6 +6,7 @@ import (
 	"mysql/constant/apperror"
 	"mysql/constant/share"
 	"mysql/helper"
+	"mysql/model"
 	"mysql/pattern/res"
 	"mysql/request"
 	"mysql/service"
@@ -149,6 +150,18 @@ func (cr *CompanyController) GetFaculty(c *gin.Context) {
 		return
 	}
 	share.RespondDate(c, http.StatusOK, data)
+}
+
+func (cr *CompanyController) SaveFaculty(c *gin.Context) {
+	var input model.Faculty
+	if err := c.ShouldBindJSON(&input); err != nil {
+		res.Fail(c, 400, "BAD_REQUEST", err.Error())
+		return
+	}
+	if err := cr.service.SaveFaculty(c, &input); err != nil {
+		res.Fail(c, 168, "CAN NOT SAVE", err.Error())
+	}
+	res.OK(c, 200)
 }
 
 func (cr CompanyController) GetClass(c *gin.Context) {

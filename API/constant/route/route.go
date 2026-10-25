@@ -20,6 +20,8 @@ const (
 	ToggleGeneration         = "toggle.Generation/:id"
 	ViewProgramme            = "view.Programme"
 	ViewFaculty              = "view.Faculty"
+	SavePOSTFaculty          = "save.faculty"
+	SavePUTFaculty           = "save.faculty/:id"
 	EditCompany              = "edit.company/:id"
 	EditTelegram             = "edit.telegram/:id"
 	ViewManageCompany        = "view.manage.company"

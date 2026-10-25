@@ -35,6 +35,7 @@ type CompanyService interface {
 	ToggleGeneration(ctx context.Context, id int) error
 	GetProgramme(ctx context.Context) ([]model.Programme, error)
 	GetFaculty(ctx context.Context) ([]model.Faculty, error)
+	SaveFaculty(ctx context.Context, input *model.Faculty) error
 	UpdateExamFinal(ctx context.Context, id int) error
 	CreateExamPlatform(ctx context.Context, input request.ExamPlatform, userID int) error
 	ListExamPlatforms(ctx context.Context, classID int) ([]response.ExamPlatform, error)
@@ -782,4 +783,11 @@ func (s *companyservice) UpdateClassDetail(ctx context.Context, id int, input re
 		return nil
 	})
 	return err
+}
+
+func (s *companyservice) SaveFaculty(ctx context.Context, input *model.Faculty) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	return s.db.WithContext(ctx).Save(input).Error
 }

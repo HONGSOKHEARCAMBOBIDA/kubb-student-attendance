@@ -71,13 +71,14 @@ func (s *majorService) GetWithPagination(ctx context.Context, pf request.Paginat
 	var total int64
 	base := func() *gorm.DB {
 		return s.db.WithContext(ctx).
-			Table("major m")
+			Table("major m").Joins("LEFT JOIN faculties ff ON ff.id = m.faculty_id")
 	}
 
 	applyFilters := func(tx *gorm.DB) *gorm.DB {
 		if v, ok := filter["name"]; ok && v != "" {
 			tx = tx.Where(
-				"m.name_kh LIKE ? OR m.name_en LIKE ?",
+				"m.name_kh LIKE ? OR m.name_en LIKE ? OR ff.name LIKE ?",
+				"%"+v+"%",
 				"%"+v+"%",
 				"%"+v+"%",
 			)
@@ -102,7 +103,8 @@ func (s *majorService) GetWithPagination(ctx context.Context, pf request.Paginat
 		m.name_en AS name_en,
 		m.is_active AS is_active,
 		f.id AS faculty_id,
-		f.name AS faculty_name
+		f.name AS faculty_name,
+		f.code AS faculty_code
 	`).
 		Joins("LEFT JOIN faculties f ON f.id = m.faculty_id")
 	if err := dataQuery.Offset(offset).Limit(pf.PageSize).Scan(&data).Error; err != nil {

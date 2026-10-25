@@ -2,10 +2,17 @@
   <div>
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 5 },
-        { slot: 'dateFrom', span: 5 },
+        { slot: 'name', span: 2 },
+        { slot: 'programm', span: 2 },
+        { slot: 'generation', span: 2 },
+        { slot: 'major', span: 2 },
+        { slot: 'shift', span: 2 },
+        { slot: 'year', span: 2 },
+        { slot: 'semester', span: 2 },
         { slot: 'class', span: 5 },
-        { slot: 'subject', span: 5 },
+
+        { slot: 'subject', span: 2 },
+        { slot: 'date', span: 3 },
       ]"
       :action-span="3"
     >
@@ -18,7 +25,7 @@
         >
         </AppInput>
       </template>
-      <template #dateFrom>
+      <template #date>
         <AppDatePicker
           v-model="filters.check_date"
           type="date"
@@ -41,6 +48,7 @@
         >
         </AppSelect>
       </template>
+  
       <template #subject>
         <AppSelect
           v-model="filters.subject_id"
@@ -53,9 +61,73 @@
         >
         </AppSelect>
       </template>
-      <template #actions>
-        <AppButton type="primary" @click="fetchReport">ស្វែងរក</AppButton>
+            <template #programm>
+        <AppSelect
+          v-model="filters.programme_id"
+          :options="programmes"
+          placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
+          size="large"
+          filterable
+          clearable
+          @change="onProgrammchange"
+        />
       </template>
+            <template #generation>
+        <AppSelect
+          v-model="filters.generation_id"
+          :options="generations"
+          placeholder="ជ្រើសរើសជំនាន់"
+          size="large"
+          filterable
+          clearable
+          @change="onGenerationchange"
+        />
+      </template>
+            <template #major>
+        <AppSelect
+          v-model="filters.major_id"
+          :options="majors"
+          placeholder="ជ្រើសរើសជំនាញ"
+          size="large"
+          filterable
+          clearable
+          @change="onMajorchange"
+        />
+      </template>
+            <template #shift>
+        <AppSelect
+          v-model="filters.shift_id"
+          :options="shifts"
+          placeholder="ជ្រើសរើសវេនសិក្សា"
+          size="large"
+          filterable
+          clearable
+          @change="onShiftchange"
+        />
+      </template>
+            <template #year>
+        <AppSelect
+          v-model="filters.year"
+          :options="years"
+          placeholder="ជ្រើសរើសឆ្នាំសិក្សា"
+          size="large"
+          clearable
+          @change="onYearchange"
+        />
+      </template>
+           <template #semester>
+        <AppSelect
+          v-model="filters.semester"
+          :options="semesters"
+          placeholder="ជ្រើសរើសឆមាស"
+          size="large"
+          clearable
+          @change="onSemesterchange"
+        />
+      </template>
+      <!-- <template #actions>
+        <AppButton type="primary" @click="fetchReport">ស្វែងរក</AppButton>
+      </template> -->
     </AppFilterBar>
 
     <el-card v-loading="loading">
@@ -163,6 +235,10 @@ import {
   getAttendanceReport,
   getClass,
   getClassAvailableSubjects,
+  getGeneration,
+  getMajor,
+  getProgramme,
+  getShift,
 } from "../api/services";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppButton from "../../components/AppButton.vue";
@@ -174,7 +250,8 @@ const classes = ref([]);
 const report = reactive({ columns: [], rows: [] });
 const subjectOptions = ref([]);
 const subjectsLoading = ref(false);
-
+const page = ref(1);
+const pageSize = ref(20);
 const getScore = (row) => {
   return 10 - row.absent_count * 1 - row.permission_count * 0.5
 }
@@ -184,7 +261,154 @@ const filters = reactive({
   check_date: new Date().toISOString().split("T")[0],
   class_id: null,
   subject_id: null,
+  programme_id: null,
+  generation_id: null,
+  major_id: null,
+  shift_id: null,
+  year: null,
+  semester: null,
 });
+
+const filterClass = reactive({
+  major_id: "",
+  shift_id: "",
+  generation_id: "",
+  programme_id: "",
+  year: "",
+  semester: "",
+});
+
+const years = [
+  { label: "ឆ្នាំទី 1", value: 1 },
+  { label: "ឆ្នាំទី 2", value: 2 },
+  { label: "ឆ្នាំទី 3", value: 3 },
+  { label: "ឆ្នាំទី 4", value: 4 },
+];
+
+const semesters = [
+  { label: "ឆមាសទី 1", value: 1 },
+  { label: "ឆមាសទី 2", value: 2 },
+];
+
+// state filter
+const programmes = ref([]);
+const generations = ref([]);
+const shifts = ref([]);
+const majors = ref([]);
+
+async function fetchProgramme() {
+  try {
+    const res = await getProgramme();
+    programmes.value = (res.data.data || []).map((s) => ({
+      label: `${s.name}`,
+      value: s.id,
+    }));
+  } catch {
+    ElMessage.error("Failed to load programme");
+  }
+}
+
+async function fetchGeneration() {
+  try {
+    const res = await getGeneration();
+    generations.value = (res.data.data || []).map((s) => ({
+      label: `${s.name_kh}`,
+      value: s.id,
+    }));
+  } catch {
+    ElMessage.error("Failed to load programme");
+  }
+}
+
+async function fetchMajor() {
+  try {
+    const res = await getMajor();
+    majors.value = (res.data.data || []).map((s) => ({
+      label: `${s.name_kh}`,
+      value: s.id,
+    }));
+  } catch {
+    ElMessage.error("Failed to load programme");
+  }
+}
+
+async function fetchShift() {
+  try {
+    const res = await getShift();
+    shifts.value = (res.data.data || []).map((s) => ({
+      label: `${s.name}`,
+      value: s.id,
+    }));
+  } catch {
+    ElMessage.error("Failed to load programme");
+  }
+}
+
+async function onProgrammchange(programmID) {
+  filterClass.programme_id = programmID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchReport();
+}
+
+async function onGenerationchange(generationID) {
+  filterClass.generation_id = generationID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchReport();
+}
+
+async function onMajorchange(majorID) {
+  filterClass.major_id = majorID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchReport();
+}
+
+async function onShiftchange(shiftID) {
+  filterClass.shift_id = shiftID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchReport();
+}
+
+async function onYearchange(yearID) {
+  filterClass.year = yearID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchReport();
+}
+
+async function onSemesterchange(semesterID) {
+  filterClass.semester = semesterID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchReport();
+}
 
 const dateGroups = computed(() => {
   const groups = [];
@@ -218,9 +442,18 @@ function formatDate(d) {
 
 async function fetchClasses() {
   try {
-    const res = await getClass();
+    const params = {};
+    if (filterClass.programme_id)
+      params.programme_id = filterClass.programme_id;
+    if (filterClass.major_id) params.major_id = filterClass.major_id;
+    if (filterClass.shift_id) params.shift_id = filterClass.shift_id;
+    if (filterClass.generation_id)
+      params.generation_id = filterClass.generation_id;
+    if (filterClass.year) params.year = filterClass.year;
+    if (filterClass.semester) params.semester = filterClass.semester;
+    const res = await getClass(params);
     classes.value = (res.data.data || []).map((s) => ({
-      label: `${s.name}`,
+      label: `${s.programme_name} - ${s.major_name} - ${s.shift_name} - ឆ្នាំទី${s.year} - ឆមាសទី${s.semester}`,
       value: s.id,
     }));
   } catch {
@@ -246,16 +479,22 @@ async function fetchSubjectOptions(classID) {
 async function fetchReport() {
   loading.value = true;
   try {
-    const params = {};
+    const params = { page: page.value, page_size: pageSize.value };
     if (filters.name) params.name = filters.name;
     if (filters.check_date) params.check_date = filters.check_date;
     if (filters.class_id) params.class_id = filters.class_id;
     if (filters.subject_id) params.subject_id = filters.subject_id;
+    if (filters.programme_id) params.programme_id = filters.programme_id;
+    if (filters.generation_id) params.generation_id = filters.generation_id;
+    if (filters.major_id) params.major_id = filters.major_id;
+    if (filters.shift_id) params.shift_id = filters.shift_id;
+    if (filters.year) params.year = filters.year;
+    if (filters.semester) params.semester = filters.semester;
     const res = await getAttendanceReport(params);
     report.columns = res.data.data?.columns || [];
     report.rows = res.data.data?.rows || [];
   } catch {
-    ElMessage.error("Failed to load report");
+    ElMessage.error(e);
   } finally {
     loading.value = false;
   }
@@ -288,7 +527,11 @@ watch(
 
 onMounted(() => {
   fetchReport();
-  fetchClasses();
+  // fetchClasses();
+  fetchProgramme();
+  fetchGeneration();
+  fetchMajor();
+  fetchShift();
 });
 </script>
 

@@ -19,6 +19,12 @@ export const editGeneration = (id, data) =>
 export const toggleGeneration = (id) => api.put(`/toggle.Generation/${id}`);
 export const getProgramme = () => api.get("/view.Programme");
 export const getFaculty = () => api.get("/view.Faculty");
+// export const saveFaculty = (data) => api.post('/save.faculty',data)
+
+export const addFaculty = (data) => api.post("/save.faculty", data);
+export const editFaculty = (id, data) => api.put(`/save.faculty/${id}`, data);
+
+
 export const getClass = (params) => api.get("/view.company", { params });
 export const createClass = (data) => api.post("/add.company", data);
 export const updateClass = (id, data) => api.put(`/edit.company/${id}`, data);

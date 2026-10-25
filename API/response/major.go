@@ -8,6 +8,7 @@ type Major struct {
 	IsActive    bool   `json:"is_active"`
 	FacultyID   int    `gorm:"column:faculty_id" json:"faculty_id"`
 	FacultyName string `gorm:"column:faculty_name" json:"faculty_name"`
+	FacultyCode string `json:"faculty_code" gorm:"column:faculty_code"`
 }
 
 // MajorSubject is the "flattened" view of one major_subject row joined

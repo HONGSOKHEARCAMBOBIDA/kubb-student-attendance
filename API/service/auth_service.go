@@ -1187,38 +1187,33 @@ func (s *authservice) GetTeacherProfile(ctx context.Context, id int) (*response.
 	return &data, nil
 }
 
-func (s *authservice) UpdateTeacherRate(
-	ctx context.Context,
-	classscheduleID int,
-	input request.TeacherRate,
-) error {
+func (s *authservice) UpdateTeacherRate(ctx context.Context, classscheduleID int, input request.TeacherRate) error {
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
 	defer cancel()
-
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		data := model.TeacherRate{
+		teacherrate := model.TeacherRate{
 			UserID:     input.UserID,
 			HourlyRate: input.HourlyRate,
 		}
 
 		result := tx.Model(&model.TeacherRate{}).
 			Where("class_schedule_id = ?", classscheduleID).
-			Updates(&data)
+			Updates(&teacherrate)
 
 		if result.Error != nil {
-			return apperror.New(
-				apperror.CodeInternal,
-				"failed to update teacher rate",
-				nil,
-			)
+			return result.Error
 		}
 
-		if result.RowsAffected == 0 {
-			return apperror.New(
-				apperror.CodeNotFound,
-				"teacher rate not found",
-				nil,
-			)
+		classschedule := model.ClassSchedule{
+			SubjectID:    input.SubjectID,
+			DayOfWeek:    input.DayOfWeek,
+			ScheduleDate: input.ScheduleDate,
+			TotalSession: input.TotalSession,
+		}
+
+		classscheduleupdate := tx.Model(&model.ClassSchedule{}).Where("id =?", classscheduleID).Updates(&classschedule)
+		if classscheduleupdate.Error != nil {
+			return classscheduleupdate.Error
 		}
 
 		return nil
