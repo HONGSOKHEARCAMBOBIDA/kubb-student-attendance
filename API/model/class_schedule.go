@@ -11,6 +11,7 @@ type ClassSchedule struct {
 	TotalSession  int    `gorm:"column:total_session" json:"total_session"`
 	IsActive      bool   `gorm:"not null;default:1" json:"is_active"`
 	ClassDetailID int    `json:"class_detail_id" gorm:"column:class_detail_id"`
+	TotalStudent  int    `json:"total_student" gorm:"column:total_student"`
 	Subject       Subject
 }
 

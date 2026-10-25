@@ -17,6 +17,7 @@ type ClassScheduleResponse struct {
 	NameEn       string  `json:"name_en"`
 	HourlyRate   float64 `gorm:"type:decimal(12,2);not null;default:0.00" json:"hourly_rate"`
 	CreatedBy    string  `json:"created_by"`
+	TotalStudent int     `json:"total_student" gorm:"column:total_student"`
 }
 
 // SubjectOption is the trimmed-down shape used to populate the "add

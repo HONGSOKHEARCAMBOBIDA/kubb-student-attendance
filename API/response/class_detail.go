@@ -11,4 +11,6 @@ type ClassDetail struct {
 	Remain      float64 `json:"remaining_hours" gorm:"column:remaining_hours"`
 	TeacherID   int     `gorm:"not null" json:"teacher_id"`
 	TeacherName string  `json:"teacher_name" gorm:"column:teacher_name"`
+	Midterm     bool    `json:"midterm" gorm:"column:midterm"`
+	Final       bool    `json:"final" gorm:"column:final"`
 }

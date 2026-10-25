@@ -15,4 +15,5 @@ type ClassScheduleRequestCreate struct {
 	HourlyRate    float64 `json:"hourly_rate"`
 	EffectiveDate string  `gorm:"type:date;not null;index:idx_teacher_rates_effective_date" json:"effective_date"`
 	EndDate       *string `gorm:"type:date" json:"end_date"`
+	TotalStudent  int     `json:"total_student" gorm:"column:total_student"`
 }

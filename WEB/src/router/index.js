@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useUserDataStore } from '../stores/user_data'
+import { useUserDataStore } from "../stores/user_data";
 import { useAuthStore } from "../stores/auth.js";
 const routes = [
   {
@@ -55,7 +55,7 @@ const routes = [
           icon: "List",
           short: "ប្រភេទច្បាប់",
           showInNav: false,
-        }
+        },
       },
       {
         path: "leaverequest",
@@ -66,7 +66,7 @@ const routes = [
           icon: "Promotion",
           short: "សិស្សសុំច្បាប់",
           showInNav: false,
-        }
+        },
       },
       {
         path: "Notpermissionleave",
@@ -77,19 +77,19 @@ const routes = [
           icon: "Promotion",
           short: "សិស្សឈប់មិនសុំច្បាប់",
           showInNav: false,
-        }
+        },
       },
       {
-        path: 'role',
-        name: 'Role',
+        path: "role",
+        name: "Role",
         component: () => import("../views/Role.vue"),
-        meta:{
+        meta: {
           title: "សិទ្ធ",
           icon: "User",
           short: "សិទ្ធ",
           showInNav: true,
           permission: "add.role.has.permission",
-        }
+        },
       },
       {
         path: "attendance",
@@ -140,7 +140,7 @@ const routes = [
         path: "createattendance",
         name: "CreateAttendance",
         component: () => import("../views/CreateAttendance.vue"),
-        meta: { title: "ចុះវត្តមាន",showInNav: false }, // no showInNav -> hidden from sidebar
+        meta: { title: "ចុះវត្តមាន", showInNav: false }, // no showInNav -> hidden from sidebar
       },
       {
         path: "profile",
@@ -170,41 +170,62 @@ const routes = [
         name: "NotFound",
         component: () => import("../views/NotFound.vue"),
       },
-       {
+      {
         path: "subject",
         name: "subject",
         component: () => import("../views/subject.vue"),
-        meta: { title: "Subject",showInNav: false }, // no showInNav -> hidden from sidebar
+        meta: { title: "Subject", showInNav: false }, // no showInNav -> hidden from sidebar
       },
-     {
+      {
         path: "Major",
         name: "Major",
         component: () => import("../views/Major.vue"),
-        meta: { title: "Major",showInNav: false }, // no showInNav -> hidden from sidebar
+        meta: { title: "Major", showInNav: false }, // no showInNav -> hidden from sidebar
       },
       {
         path: "AttendanceForUpdate",
         name: "AttendanceForUpdate",
         component: () => import("../views/AttendanceForUpdate.vue"),
-        meta: { title: "AttendanceForUpdate",showInNav: false }, // no showInNav -> hidden from sidebar
+        meta: { title: "AttendanceForUpdate", showInNav: false }, // no showInNav -> hidden from sidebar
       },
       {
         path: "Generation",
         name: "Generation",
         component: () => import("../views/Generation.vue"),
-        meta: { title: "Generation",showInNav: false }, // no showInNav -> hidden from sidebar
+        meta: { title: "Generation", showInNav: false }, // no showInNav -> hidden from sidebar
       },
       {
         path: "Shift",
         name: "Shift",
         component: () => import("../views/Shift.vue"),
-        meta: { title: "Shift",showInNav: false }, // no showInNav -> hidden from sidebar
+        meta: { title: "Shift", showInNav: false }, // no showInNav -> hidden from sidebar
       },
       {
         path: "Income",
         name: "Income",
         component: () => import("../views/IncomeView.vue"),
-        meta: { title: "បញ្ជីចំណូល",showInNav: false }, // no showInNav -> hidden from sidebar
+        meta: { title: "បញ្ជីចំណូល", showInNav: false }, // no showInNav -> hidden from sidebar
+      },
+      {
+        path: "Report",
+        name: "Report",
+        component: () => import("../views/Report.vue"),
+        redirect: "/Report/TeacherSchedule",
+        meta: { title: "របាយការណ៍ផ្សេងៗ", showInNav: false },
+        children: [
+          {
+            path: "TeacherSchedule",
+            name: "TeacherSchedule",
+            component: () => import("../views/TeacherSchedule.vue"),
+            meta: { title: "កាលវិភាគប្រចាំសាប្ដាហ៍", showInNav: false },
+          },
+          {
+            path: "teaching-hours",
+            name: "ReportTeachingHours",
+            component: () => import("../views/TeachingHours.vue"),
+            meta: { title: "របាយការណ៍ម៉ោងប្រៀន", showInNav: false },
+          },
+        ],
       },
     ],
   },
@@ -219,7 +240,7 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const userDataStore = useUserDataStore();
-  const auth = useAuthStore()
+  const auth = useAuthStore();
   if (!to.meta.public && !auth.isLoggedIn) {
     return { name: "Login" };
   }

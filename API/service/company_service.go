@@ -753,6 +753,8 @@ func (s *companyservice) GetClassDetail(ctx context.Context, classID int) ([]res
 			cd.credit AS credit,
 			u.id AS teacher_id,
 			u.name_kh AS teacher_name,
+			cd.midterm AS midterm,
+			cd.final AS final,
 			COALESCE(cs.total_session, 0) AS total_session,
 			(cd.credit * 9) - (COALESCE(cs.total_session, 0) * 1.5) AS remaining_hours
 		`).
@@ -777,6 +779,8 @@ func (s *companyservice) UpdateClassDetail(ctx context.Context, id int, input re
 		data.SubjectID = input.SubjectID
 		data.Credit = input.Credit
 		data.TeacherID = input.TeacherID
+		data.Midterm = input.Midterm
+		data.Final = input.Final
 		if err := tx.Save(&data).Error; err != nil {
 			return err
 		}

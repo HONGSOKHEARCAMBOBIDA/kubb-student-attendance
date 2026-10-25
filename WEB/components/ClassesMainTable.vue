@@ -24,7 +24,7 @@
         { slot: 'type', label: 'ប្រភេទ', width: 100, align: 'center' },
         {
           slot: 'exam_final',
-          label: 'ប្រឡង Final',
+          label: 'ប្រឡងគ្រប់មុខ',
           width: 110,
           align: 'center',
         },
@@ -43,11 +43,22 @@
         />
       </template>
       <template #name="{ row }">
-        <el-text
-          >{{ row.name }}-{{ row.programme_name }}-ឆ្នាំទី{{
-            row.year
-          }}-ឆមាសទី{{ row.semester }}</el-text
+        <div style="display: flex; flex-direction: column; text-align: start; gap: 2px;">
+          <div> 
+             <el-text size="large" style="color: black;"
+        >{{ row.name }} | {{ row.programme_name }}</el-text
         >
+          </div>
+        <div>
+         <el-text size="large" style="color: black;"
+          >ឆ្នាំទី{{
+            row.year
+          }} | ឆមាសទី{{ row.semester }}</el-text
+        > 
+        </div>
+
+        </div>
+       
       </template>
       <template #major_name="{ row }">
         <el-text tag="b" type="primary">{{ row.major_name }}</el-text>

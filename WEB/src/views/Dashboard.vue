@@ -259,6 +259,24 @@
               <ArrowRight />
             </el-icon>
           </div>
+          <div v-if="adminLevel || managerLevel" class="action-btn" @click="$router.push('/Report')">
+            <div class="icon-box">
+              <el-icon :size="23">
+                <Eleme />
+              </el-icon>
+            </div>
+
+            <div class="action-content">
+              <span class="action-title">របាយការណ៍ផ្សេងៗ</span>
+              <span class="action-description">
+                របាយការណ៍ផ្សេងៗ
+              </span>
+            </div>
+
+            <el-icon class="arrow-icon">
+              <ArrowRight />
+            </el-icon>
+          </div>
         </div>
       </el-card>
     </div>
