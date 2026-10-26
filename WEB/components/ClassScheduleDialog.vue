@@ -65,7 +65,8 @@ const defaultForm = () => ({
   effective_date: "",
   end_date: "",
   class_detail_id: null,
-  total_student: 0
+  total_student: 0,
+  room: ""
 });
 
 const examstatus = [
@@ -342,7 +343,8 @@ const editForm = reactive({
   day_of_week: null,
   schedule_date: "",
   total_session: 0,
-  total_student: 0
+  total_student: 0,
+  room: ""
 });
 const editRules = {
   user_id: [
@@ -363,6 +365,7 @@ function openEdit(row) {
   editForm.schedule_date = row.schedule_date ?? null;
   editForm.total_session = row.total_session ?? null;
   editForm.total_student = row.total_student ?? null;
+  editForm.room = row.room ?? "";
   editVisible.value = true;
   editFormRef.value?.clearValidate();
 }
@@ -380,7 +383,8 @@ async function handleUpdateRate() {
       day_of_week: editForm.day_of_week,
       schedule_date: editForm.schedule_date,
       total_session: editForm.total_session,
-      total_student: editForm.total_student
+      total_student: editForm.total_student,
+      room: editForm.room,
     });
     notify.success("កែប្រែតម្លៃម៉ោងគ្រូជោគជ័យ");
     editVisible.value = false;
@@ -696,6 +700,14 @@ watch(
               clearable
             />
           </el-form-item>
+                    <el-form-item label="បន្ទប់" >
+            <AppInput
+              v-model="form.room"
+              placeholder="បន្ទប់"
+              size="large"
+            >
+            </AppInput>
+          </el-form-item>
         </div>
 
         <AppButton type="primary" :loading="submitting" @click="handleAdd">
@@ -718,6 +730,7 @@ watch(
         { label: 'កាលបរិច្ឆេទ', prop: 'schedule_date', width: 120 },
         { label: 'Session សរុប', prop: 'total_session', width: 120 },
         { label: 'និស្សិតសរុប', slot: 'total_student', width: 120 },
+        { label: 'បន្ទប់', prop: 'room', width: 120 },
         { label: 'សាស្រ្តាចារ្យ', slot: 'name_kh', minWidth: 120 },
         { label: 'តម្លៃម៉ោង', slot: 'hourly_rate', width: 120 },
         { label: 'ប្រាក់ម៉ោងគ្រូសរុប', slot: 'total_rate', width: 150 },
@@ -839,6 +852,13 @@ watch(
         type="number"
         v-model.number="editForm.hourly_rate"
         placeholder="តម្លៃម៉ោងគ្រូ"
+        size="large"
+      />
+
+            <AppInput
+        label="បន្ទប់"
+        v-model="editForm.room"
+        placeholder="បន្ទប់"
         size="large"
       />
 

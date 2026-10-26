@@ -83,4 +83,6 @@ const (
 	ViewIncome         = "view.income"
 	AddIncome          = "add.income"
 	DeleteIncome       = "delete.income"
+
+	ViewReport = "view.report"
 )

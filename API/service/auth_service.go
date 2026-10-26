@@ -1210,6 +1210,7 @@ func (s *authservice) UpdateTeacherRate(ctx context.Context, classscheduleID int
 			ScheduleDate: input.ScheduleDate,
 			TotalSession: input.TotalSession,
 			TotalStudent: input.TotalStudent,
+			Room:         input.Room,
 		}
 
 		classscheduleupdate := tx.Model(&model.ClassSchedule{}).Where("id =?", classscheduleID).Updates(&classschedule)

@@ -60,6 +60,7 @@ func (s *classScheduleService) GetByClass(ctx context.Context, classID int) ([]r
 			cs.schedule_date AS schedule_date,
 			cs.total_session AS total_session,
 			cs.total_student AS total_student,
+			cs.room AS room,
 			t.name_kh AS name_kh,
 			t.name_en AS name_en,
 			t.id AS teacher_id,

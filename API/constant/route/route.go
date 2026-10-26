@@ -197,4 +197,6 @@ const (
 	AddClassDetail    = "add.class.detail"
 	ViewClassDetail   = "view.class.detail/:id"
 	UpdateClassDetail = "updaste.class.detail/:id"
+
+	ViewReportWeekSchedule = "view.report.weed.schedule"
 )

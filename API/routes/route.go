@@ -28,7 +28,7 @@ func SetupRoutes(r *gin.Engine) {
 	classschedulecontroller := controller.NewClassScheduleController()
 	scorecontroller := controller.NewScoreController()
 	transcriptcontroller := controller.NewTranscriptController()
-
+	reportcontroller := controller.NewReportController()
 	//repo
 	locationrepo := repository.NewLocationRepository(config.DB)
 	feerepo := repository.NewFeeRepository(config.DB)
@@ -220,5 +220,8 @@ func SetupRoutes(r *gin.Engine) {
 		auth.GET(route.ViewTeacherProfile, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetTeacherProfile)
 		auth.PUT(route.UpdateTeacherProfile, middleware.PermissionMiddleware(permission.AddUser), authcontroller.UpdateTeacherProfile)
 		auth.PUT(route.UpdateTeacherRate, middleware.PermissionMiddleware(permission.AddUser), authcontroller.UpdateTeacherRate)
+
+		// Report
+		auth.GET(route.ViewReportWeekSchedule, middleware.PermissionMiddleware(permission.ViewReport), reportcontroller.GetWeekSchedule)
 	}
 }
