@@ -17,4 +17,5 @@ type ClassScheduleRequestCreate struct {
 	EndDate       *string `gorm:"type:date" json:"end_date"`
 	TotalStudent  int     `json:"total_student" gorm:"column:total_student"`
 	Room          string  `json:"room" gorm:"column:room"`
+	IsMission     bool    `json:"is_mission" gorm:"column:is_mission"`
 }

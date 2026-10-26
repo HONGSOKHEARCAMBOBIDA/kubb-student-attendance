@@ -40,7 +40,8 @@ func (s *reportservice) GetWeekSchedule(ctx context.Context, pf request.Paginati
 			Joins("LEFT JOIN generation g ON g.id = c.generation_id").
 			Joins("LEFT JOIN major m ON m.id = c.major_id").
 			Joins("LEFT JOIN teacher_rates tr ON tr.class_schedule_id = cs.id").
-			Joins("LEFT JOIN user u ON u.id = tr.user_id")
+			Joins("LEFT JOIN user u ON u.id = tr.user_id").
+			Joins("LEFT JOIN teacher_profile tp ON tp.user_id = u.id")
 	}
 
 	Filters := func(tx *gorm.DB) *gorm.DB {
@@ -74,9 +75,16 @@ func (s *reportservice) GetWeekSchedule(ctx context.Context, pf request.Paginati
 		m.name_kh AS major_name,
 		s.name_kh AS subject_name_kh,
 		u.name_kh AS name_kh,
+		u.name_en AS name_en,
+		u.gender AS gender,
+		tp.phone AS phone,
 		cs.room AS room,
 		cs.schedule_date AS schedule_date,
-		cs.id AS id
+		cs.id AS id,
+		cs.total_student AS total_student,
+		cs.total_session AS total_session,
+		cs.is_mission AS is_mission,
+		cs.day_of_week AS day_of_week
 	`)
 
 	if err := Query.Offset(offset).Limit(pf.PageSize).Order("id DESC").Scan(&data).Error; err != nil {

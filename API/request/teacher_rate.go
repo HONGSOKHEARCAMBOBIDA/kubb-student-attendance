@@ -9,4 +9,5 @@ type TeacherRate struct {
 	TotalSession int     `gorm:"column:total_session" json:"total_session"`
 	TotalStudent int     `json:"total_student" gorm:"column:total_student"`
 	Room         string  `json:"room" gorm:"column:room"`
+	IsMission    bool    `json:"is_mission" gorm:"column:is_mission"`
 }

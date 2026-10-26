@@ -61,6 +61,7 @@ func (s *classScheduleService) GetByClass(ctx context.Context, classID int) ([]r
 			cs.total_session AS total_session,
 			cs.total_student AS total_student,
 			cs.room AS room,
+			cs.is_mission AS is_mission,
 			t.name_kh AS name_kh,
 			t.name_en AS name_en,
 			t.id AS teacher_id,
@@ -141,9 +142,11 @@ func (s *classScheduleService) Create(ctx context.Context, classID int, input re
 			DayOfWeek:     input.DayOfWeek,
 			ScheduleDate:  input.ScheduleDate,
 			TotalSession:  input.TotalSession,
-			IsActive:      true,
+			IsActive:      false,
 			ClassDetailID: input.ClassDetailID,
 			TotalStudent:  input.TotalStudent,
+			Room:          input.Room,
+			IsMission:     input.IsMission,
 		}
 		if err := tx.Create(&newdata).Error; err != nil {
 			return apperror.New(apperror.CodeInternal, "failed to create class schedule", nil)

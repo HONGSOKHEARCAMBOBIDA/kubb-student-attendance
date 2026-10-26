@@ -19,6 +19,7 @@ type ClassScheduleResponse struct {
 	CreatedBy    string  `json:"created_by"`
 	TotalStudent int     `json:"total_student" gorm:"column:total_student"`
 	Room         string  `json:"room" gorm:"column:room"`
+	IsMission    bool    `json:"is_mission" gorm:"column:is_mission"`
 }
 
 // SubjectOption is the trimmed-down shape used to populate the "add

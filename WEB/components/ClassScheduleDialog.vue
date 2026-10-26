@@ -66,7 +66,8 @@ const defaultForm = () => ({
   end_date: "",
   class_detail_id: null,
   total_student: 0,
-  room: ""
+  room: "",
+  is_mission: false,
 });
 
 const examstatus = [
@@ -179,7 +180,7 @@ const editDetail = reactive({
   credit: 0,
   teacher_id: null,
   midterm: null,
-  final: null
+  final: null,
 });
 
 function openEditDetail(row) {
@@ -189,7 +190,7 @@ function openEditDetail(row) {
     credit: row.credit,
     teacher_id: row.teacher_id,
     midterm: row.midterm,
-    final: row.final
+    final: row.final,
   });
   // available list excludes the current subject, so add it back
   editSubjects.value = [
@@ -310,7 +311,7 @@ async function handleAdd() {
     formRef.value.clearValidate();
     await fetchSchedules();
     fetchClassDetail();
-    closeScheduleForm()
+    closeScheduleForm();
   } catch (e) {
     notify.error(e.response?.data?.error || "មិនអាចបន្ថែមកាលវិភាគបានទេ");
   } finally {
@@ -344,7 +345,8 @@ const editForm = reactive({
   schedule_date: "",
   total_session: 0,
   total_student: 0,
-  room: ""
+  room: "",
+  is_mission: false,
 });
 const editRules = {
   user_id: [
@@ -365,6 +367,7 @@ function openEdit(row) {
   editForm.schedule_date = row.schedule_date ?? null;
   editForm.total_session = row.total_session ?? null;
   editForm.total_student = row.total_student ?? null;
+  editForm.is_mission = row.is_mission ?? false;
   editForm.room = row.room ?? "";
   editVisible.value = true;
   editFormRef.value?.clearValidate();
@@ -385,6 +388,7 @@ async function handleUpdateRate() {
       total_session: editForm.total_session,
       total_student: editForm.total_student,
       room: editForm.room,
+      is_mission: editForm.is_mission,
     });
     notify.success("កែប្រែតម្លៃម៉ោងគ្រូជោគជ័យ");
     editVisible.value = false;
@@ -538,11 +542,15 @@ watch(
               {{ row.remaining_hours }} ម៉ោង
             </el-text>
           </template>
-          <template #midterm="{row}">
-            <el-text>{{ row.midterm === false ? 'មិនទាន់ប្រឡង' : 'បានប្រឡង' }}</el-text>
+          <template #midterm="{ row }">
+            <el-text>{{
+              row.midterm === false ? "មិនទាន់ប្រឡង" : "បានប្រឡង"
+            }}</el-text>
           </template>
-          <template #final="{row}">
-            <el-text>{{ row.final === false ? 'មិនទាន់ប្រឡង' : 'បានប្រឡង' }}</el-text>
+          <template #final="{ row }">
+            <el-text>{{
+              row.final === false ? "មិនទាន់ប្រឡង" : "បានប្រឡង"
+            }}</el-text>
           </template>
           <template #actions="{ row }">
             <el-tooltip content="បញ្ចូលកាលវិភាគ" placement="top">
@@ -648,7 +656,7 @@ watch(
               clearable
             />
           </el-form-item>
-          <el-form-item label="និស្សិតសរុប" >
+          <el-form-item label="និស្សិតសរុប">
             <AppInput
               type="number"
               v-model.number="form.total_student"
@@ -700,13 +708,17 @@ watch(
               clearable
             />
           </el-form-item>
-                    <el-form-item label="បន្ទប់" >
-            <AppInput
-              v-model="form.room"
-              placeholder="បន្ទប់"
-              size="large"
-            >
+          <el-form-item label="បន្ទប់">
+            <AppInput v-model="form.room" placeholder="បន្ទប់" size="large">
             </AppInput>
+          </el-form-item>
+          <el-form-item label="បេសកកម្ម" prop="is_mission">
+            <el-switch
+              v-model="form.is_mission"
+              size="large"
+              active-text="បេសកកម្ម"
+              inactive-text="ធម្មតា"
+            />
           </el-form-item>
         </div>
 
@@ -735,12 +747,18 @@ watch(
         { label: 'តម្លៃម៉ោង', slot: 'hourly_rate', width: 120 },
         { label: 'ប្រាក់ម៉ោងគ្រូសរុប', slot: 'total_rate', width: 150 },
         { label: 'បង្កើតដោយ', prop: 'created_by', minWidth: 120 },
-        { label: 'ស្ថានភាព', slot: 'status', width: 110 },
+        { label: 'បាន់ប្រគល់ប្រាក់ម៉ោង', slot: 'status', width: 150 },
+        { label: 'ផ្សេងៗ', slot: 'is_mission', width: 110 },
       ]"
     >
-    <template #total_student="{row}">
-      <el-text tag="b" size="large" style="color: black;">{{ row.total_student }} នាក់</el-text>
-    </template>
+      <template #is_mission="{ row }">
+        <el-tag v-if="row.is_mission" type="warning">បេសកកម្ម</el-tag>
+      </template>
+      <template #total_student="{ row }">
+        <el-text tag="b" size="large" style="color: black"
+          >{{ row.total_student }} នាក់</el-text
+        >
+      </template>
       <template #name_kh="{ row }">
         <el-text>{{ row.name_kh }} - {{ row.name_en }}</el-text>
       </template>
@@ -771,7 +789,7 @@ watch(
       <template #actions="{ row }">
         <el-tooltip content="កែប្រែ" placement="top">
           <AppButton
-            :disabled="!row.is_active"
+            :disabled="row.is_active"
             circle
             size="small"
             type="warning"
@@ -838,7 +856,7 @@ watch(
         placeholder="Session សរុប  "
         size="large"
       />
-            <AppInput
+      <AppInput
         label="និស្សិតសរុប"
         suffix="$"
         type="number"
@@ -855,12 +873,20 @@ watch(
         size="large"
       />
 
-            <AppInput
+      <AppInput
         label="បន្ទប់"
         v-model="editForm.room"
         placeholder="បន្ទប់"
         size="large"
       />
+      <el-form-item label="បេសកកម្ម">
+        <el-switch
+          v-model="editForm.is_mission"
+          size="large"
+          active-text="បេសកកម្ម"
+          inactive-text="ធម្មតា"
+        />
+      </el-form-item>
 
       <div style="display: flex; justify-content: flex-end; gap: 8px">
         <AppButton @click="editVisible = false">បោះបង់</AppButton>
@@ -900,14 +926,14 @@ watch(
       size="large"
       filterable
     />
-        <AppSelect
+    <AppSelect
       label="Midterm"
       v-model="editDetail.midterm"
       :options="examstatus"
       size="large"
       filterable
     />
-            <AppSelect
+    <AppSelect
       label="Final"
       v-model="editDetail.final"
       :options="examstatus"

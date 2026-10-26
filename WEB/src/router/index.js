@@ -225,6 +225,12 @@ const routes = [
             component: () => import("../views/TeachingHours.vue"),
             meta: { title: "របាយការណ៍ម៉ោងប្រៀន", showInNav: false },
           },
+          {
+            path: "teacher-attendandce",
+            name: "ReportTeachingAttendance",
+            component: () => import("../views/TeacherAttendance.vue"),
+            meta: { title: "របាយការណ៍វត្តមានសាស្រ្តាចារ្យ", showInNav: false },
+          },
         ],
       },
     ],

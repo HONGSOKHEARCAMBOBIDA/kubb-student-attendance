@@ -1187,35 +1187,44 @@ func (s *authservice) GetTeacherProfile(ctx context.Context, id int) (*response.
 	return &data, nil
 }
 
-func (s *authservice) UpdateTeacherRate(ctx context.Context, classscheduleID int, input request.TeacherRate) error {
+func (s *authservice) UpdateTeacherRate(
+	ctx context.Context,
+	classscheduleID int,
+	input request.TeacherRate,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
 	defer cancel()
-	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		teacherrate := model.TeacherRate{
-			UserID:     input.UserID,
-			HourlyRate: input.HourlyRate,
-		}
 
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+
+		teacherRateUpdates := map[string]interface{}{
+			"user_id":     input.UserID,
+			"hourly_rate": input.HourlyRate,
+		}
 		result := tx.Model(&model.TeacherRate{}).
 			Where("class_schedule_id = ?", classscheduleID).
-			Updates(&teacherrate)
+			Updates(teacherRateUpdates)
 
 		if result.Error != nil {
 			return result.Error
 		}
 
-		classschedule := model.ClassSchedule{
-			SubjectID:    input.SubjectID,
-			DayOfWeek:    input.DayOfWeek,
-			ScheduleDate: input.ScheduleDate,
-			TotalSession: input.TotalSession,
-			TotalStudent: input.TotalStudent,
-			Room:         input.Room,
+		classScheduleUpdates := map[string]interface{}{
+			"subject_id":    input.SubjectID,
+			"day_of_week":   input.DayOfWeek,
+			"schedule_date": input.ScheduleDate,
+			"total_session": input.TotalSession,
+			"total_student": input.TotalStudent,
+			"room":          input.Room,
+			"is_mission":    input.IsMission,
 		}
 
-		classscheduleupdate := tx.Model(&model.ClassSchedule{}).Where("id =?", classscheduleID).Updates(&classschedule)
-		if classscheduleupdate.Error != nil {
-			return classscheduleupdate.Error
+		scheduleResult := tx.Model(&model.ClassSchedule{}).
+			Where("id = ?", classscheduleID).
+			Updates(classScheduleUpdates)
+
+		if scheduleResult.Error != nil {
+			return scheduleResult.Error
 		}
 
 		return nil
