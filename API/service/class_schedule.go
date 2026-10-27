@@ -142,7 +142,7 @@ func (s *classScheduleService) Create(ctx context.Context, classID int, input re
 			DayOfWeek:     input.DayOfWeek,
 			ScheduleDate:  input.ScheduleDate,
 			TotalSession:  input.TotalSession,
-			IsActive:      false,
+			IsActive:      true,
 			ClassDetailID: input.ClassDetailID,
 			TotalStudent:  input.TotalStudent,
 			Room:          input.Room,

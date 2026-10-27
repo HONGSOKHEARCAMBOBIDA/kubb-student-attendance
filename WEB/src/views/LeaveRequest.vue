@@ -261,10 +261,10 @@ onUnmounted(() => clearTimeout(searchTimer));
   <div>
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 5 },
-        { slot: 'class', span: 5 },
-        { slot: 'subject', span: 5 },
-        { slot: 'status', span: 5 },
+        { slot: 'name', span: 2 },
+        { slot: 'class', span: 2 },
+        { slot: 'subject', span: 2 },
+        { slot: 'status', span: 2 },
       ]"
       :action-span="4"
     >

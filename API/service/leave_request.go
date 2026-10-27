@@ -108,20 +108,58 @@ func (s *leaveRequestService) GetLeaveRequest(ctx context.Context, id int, pf re
 	}
 
 	applyFilters := func(tx *gorm.DB) *gorm.DB {
+
 		if v, ok := filter["name"]; ok && v != "" {
 			tx = tx.Where("u.name_kh LIKE ?", "%"+v+"%")
 		}
+
 		if v, ok := filter["class_id"]; ok && v != "" {
 			tx = tx.Where("l.class_id = ?", v)
 		}
+
+		if v, ok := filter["programme_id"]; ok && v != "" {
+			tx = tx.Where("c.programme_id = ?", v)
+		}
+
+		if v, ok := filter["generation_id"]; ok && v != "" {
+			tx = tx.Where("c.generation_id = ?", v)
+		}
+
+		if v, ok := filter["major_id"]; ok && v != "" {
+			tx = tx.Where("c.major_id = ?", v)
+		}
+
+		if v, ok := filter["shift_id"]; ok && v != "" {
+			tx = tx.Where("c.shift_id = ?", v)
+		}
+
+		if v, ok := filter["year"]; ok && v != "" {
+			tx = tx.Where("c.year = ?", v)
+		}
+
+		if v, ok := filter["semester"]; ok && v != "" {
+			tx = tx.Where("c.semester = ?", v)
+		}
+
 		if v, ok := filter["subject_id"]; ok && v != "" {
 			tx = tx.Where("l.subject_id = ?", v)
 		}
+
 		if v, ok := filter["status"]; ok && v != "" {
 			tx = tx.Where("l.status = ?", v)
 		}
+
+		if v, ok := filter["start_date"]; ok && v != "" {
+			tx = tx.Where("l.start_date >= ?", v)
+		}
+
+		if v, ok := filter["end_date"]; ok && v != "" {
+			tx = tx.Where("l.end_date <= ?", v)
+		}
+
 		return tx
 	}
+
 	if err := applyFilters(base()).Count(&total).Error; err != nil {
 		return nil, nil, fmt.Errorf("count product: %w", err)
 	}

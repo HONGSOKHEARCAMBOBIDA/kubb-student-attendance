@@ -747,7 +747,7 @@ watch(
         { label: 'តម្លៃម៉ោង', slot: 'hourly_rate', width: 120 },
         { label: 'ប្រាក់ម៉ោងគ្រូសរុប', slot: 'total_rate', width: 150 },
         { label: 'បង្កើតដោយ', prop: 'created_by', minWidth: 120 },
-        { label: 'បាន់ប្រគល់ប្រាក់ម៉ោង', slot: 'status', width: 150 },
+        { label: 'ស្ថានភាព', slot: 'status', width: 150 },
         { label: 'ផ្សេងៗ', slot: 'is_mission', width: 110 },
       ]"
     >
@@ -789,7 +789,7 @@ watch(
       <template #actions="{ row }">
         <el-tooltip content="កែប្រែ" placement="top">
           <AppButton
-            :disabled="row.is_active"
+            :disabled="!row.is_active"
             circle
             size="small"
             type="warning"
