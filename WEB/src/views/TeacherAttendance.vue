@@ -61,6 +61,9 @@
           @change="onFilterChange"
         />
       </template>
+      <template #actions>
+        <AppButton icon="Printer" @click="printAttendance">បោះពុម្ព</AppButton>
+      </template>
     </AppFilterBar>
 
     <el-card>
@@ -74,10 +77,10 @@
         @page-change="fetchSchedule"
         :columns="[
           { prop: 'name_kh', label: 'ឈ្មោះសាស្ត្រាចារ្យ', minWidth: 140 },
-          { slot: 'gender', label: 'ភេទ', width: 60,align:'center' },
+          { slot: 'gender', label: 'ភេទ', width: 60, align: 'center' },
           { prop: 'subject_name_kh', label: 'មុខវិជ្ជា', minWidth: 160 },
           { prop: 'major_name', label: 'ជំនាញ', minWidth: 140 },
-                 { prop: 'programme_name', label: 'កម្រិត', minWidth: 100 },
+          { prop: 'programme_name', label: 'កម្រិត', minWidth: 100 },
           {
             prop: 'generation_name',
             label: 'ជំនាន់',
@@ -96,7 +99,6 @@
             minWidth: 110,
             align: 'center',
           },
-   
 
           {
             prop: 'shift_name',
@@ -116,26 +118,35 @@
           { prop: '', label: 'រសៀល', minWidth: 80, align: 'center' },
         ]"
       >
-      <template #day_of_week="{row}">
-        <el-text>{{ dayLabel(row.day_of_week) }}</el-text>
-      </template>
+        <template #day_of_week="{ row }">
+          <el-text>{{ dayLabel(row.day_of_week) }}</el-text>
+        </template>
         <template #gender="{ row }">
           <el-text>{{ row.gender === 1 ? "ប" : "ស" }}</el-text>
         </template>
       </AppTable>
     </el-card>
+    <div class="print-only-wrapper">
+      <PrintTeacherAttendance
+        ref="printexamRef"
+        :title="printExamData.title"
+        :secondtitle="printExamData.secondtitle"
+        :rows="printExamData.rows"
+      />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, computed, onMounted, nextTick } from "vue";
 import { ElMessage } from "element-plus";
 import { getWeekSchedule, getProgramme, getGeneration } from "../api/services";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppTable from "../../components/AppTable.vue";
 import AppSelect from "../../components/AppSelect.vue";
 import AppDatePicker from "../../components/AppDatePicker.vue";
-
+import AppButton from "../../components/AppButton.vue";
+import PrintTeacherAttendance from "../../components/PrintTeacherAttendance.vue";
 const schedules = ref([]);
 const loading = ref(false);
 const page = ref(1);
@@ -144,6 +155,54 @@ const total = ref(0);
 
 const programmes = ref([]);
 const generations = ref([]);
+
+const printexamRef = ref(null);
+const printExamData = reactive({
+  title: "",
+  secondtitle: "",
+  rows: [],
+});
+
+const selectedProgrammeName = computed(() => {
+  const p = programmes.value.find((x) => x.value === filters.programme_id);
+  return p ? p.label : "ទាំងអស់";
+});
+
+const toKh = (v) => String(v ?? "").replace(/\d/g, (d) => "០១២៣៤៥៦៧៨៩"[d]);
+
+const khMonths = [
+  "មករា",
+  "កុម្ភៈ",
+  "មីនា",
+  "មេសា",
+  "ឧសភា",
+  "មិថុនា",
+  "កក្កដា",
+  "សីហា",
+  "កញ្ញា",
+  "តុលា",
+  "វិច្ឆិកា",
+  "ធ្នូ",
+];
+
+const khDate = (value) => {
+  if (!value) return "";
+  const [year, month, day] = String(value).slice(0, 10).split("-").map(Number);
+  return `ថ្ងៃទី${toKh(day)} ខែ${khMonths[month - 1]} ឆ្នាំ${toKh(year)}`;
+};
+
+function printAttendance() {
+  printExamData.title = `បញ្ជីវត្តមានសាស្រ្តាចារ្យ ថ្នាក់${selectedProgrammeName.value}`;
+
+  const start = filters.start_date ? khDate(filters.start_date) : "";
+  const end = filters.end_date ? khDate(filters.end_date) : "";
+  printExamData.secondtitle =
+    start && end ? `ចាប់ពី${start} ដល់${end}` : start || end || "";
+
+  printExamData.rows = [...schedules.value];
+
+  nextTick(() => printexamRef.value?.print());
+}
 
 // format using local time (toISOString() can shift the date back one day in UTC+7)
 function formatLocalDate(d) {
@@ -253,4 +312,13 @@ onMounted(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.print-only-wrapper {
+  display: none;
+}
+@media print {
+  .print-only-wrapper {
+    display: block;
+  }
+}
+</style>

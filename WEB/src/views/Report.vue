@@ -9,7 +9,7 @@
     </template>
     <el-menu-item-group>
       <el-menu-item index="/Report/TeacherSchedule">កាលវិភាគប្រចាំសាប្ដាហ៍</el-menu-item>
-      <el-menu-item index="/Report/teaching-hours">របាយការណ៍ម៉ោងប្រៀនរបស់សាស្រ្តាចារ្យ</el-menu-item>
+      <el-menu-item index="/Report/teaching-hours">របាយការណ៍ម៉ោងបង្រៀនរបស់សាស្រ្តាចារ្យ</el-menu-item>
       <el-menu-item index="/Report/teacher-attendandce">របាយការណ៍វត្តមានសាស្រ្តាចារ្យ</el-menu-item>
     </el-menu-item-group>
   </el-sub-menu>
