@@ -8,6 +8,7 @@ type LeaveRequestResponse struct {
 	UserNameEn     string  `json:"user_name_en" gorm:"column:user_name_en"`
 	UserCode       string  `json:"user_code"`
 	ClassName      string  `json:"class_name"`
+	ClassID        int     `json:"class_id" gorm:"column:class_id"`
 	StartDate      string  `json:"start_date" gorm:"column:start_date"`
 	EndDate        string  `json:"end_date" gorm:"column:end_date"`
 	BackToWorkDate string  `json:"back_to_work_date" gorm:"column:back_to_work_date"`

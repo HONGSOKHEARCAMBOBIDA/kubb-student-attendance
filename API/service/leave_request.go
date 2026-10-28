@@ -179,6 +179,7 @@ func (s *leaveRequestService) GetLeaveRequest(ctx context.Context, id int, pf re
 		u.name_en AS user_name_en,
 		u.code AS user_code,
 		c.name AS class_name,
+		c.id AS class_id,
 		l.start_date AS start_date,
 		l.end_date AS end_date,
 		l.back_to_work_date AS back_to_work_date,
@@ -681,6 +682,18 @@ func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, pf requ
 		}
 		if v, ok := filter["generation_id"]; ok && v != "" {
 			tx = tx.Where("c.generation_id = ?", v)
+		}
+		if v, ok := filter["programme_id"]; ok && v != "" {
+			tx = tx.Where("c.programme_id = ?", v)
+		}
+		if v, ok := filter["year"]; ok && v != "" {
+			tx = tx.Where("c.year = ?", v)
+		}
+		if v, ok := filter["semester"]; ok && v != "" {
+			tx = tx.Where("c.semester = ?", v)
+		}
+		if v, ok := filter["subject_id"]; ok && v != "" {
+			tx = tx.Where("l.subject_id = ?", v)
 		}
 		// NOTE: no "check_date" branch here anymore — it's already baked into base()'s joins above.
 		return tx

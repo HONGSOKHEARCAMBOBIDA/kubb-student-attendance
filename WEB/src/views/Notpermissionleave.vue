@@ -2,96 +2,132 @@
   <div>
     <AppFilterBar
       :fields="[
-        { slot: 'name', span: 4 },
-        { slot: 'check_date', span: 4 },
-        { slot: 'class', span: 4 },
-        { slot: 'major', span: 4 },
-        { slot: 'shift', span: 4 },
-        { slot: 'generation', span: 4 },
+        { slot: 'name', span: 2 },
+        { slot: 'programm', span: 2 },
+        { slot: 'generation', span: 2 },
+        { slot: 'major', span: 2 },
+        { slot: 'shift', span: 2 },
+        { slot: 'year', span: 2 },
+        { slot: 'semester', span: 2 },
+
+        { slot: 'class', span: 2 },
+        { slot: 'subject', span: 2 },
+        { slot: 'check_date', span: 2 },
       ]"
     >
       <template #name>
-        <el-input
-          v-model.trim="filters.name"
-          placeholder="ស្វែងរកតាមឈ្មោះសិស្ស"
+        <AppInput
+          v-model="filters.name"
+          placeholder="ស្វែងរក"
+          prefix-icon="Search"
           clearable
+          @change="fetchData"
           size="large"
-        />
+        >
+        </AppInput>
       </template>
 
       <template #check_date>
-        <el-date-picker
+        <AppDatePicker
           v-model="filters.check_date"
           type="date"
-          placeholder="ជ្រើសរើសកាលបរិច្ឆេទ"
-          format="YYYY-MM-DD"
+          placeholder="ជ្រេីសរេីសថ្ងៃទី"
           value-format="YYYY-MM-DD"
-          size="large"
+          clearable
+          @change="fetchData"
           style="width: 100%"
-          clearable="false"
+          size="large"
+        >
+        </AppDatePicker>
+      </template>
+      <template #subject>
+        <AppSelect
+          v-model="filters.subject_id"
+          :options="subjectOptions"
+          :loading="subjectsLoading"
+          placeholder="ជ្រើសរើសមុខវិជ្ជា"
+          size="large"
+          filterable
+          clearable
+          @change="fetchData"
         />
       </template>
-
       <template #class>
         <AppSelect
+          :options="classes"
           v-model="filters.class_id"
           placeholder="ថ្នាក់"
-          clearable
           filterable
+          clearable
+          style="width: 100%"
           size="large"
-          :options="classOptions"
+          @change="onclasschange"
         >
         </AppSelect>
       </template>
-
-      <template #major>
-        <el-select
-          v-model="filters.major_id"
-          placeholder="ជំនាញ"
-          clearable
+      <template #programm>
+        <AppSelect
+          v-model="filters.programme_id"
+          :options="programmes"
+          placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
+          size="large"
           filterable
-          size="large"
-        >
-          <el-option
-            v-for="item in majors"
-            :key="item.id"
-            :label="item.name_kh"
-            :value="item.id"
-          />
-        </el-select>
-      </template>
-
-      <template #shift>
-        <el-select
-          v-model="filters.shift_id"
-          placeholder="វេន"
           clearable
-          size="large"
-        >
-          <el-option
-            v-for="item in shifts"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-          />
-        </el-select>
+          @change="onProgrammchange"
+        />
       </template>
-
       <template #generation>
-        <el-select
+        <AppSelect
           v-model="filters.generation_id"
-          placeholder="ជំនាន់"
-          clearable
-          filterable
+          :options="generations"
+          placeholder="ជ្រើសរើសជំនាន់"
           size="large"
-        >
-          <el-option
-            v-for="item in generations"
-            :key="item.id"
-            :label="item.name_kh"
-            :value="item.id"
-          />
-        </el-select>
+          filterable
+          clearable
+          @change="onGenerationchange"
+        />
+      </template>
+      <template #major>
+        <AppSelect
+          v-model="filters.major_id"
+          :options="majors"
+          placeholder="ជ្រើសរើសជំនាញ"
+          size="large"
+          filterable
+          clearable
+          @change="onMajorchange"
+        />
+      </template>
+      <template #shift>
+        <AppSelect
+          v-model="filters.shift_id"
+          :options="shifts"
+          placeholder="ជ្រើសរើសវេនសិក្សា"
+          size="large"
+          filterable
+          clearable
+          @change="onShiftchange"
+        />
+      </template>
+      <template #year>
+        <AppSelect
+          v-model="filters.year"
+          :options="years"
+          placeholder="ជ្រើសរើសឆ្នាំសិក្សា"
+          size="large"
+          clearable
+          @change="onYearchange"
+        />
+      </template>
+      <template #semester>
+        <AppSelect
+          v-model="filters.semester"
+          :options="semesters"
+          placeholder="ជ្រើសរើសឆមាស"
+          size="large"
+          clearable
+          @change="onSemesterchange"
+        />
       </template>
     </AppFilterBar>
 
@@ -139,19 +175,28 @@
         ]"
         @selection-change="(rows) => (selectedRows = rows)"
       >
-        <template #name="{row}">
-          <el-text size="large" tag="b" type="primary">{{ row.user_name_kh }} | <el-text>{{ row.user_name_en }}</el-text></el-text>
+        <template #name="{ row }">
+          <el-text size="large" tag="b" type="primary"
+            >{{ row.user_name_kh }} |
+            <el-text>{{ row.user_name_en }}</el-text></el-text
+          >
         </template>
         <template #gender="{ row }">
           <el-text :type="row.gender === 1 ? 'primary' : 'danger'" size="small">
             {{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}
           </el-text>
         </template>
-        <template #class="{row}">
-          <el-text>{{ row.class_name }}-{{ row.programme_name }}-ឆ្នាំទី{{ row.year }}-ឆមាសទី{{ row.semester }}</el-text>
+        <template #class="{ row }">
+          <el-text
+            >{{ row.class_name }}-{{ row.programme_name }}-ឆ្នាំទី{{
+              row.year
+            }}-ឆមាសទី{{ row.semester }}</el-text
+          >
         </template>
-        <template #major="{row}">
-          <el-text size="large" type="primary" tag="b">{{ row.major_name }}</el-text>
+        <template #major="{ row }">
+          <el-text size="large" type="primary" tag="b">{{
+            row.major_name
+          }}</el-text>
         </template>
       </AppTable>
     </el-card>
@@ -168,39 +213,210 @@ import {
   getShift,
   getGeneration,
   addNotPermissionLeave,
+  getProgramme,
+  getClassAvailableSubjects,
+  getClass,
 } from "../api/services";
 import AppTable from "../../components/AppTable.vue";
 import AppButton from "../../components/AppButton.vue";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import { useNotification } from "../../composables/useNotification.js";
 import AppSelect from "../../components/AppSelect.vue";
+import AppDatePicker from "../../components/AppDatePicker.vue";
+import AppInput from "../../components/AppInput.vue";
 const notify = useNotification();
 const selectedRows = ref([]);
 const submitting = ref(false);
 const list = ref([]);
-const classOptions = ref([]);
-const majors = ref([]);
-const shifts = ref([]);
-const generations = ref([]);
+
+
 
 const loading = ref(false);
-const exporting = ref(false);
 const page = ref(1);
 const pageSize = ref(50);
 const total = ref(0);
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
+
+// state filter
+const classes = ref([]);
+const programmes = ref([]);
+const generations = ref([]);
+const shifts = ref([]);
+const majors = ref([]);
+
+const years = [
+  { label: "ឆ្នាំទី 1", value: 1 },
+  { label: "ឆ្នាំទី 2", value: 2 },
+  { label: "ឆ្នាំទី 3", value: 3 },
+  { label: "ឆ្នាំទី 4", value: 4 },
+];
+
+const semesters = [
+  { label: "ឆមាសទី 1", value: 1 },
+  { label: "ឆមាសទី 2", value: 2 },
+];
 
 const filters = reactive({
   name: "",
-  check_date: todayStr(),
-  class_id: "",
+  check_date: new Date().toISOString().split("T")[0],
+  class_id: null,
+  subject_id: null,
+  programme_id: null,
+  generation_id: null,
+  major_id: null,
+  shift_id: null,
+  year: null,
+  semester: null,
+});
+
+const filterClass = reactive({
   major_id: "",
   shift_id: "",
   generation_id: "",
+  programme_id: "",
+  year: "",
+  semester: "",
 });
+
+async function fetchProgramme() {
+  try {
+    const res = await getProgramme();
+    programmes.value = (res.data.data || []).map((s) => ({
+      label: `${s.name}`,
+      value: s.id,
+    }));
+  } catch {
+    ElMessage.error("Failed to load programme");
+  }
+}
+
+async function fetchGeneration() {
+  try {
+    const res = await getGeneration();
+    generations.value = (res.data.data || []).map((s) => ({
+      label: `${s.name_kh}`,
+      value: s.id,
+    }));
+  } catch {
+    ElMessage.error("Failed to load programme");
+  }
+}
+
+async function fetchMajor() {
+  try {
+    const res = await getMajor();
+    majors.value = (res.data.data || []).map((s) => ({
+      label: `${s.name_kh}`,
+      value: s.id,
+    }));
+  } catch {
+    ElMessage.error("Failed to load programme");
+  }
+}
+
+async function fetchShift() {
+  try {
+    const res = await getShift();
+    shifts.value = (res.data.data || []).map((s) => ({
+      label: `${s.name}`,
+      value: s.id,
+    }));
+  } catch {
+    ElMessage.error("Failed to load programme");
+  }
+}
+
+async function onProgrammchange(programmID) {
+  filterClass.programme_id = programmID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchData();
+}
+
+async function onGenerationchange(generationID) {
+  filterClass.generation_id = generationID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchData();
+}
+
+async function onMajorchange(majorID) {
+  filterClass.major_id = majorID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchData();
+}
+
+async function onShiftchange(shiftID) {
+  filterClass.shift_id = shiftID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchData();
+}
+
+async function onYearchange(yearID) {
+  filterClass.year = yearID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchData();
+}
+
+async function onSemesterchange(semesterID) {
+  filterClass.semester = semesterID;
+  filters.class_id = null;
+  filters.subject_id = null;
+  classes.value = [];
+  subjectOptions.value = [];
+  await fetchClasses(); //
+  page.value = 1;
+  fetchData();
+}
+
+async function onclasschange(classID) {
+  filters.subject_id = null;
+  subjectOptions.value = [];
+  if (classID) {
+    await fetchSubjectOptions(classID);
+  }
+  fetchData();
+}
+
+const subjectOptions = ref([]);
+const subjectsLoading = ref(false);
+async function fetchSubjectOptions(classID) {
+  subjectsLoading.value = true;
+  try {
+    const res = await getClassAvailableSubjects(classID);
+    subjectOptions.value = (res.data.data || []).map((s) => ({
+      label: `${s.code} — ${s.name_kh}`,
+      value: s.id,
+    }));
+  } catch (e) {
+    notify.error(e.response?.data?.error || "Failed to load subjects");
+  } finally {
+    subjectsLoading.value = false;
+  }
+}
 
 let debounceTimer = null;
 function debounce(fn, delay = 400) {
@@ -236,19 +452,20 @@ async function handleAddNotPermission() {
 async function fetchData() {
   loading.value = true;
   try {
-    const res = await getNotPermissionLeave({
-      page: page.value,
-      page_size: pageSize.value,
-      name: filters.name || undefined,
-      check_date: filters.check_date || undefined,
-      class_id: filters.class_id || undefined,
-      major_id: filters.major_id || undefined,
-      shift_id: filters.shift_id || undefined,
-      generation_id: filters.generation_id || undefined,
-    });
+    const params = { page: page.value, page_size: pageSize.value };
+    if (filters.name) params.name = filters.name;
+    if (filters.check_date) params.check_date = filters.check_date;
+    if (filters.class_id) params.class_id = filters.class_id;
+    if (filters.subject_id) params.subject_id = filters.subject_id;
+    if (filters.programme_id) params.programme_id = filters.programme_id;
+    if (filters.generation_id) params.generation_id = filters.generation_id;
+    if (filters.major_id) params.major_id = filters.major_id;
+    if (filters.shift_id) params.shift_id = filters.shift_id;
+    if (filters.year) params.year = filters.year;
+    if (filters.semester) params.semester = filters.semester;
+    const res = await getNotPermissionLeave(params);
     list.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;
-    console.log(list.value)
   } catch (e) {
     notify.error(e.response?.data?.error || "");
   } finally {
@@ -256,84 +473,34 @@ async function fetchData() {
   }
 }
 
-async function fetchLookups() {
+async function fetchClasses() {
   try {
-    const [classRes, majorRes, shiftRes, generationRes] = await Promise.all([
-      viewcompanyscan(),
-      getMajor(),
-      getShift(),
-      getGeneration(),
-    ]);
-    classOptions.value = (classRes.data.data || []).map((s) => ({
-      label: `${s.name}-${s.programme_name}-ឆ្នាំទី${s.year}-ឆមាសទី${s.semester}`,
+    const params = {};
+    if (filterClass.programme_id)
+      params.programme_id = filterClass.programme_id;
+    if (filterClass.major_id) params.major_id = filterClass.major_id;
+    if (filterClass.shift_id) params.shift_id = filterClass.shift_id;
+    if (filterClass.generation_id)
+      params.generation_id = filterClass.generation_id;
+    if (filterClass.year) params.year = filterClass.year;
+    if (filterClass.semester) params.semester = filterClass.semester;
+    const res = await getClass(params);
+    classes.value = (res.data.data || []).map((s) => ({
+      label: `${s.programme_name} - ${s.major_name} - ${s.shift_name} - ឆ្នាំទី${s.year} - ឆមាសទី${s.semester}`,
       value: s.id,
-    }))
-    majors.value = majorRes.data.data || [];
-    shifts.value = shiftRes.data.data || [];
-    generations.value = generationRes.data.data || [];
-  } catch (e) {
-    notify.error(e.response?.data?.error || "");
+    }));
+  } catch {
+    ElMessage.error("Failed to load classes");
   }
 }
-
-async function handleExport() {
-  exporting.value = true;
-  try {
-    const res = await exportNotPermissionLeave(
-      {
-        name: filters.name || undefined,
-        check_date: filters.check_date || undefined,
-        class_id: filters.class_id || undefined,
-        major_id: filters.major_id || undefined,
-        shift_id: filters.shift_id || undefined,
-        generation_id: filters.generation_id || undefined,
-      },
-      { responseType: "blob" },
-    );
-
-    const url = window.URL.createObjectURL(new Blob([res.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute(
-      "download",
-      `not-permission-leave-${filters.check_date}.xlsx`,
-    );
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (e) {
-    notify.error(e.response?.data?.error || "នាំចេញបរាជ័យ");
-  } finally {
-    exporting.value = false;
-  }
-}
-
-watch(
-  () => filters.name,
-  () => {
-    page.value = 1;
-    debounce(() => fetchData());
-  },
-);
-
-watch(
-  [
-    () => filters.check_date,
-    () => filters.class_id,
-    () => filters.major_id,
-    () => filters.shift_id,
-    () => filters.generation_id,
-  ],
-  () => {
-    page.value = 1;
-    fetchData();
-  },
-);
 
 onMounted(() => {
+  fetchClasses();
+  fetchProgramme();
+  fetchGeneration();
+  fetchMajor();
+  fetchShift();
   fetchData();
-  fetchLookups();
 });
 </script>
 

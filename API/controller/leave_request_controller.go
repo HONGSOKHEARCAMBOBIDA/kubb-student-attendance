@@ -167,6 +167,10 @@ func (cr *LeaveController) GetNotPermissionLeave(c *gin.Context) {
 		"shift_id":      c.Query("shift_id"),
 		"generation_id": c.Query("generation_id"),
 		"check_date":    c.Query("check_date"),
+		"programme_id":  c.Query("programme_id"),
+		"year":          c.Query("year"),
+		"semester":      c.Query("semester"),
+		"subject_id":    c.Query("subject_id"),
 	}
 
 	data, meta, err := cr.service.GetNotPermissionLeave(c.Request.Context(), request.Pagination{
