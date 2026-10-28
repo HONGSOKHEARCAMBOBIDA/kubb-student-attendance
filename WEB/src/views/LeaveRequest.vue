@@ -19,11 +19,13 @@ import {
   getProgramme,
   getGeneration,
   getMajor,
-  getShift
+  getShift,
+  rollbackleave
 } from "../api/services.js";
 import { useUserDataStore } from "../stores/user_data.js";
 import AppSelect from "../../components/AppSelect.vue";
 import AppDatePicker from "../../components/AppDatePicker.vue";
+import { ElMessageBox } from "element-plus";
 
 let searchTimer = null;
 const notify = useNotification();
@@ -55,6 +57,28 @@ const programmes = ref([]);
 const generations = ref([]);
 const shifts = ref([]);
 const majors = ref([]);
+
+async function confirmDelete(message) {
+  try {
+    await ElMessageBox.confirm(message, "បញ្ជាក់", { type: "warning" });
+    return true;
+  } catch {
+    return false; // the user clicked cancel
+  }
+}
+
+async function handleRollback(row) {
+  const confirmed = await confirmDelete("តើអ្នកពិតជាចង់ត្រឡប់ការអនុម័តច្បាប់នេះមែនទេ?");
+  if (!confirmed) return;
+
+  try {
+    await rollbackleave(row.id);
+    notify.success("ជោគជ័យ");
+    await fetchLeaveRequest();
+  } catch (e) {
+    notify.error(errorMessage(e, "មិនអាចបានទេ"));
+  }
+}
 
 
 const years = [
@@ -383,7 +407,8 @@ async function handleSubmit() {
 }
 
 async function handleApprove(row) {
-  approvingId.value = row.id;
+  const confirmed = await confirmDelete("តេីអ្នកពិតជាចង់អនុម័តច្បាប់នេះមែនទេ?");
+  if (!confirmed) return;
   try {
     await approveLeaveRequest(row.id);
     notify.success("អនុម័តច្បាប់ជោគជ័យ");
@@ -391,11 +416,13 @@ async function handleApprove(row) {
   } catch (e) {
     notify.error(e.response?.data?.error || "មិនអាចអនុម័តច្បាប់នេះបានទេ");
   } finally {
-    approvingId.value = null;
+    
   }
 }
 
 async function handleDelete(row) {
+  const confirmed = await confirmDelete("តេីអ្នកពិតជាចង់លុបច្បាប់នេះមែនទេ?");
+  if (!confirmed) return;
   try {
     await deleteLeaveRequest(row.id);
     notify.success("លុបច្បាប់ជោគជ័យ");
@@ -575,6 +602,10 @@ onUnmounted(() => clearTimeout(searchTimer));
           <el-tooltip content="លុប" placement="top">
             <AppButton v-if="canDeleteLeave && row.status === 'PENDING'" size="small" icon="Delete" type="danger" circle
               @click="handleDelete(row)" />
+          </el-tooltip>
+          <el-tooltip content="ត្រឡប់" placement="top">
+            <AppButton v-if="canDeleteLeave && row.status === 'APPROVE'" size="small" icon="Refresh" type="danger" circle
+              @click="handleRollback(row)" />
           </el-tooltip>
         </template>
       </AppTable>

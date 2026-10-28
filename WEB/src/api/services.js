@@ -140,6 +140,7 @@ export const deleteLeaveRequest = (id) =>
 export const addNotPermissionLeave = (data) =>
   api.post("/add.leave.not.permission", data);
 export const getcountleave = () => api.get("/count.leave");
+export const rollbackleave = (id) => api.put(`/roll.back.leave/${id}`)
 
 // RoleHasPermission
 export const getrolehaspermission = (id) =>

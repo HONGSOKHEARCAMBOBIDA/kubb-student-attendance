@@ -26,6 +26,7 @@ type LeaveRequestService interface {
 	GetNotPermissionLeave(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.NotPermissionLeave, *model.PaginationMetadata, error)
 	AddNotPermission(ctx context.Context, input request.NotPermissionLeaveRequest) error
 	CountLeave(ctx context.Context, id int) (int, error)
+	RollBackLeaveRequest(ctx context.Context, id int) error
 }
 
 type leaveRequestService struct {
@@ -221,9 +222,10 @@ func (s *leaveRequestService) CreateLeaveRequest(ctx context.Context, id int, in
 	if err := s.db.WithContext(ctx).
 		Preload("Subject").
 		Where(
-			"class_id  = ? AND is_active = ?",
+			"class_id  = ? AND is_active = ? AND schedule_date = ?",
 			input.ClassID,
 			true,
+			helper.CurrentDate(),
 		).
 		First(&classSchedule).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -463,8 +465,6 @@ func (s *leaveRequestService) VerifyLeaveRequest(ctx context.Context, id int, ve
 		return err
 	}
 
-	const leaveScore = -0.5
-
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		now := time.Now()
 		updates := map[string]interface{}{
@@ -543,6 +543,7 @@ func (s *leaveRequestService) VerifyLeaveRequest(ctx context.Context, id int, ve
 					SubjectID:       leaveforupdte.SubjectID,
 					Inzone:          false,
 					Status:          model.StatusPermission,
+					LeaveRequestID:  &leaveforupdte.ID,
 				}
 				if err := tx.Create(&record).Error; err != nil {
 					return fmt.Errorf("failed to create leave attendance record: %w", err)
@@ -725,4 +726,42 @@ func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, pf requ
 	}
 
 	return data, helper.BuildPaginationMeta(pf, total), nil
+}
+
+func (s *leaveRequestService) RollBackLeaveRequest(ctx context.Context, id int) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+
+	var leaveForUpdate model.LeaveRequest
+	if err := s.db.WithContext(ctx).
+		Preload("LeaveDeductType").
+		Preload("ClassSchedule").
+		First(&leaveForUpdate, id).Error; err != nil {
+		return err
+	}
+
+	if leaveForUpdate.Status != model.LeaveStatusApprove {
+		return fmt.Errorf("leave request %d is not approved, cannot roll back", id)
+	}
+
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		updates := map[string]interface{}{
+			"status":      model.LeaveStatusPending,
+			"approve_by":  nil,
+			"approved_at": nil,
+		}
+		if err := tx.Model(&model.LeaveRequest{}).
+			Where("id = ?", leaveForUpdate.ID).
+			Updates(updates).Error; err != nil {
+			return fmt.Errorf("failed to roll back leave request: %w", err)
+		}
+
+		if err := tx.
+			Where("leave_request_id = ?", leaveForUpdate.ID).
+			Delete(&model.AttendanceRecord{}).Error; err != nil {
+			return fmt.Errorf("failed to delete attendance records: %w", err)
+		}
+
+		return nil
+	})
 }

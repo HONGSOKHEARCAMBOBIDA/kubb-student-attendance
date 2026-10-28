@@ -5,6 +5,7 @@ import (
 	"errors"
 	"mysql/constant/share"
 	"mysql/helper"
+	"mysql/pattern/res"
 	"mysql/request"
 	"mysql/service"
 	"net/http"
@@ -182,4 +183,17 @@ func (cr *LeaveController) GetNotPermissionLeave(c *gin.Context) {
 		return
 	}
 	share.ResponsePagination(c, 200, data, meta)
+}
+
+func (cr *LeaveController) RollBackLeaveRequest(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		res.Fail(c, 400, "BAD_REQUEST", "INVALID ID")
+		return
+	}
+	if err := cr.service.RollBackLeaveRequest(c, id); err != nil {
+		res.Fail(c, 500, "CAN NOT ROLLBACK", err.Error())
+		return
+	}
+	res.OK(c, 200)
 }

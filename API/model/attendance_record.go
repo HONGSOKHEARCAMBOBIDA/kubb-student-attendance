@@ -33,6 +33,7 @@ type AttendanceRecord struct {
 	Latitude        string  `gorm:"column:latitude;size:255" json:"latitude"`
 	Longitude       string  `gorm:"column:longitude;size:255" json:"longitude"`
 	Status          string  `gorm:"column:status;type:enum('PR','P','A')" json:"status"`
+	LeaveRequestID  *int    `gorm:"column:leave_request_id" json:"leave_request_id"`
 }
 
 func (AttendanceRecord) TableName() string {

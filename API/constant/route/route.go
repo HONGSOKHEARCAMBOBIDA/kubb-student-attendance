@@ -92,6 +92,7 @@ const (
 	AddLeaveType  = "add.leave.type"
 	EditLeaveType = "edit.leave.type/:id"
 	CountLeave    = "count.leave"
+	RollbackLeave = "roll.back.leave/:id"
 
 	// LeaveRequest
 	ViewLeaveRequest       = "view.leave.request"
