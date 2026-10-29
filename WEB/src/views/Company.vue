@@ -239,12 +239,12 @@ const filters = reactive({
   controlled_by: "",
 });
 
-const adminLevel = computed(() => userDataStore.level === 7);
+const adminLevel = computed(() => userDataStore.level >= 2);
 const canAddClass = computed(() =>
-  userDataStore.permissions?.some((p) => p.name === "add.company"),
+  userDataStore.permissions?.some((p) => p.name === "add.class"),
 );
 const canEditClass = computed(() =>
-  userDataStore.permissions?.some((p) => p.name === "edit.company"),
+  userDataStore.permissions?.some((p) => p.name === "edit.class"),
 );
 const canAddScore = computed(() =>
   userDataStore.permissions?.some((p) => p.name === "add.score"),

@@ -3,8 +3,8 @@
     <AppFilterBar
       :fields="[
         { slot: 'name', span: 8 },
-        // { slot: 'role', span: 5 },
-        { slot: 'quick', span: 8 },
+         { slot: 'role', span: 5 },
+        //{ slot: 'quick', span: 8 },
         { slot: 'add', span: 5 },
       ]"
     >
@@ -18,7 +18,7 @@
         />
       </template>
 
-      <!-- <template #role>
+      <template #role>
         <el-select
           v-model="filters.role_id"
           placeholder="តួនាទី"
@@ -26,6 +26,7 @@
           style="width: 100%"
           @change="fetchUsers"
           size="large"
+          filterable
         >
           <el-option
             v-for="role in roles"
@@ -34,8 +35,8 @@
             :value="role.id"
           />
         </el-select>
-      </template> -->
-      <template #quick>
+      </template> 
+      <!-- <template #quick>
         <div class="custom-style">
           <el-segmented
             v-model="filters.role_id"
@@ -44,9 +45,9 @@
             @change="onRoleChange"
           />
         </div>
-      </template>
+      </template> -->
 
-      <template #actions>
+      <template #add>
         <AppButton v-if="candadd" type="primary" @click="openCreate">
           បន្ថែម
         </AppButton>

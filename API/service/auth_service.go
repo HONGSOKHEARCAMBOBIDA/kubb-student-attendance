@@ -76,8 +76,8 @@ func NewAuthService() AuthService {
 
 var requiredPermissions = []string{
 	"add.backup", "view.backup",
-	"view.download.backup", "delete.backup", "add.company",
-	"edit.company", "edit.user", "add.user", "edit.leave.type",
+	"view.download.backup", "delete.backup", "add.class",
+	"edit.class", "edit.user", "add.user", "edit.leave.type",
 	"add.leave.type", "edit.leave.request", "edit.status.leave.request",
 	"add.role.has.permission", "add.leave.request", "edit.leave.request",
 	"edit.status.leave.request", "delete.leave.request", "add.subject", "edit.subject",

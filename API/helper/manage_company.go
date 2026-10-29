@@ -7,7 +7,7 @@ import (
 )
 
 func ManageClassFilter(query *gorm.DB, db *gorm.DB, user model.User) *gorm.DB {
-	if user.Role.Level >= 7 {
+	if user.Role.Level >= 2 {
 		return query
 	}
 

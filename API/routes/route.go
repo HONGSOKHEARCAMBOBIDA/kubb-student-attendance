@@ -19,7 +19,7 @@ func SetupRoutes(r *gin.Engine) {
 	backupcontroller := controller.NewBackupController()
 	//leavededucttypecontroller := controller.NewLeaveDeductTypeController()
 	rolehaspermissioncontroller := controller.NewRoleHasPermissionController()
-	companycontroller := controller.NewCompanyController()
+	classcontroller := controller.NewCompanyController()
 	attendancecontroller := controller.NewAttendanceController()
 	leavecontroller := controller.NewLeaveController()
 	deductcontroller := controller.NewLeaveDeductTypeController()
@@ -60,55 +60,72 @@ func SetupRoutes(r *gin.Engine) {
 	auth.Use(middleware.AuthMiddleware())
 	{
 		// Class
-		auth.GET(route.ViewClassNoPagination, middleware.PermissionMiddleware(permission.ViewCompany), companycontroller.GetClassNoPagination)
-		auth.GET(route.ViewMajor, middleware.PermissionMiddleware(permission.ViewMajor), companycontroller.GetMajor)
-		auth.GET(route.ViewShift, middleware.PermissionMiddleware(permission.ViewShift), companycontroller.GetShift)
-		auth.POST(route.AddShift, middleware.PermissionMiddleware(permission.AddShift), companycontroller.CreateShift)
-		auth.PUT(route.EditShift, middleware.PermissionMiddleware(permission.EditShift), companycontroller.UpdateShift)
-		auth.GET(route.ViewGeneration, middleware.PermissionMiddleware(permission.ViewGeneration), companycontroller.GetGeneration)
-		auth.GET(route.ViewProgramme, middleware.PermissionMiddleware(permission.ViewProgramme), companycontroller.GetProgramme)
-		auth.GET(route.ViewFaculty, middleware.PermissionMiddleware(permission.ViewFaculty), companycontroller.GetFaculty)
-		auth.POST(route.SavePOSTFaculty, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.SaveFaculty)
-		auth.PUT(route.SavePUTFaculty, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.SaveFaculty)
-		auth.POST(route.AddCompany, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.CreateClass)
-		auth.GET(route.ViewCompany, middleware.PermissionMiddleware(permission.ViewCompany), companycontroller.GetClass)
-		auth.PUT(route.EditCompany, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.UpdateClass)
-		auth.PUT(route.ToggleClassStatus, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.ChangeStatusClass)
-		auth.GET(route.ViewCompanyScan, middleware.PermissionMiddleware(permission.ViewCompany), companycontroller.GetClassScan)
-		auth.POST(route.AddGeneration, middleware.PermissionMiddleware(permission.AddGeneration), companycontroller.CreateGeneration)
-		auth.PUT(route.UpdateGeneration, middleware.PermissionMiddleware(permission.UpdateGeneration), companycontroller.UpdateGeneration)
-		auth.PUT(route.ToggleGeneration, middleware.PermissionMiddleware(permission.UpdateGeneration), companycontroller.ToggleGeneration)
-		auth.PUT(route.UpdateExamFinal, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.UpdateExamFinal)
-		auth.POST(route.CreateExamPlatform, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.CreateExamPlatform)
-		auth.GET(route.GetExamPlatform, middleware.PermissionMiddleware(permission.ViewCompany), companycontroller.ListExamPlatforms)
-		auth.PUT(route.UpdateExamPlatform, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.UpdateExamPlatform)
-		auth.PUT(route.UpdateExamPlatformDetail, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.UpdateExamPlatformDetail)
-		auth.DELETE(route.DeleteExamPlatform, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.DeleteExamPlatform)
-		//	auth.POST(route.UploadExamDocument, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.UploadExamDocument)
-		auth.POST(route.AddClassDetail, middleware.PermissionMiddleware(permission.AddCompany), companycontroller.CreateClassDetail)
-		auth.GET(route.ViewClassDetail, middleware.PermissionMiddleware(permission.ViewCompany), companycontroller.GetClassDetail)
-		auth.PUT(route.UpdateClassDetail, middleware.PermissionMiddleware(permission.EditCompany), companycontroller.UpdateClassDetail)
+		auth.GET(route.ViewClassNoPagination, middleware.PermissionMiddleware(permission.ViewClass), classcontroller.GetClassNoPagination)
+
+		// Shift
+		auth.GET(route.ViewShift, middleware.PermissionMiddleware(permission.ViewShift), classcontroller.GetShift)
+		auth.POST(route.AddShift, middleware.PermissionMiddleware(permission.AddShift), classcontroller.CreateShift)
+		auth.PUT(route.EditShift, middleware.PermissionMiddleware(permission.EditShift), classcontroller.UpdateShift)
+
+		// Generation
+		auth.GET(route.ViewGeneration, middleware.PermissionMiddleware(permission.ViewGeneration), classcontroller.GetGeneration)
+		auth.POST(route.AddGeneration, middleware.PermissionMiddleware(permission.AddGeneration), classcontroller.CreateGeneration)
+		auth.PUT(route.UpdateGeneration, middleware.PermissionMiddleware(permission.UpdateGeneration), classcontroller.UpdateGeneration)
+		auth.PUT(route.ToggleGeneration, middleware.PermissionMiddleware(permission.UpdateGeneration), classcontroller.ToggleGeneration)
+
+		// Programme
+		auth.GET(route.ViewProgramme, middleware.PermissionMiddleware(permission.ViewProgramme), classcontroller.GetProgramme)
+
+		// Faculty
+		auth.GET(route.ViewFaculty, middleware.PermissionMiddleware(permission.ViewFaculty), classcontroller.GetFaculty)
+		auth.POST(route.SavePOSTFaculty, middleware.PermissionMiddleware(permission.SaveFaculty), classcontroller.SaveFaculty)
+		auth.PUT(route.SavePUTFaculty, middleware.PermissionMiddleware(permission.SaveFaculty), classcontroller.SaveFaculty)
+
+		// Class
+		auth.POST(route.AddCompany, middleware.PermissionMiddleware(permission.AddClass), classcontroller.CreateClass)
+		auth.GET(route.ViewCompany, middleware.PermissionMiddleware(permission.ViewClass), classcontroller.GetClass)
+		auth.PUT(route.EditCompany, middleware.PermissionMiddleware(permission.EditClass), classcontroller.UpdateClass)
+		auth.GET(route.ViewCompanyScan, middleware.PermissionMiddleware(permission.ViewClass), classcontroller.GetClassScan)
+		auth.PUT(route.ToggleClassStatus, middleware.PermissionMiddleware(permission.EditClass), classcontroller.ChangeStatusClass)
+		auth.PUT(route.UpdateExamFinal, middleware.PermissionMiddleware(permission.EditClass), classcontroller.UpdateExamFinal)
+
+		// Examplatform
+		auth.POST(route.CreateExamPlatform, middleware.PermissionMiddleware(permission.CreateExamPlatform), classcontroller.CreateExamPlatform)
+		auth.GET(route.GetExamPlatform, middleware.PermissionMiddleware(permission.GetExamPlatform), classcontroller.ListExamPlatforms)
+		auth.PUT(route.UpdateExamPlatform, middleware.PermissionMiddleware(permission.UpdateExamPlatform), classcontroller.UpdateExamPlatform)
+		auth.PUT(route.UpdateExamPlatformDetail, middleware.PermissionMiddleware(permission.UpdateExamPlatformDetail), classcontroller.UpdateExamPlatformDetail)
+		auth.DELETE(route.DeleteExamPlatform, middleware.PermissionMiddleware(permission.DeleteExamPlatform), classcontroller.DeleteExamPlatform)
+
+		// ClassDetail
+		auth.POST(route.AddClassDetail, middleware.PermissionMiddleware(permission.AddClassDetail), classcontroller.CreateClassDetail)
+		auth.GET(route.ViewClassDetail, middleware.PermissionMiddleware(permission.ViewClassDetail), classcontroller.GetClassDetail)
+		auth.PUT(route.UpdateClassDetail, middleware.PermissionMiddleware(permission.UpdateClassDetail), classcontroller.UpdateClassDetail)
+
+		// User Class
+		auth.POST(route.AddUserClass, middleware.PermissionMiddleware(permission.AddUserClass), authcontroller.CreateUserClass)
+		auth.PUT(route.UpdateUserClass, middleware.PermissionMiddleware(permission.UpdateUserClass), authcontroller.UpdateUserClass)
+		auth.GET(route.ViewUserClass, middleware.PermissionMiddleware(permission.ViewUserClass), feecontroller.GetUserClass)
+
+		// Role
+		auth.GET(route.ViewRole, middleware.PermissionMiddleware(permission.ViewRole), authcontroller.GetRole)
+		auth.POST(route.AddRole, middleware.PermissionMiddleware(permission.AddRole), rolehaspermissioncontroller.CreateRole)
+
+		// StudentExam
+		auth.POST(route.AddStudentExam, middleware.PermissionMiddleware(permission.AddStudentExam), authcontroller.AddStudentExam)
+		auth.GET(route.ViewStudentExam, middleware.PermissionMiddleware(permission.ViewStudentExam), authcontroller.GetStudentExam)
+		auth.DELETE(route.DeleteStudentExam, middleware.PermissionMiddleware(permission.DeleteStudentExam), authcontroller.DeleteStudentExam)
+
 		// User
-		auth.POST(route.AddUserClass, middleware.PermissionMiddleware(permission.AddUser), authcontroller.CreateUserClass)
 		auth.POST(route.AddUser, middleware.PermissionMiddleware(permission.AddUser), authcontroller.Register)
 		auth.POST(route.AddUserMain, middleware.PermissionMiddleware(permission.AddUser), authcontroller.RegisterMain)
 		auth.POST(route.AddUserExcell, middleware.PermissionMiddleware(permission.AddUser), authcontroller.RegisterFromExcel)
 		auth.PUT(route.ToggleUserStatus, middleware.PermissionMiddleware(permission.EditUser), authcontroller.ToggleUserStatus)
 		auth.PUT(route.EditUser, middleware.PermissionMiddleware(permission.EditUser), authcontroller.UpdateUser)
-		auth.GET(route.ViewRole, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetRole)
-		auth.POST(route.AddRole, middleware.PermissionMiddleware(permission.EditUser), rolehaspermissioncontroller.CreateRole)
 		auth.GET(route.ViewUserData, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetUserData)
-		auth.PUT(route.UpdateUserClass, middleware.PermissionMiddleware(permission.EditCompany), authcontroller.UpdateUserClass)
 		auth.GET(route.ViewUser, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetUserNotStudent)
 		//auth.DELETE(route.DeleteUser, middleware.PermissionMiddleware(permission.EditUser), authcontroller.DeleteUser)
 		auth.GET(route.ViewStaft, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetStaft)
-		auth.POST(route.AddStudentExam, middleware.PermissionMiddleware(permission.AddUser), authcontroller.AddStudentExam)
-		auth.GET(route.ViewStudentExam, middleware.PermissionMiddleware(permission.AddUser), authcontroller.GetStudentExam)
-		auth.DELETE(route.DeleteStudentExam, middleware.PermissionMiddleware(permission.AddUser), authcontroller.DeleteStudentExam)
 		auth.GET(route.ViewStudentStudyHistory, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetStudentStudyHistory)
-		// Shift
-		// auth.PUT(route.EditShift, middleware.PermissionMiddleware(permission.EditUser), shiftcontroller.UpdateShift)
-		// auth.POST(route.AddShift, middleware.PermissionMiddleware(permission.EditUser), shiftcontroller.CreateShift)
 
 		// Backup
 		auth.POST(route.CreateBackup, middleware.PermissionMiddleware(permission.CreateBackup), backupcontroller.TriggerBackup)
@@ -116,15 +133,13 @@ func SetupRoutes(r *gin.Engine) {
 		auth.GET(route.DownloadBackup, middleware.PermissionMiddleware(permission.DownloadBackup), backupcontroller.DownloadBackup)
 		auth.DELETE(route.DeleteBackup, middleware.PermissionMiddleware(permission.DeleteBackup), backupcontroller.DeleteBackup)
 
-		// LeaveDeductType
-		//auth.GET(route.ViewLeaveDeductType, middleware.PermissionMiddleware(permission.ViewLeaveDeductType), leavededucttypecontroller.GetLeaveDeductType)
-
 		// RoleHasPermission
 		auth.GET(route.ViewRoleHasPermission, middleware.PermissionMiddleware(permission.ViewRoleHasPermission), rolehaspermissioncontroller.GetRolePermission)
 		auth.POST(route.AddRoleHasPermission, middleware.PermissionMiddleware(permission.AddRoleHasPermission), rolehaspermissioncontroller.CreateRoleHasPermission)
 		auth.DELETE(route.DeleteRoleHasPermission, middleware.PermissionMiddleware(permission.DeleteRoleHasPermission), rolehaspermissioncontroller.DeleteRoleHasPermission)
 		auth.PUT(route.EditRole, middleware.PermissionMiddleware(permission.ViewRoleHasPermission), rolehaspermissioncontroller.UpdateRole)
 
+		// Attendance
 		auth.GET(route.ViewAttendanceDraft, middleware.PermissionMiddleware(permission.ViewAttendance), attendancecontroller.GetAttendanceDraft)
 		auth.POST(route.AddAttendance, middleware.PermissionMiddleware(permission.AddAttendance), attendancecontroller.CreateAttendance)
 		auth.GET(route.ViewAttendance, middleware.PermissionMiddleware(permission.ViewAttendance), attendancecontroller.GetAttendancePDF)
@@ -149,8 +164,10 @@ func SetupRoutes(r *gin.Engine) {
 		auth.GET(route.Viewsubject, middleware.PermissionMiddleware(permission.Viewsubject), subjectcontroller.Get)
 		auth.PUT(route.Editsubject, middleware.PermissionMiddleware(permission.Editsubject), subjectcontroller.Update)
 		auth.PUT(route.ToggleSubject, middleware.PermissionMiddleware(permission.Editsubject), subjectcontroller.Toggle)
+		auth.GET(route.GetClassAvailableSubjects, middleware.PermissionMiddleware(permission.Viewsubject), classschedulecontroller.GetAvailableSubjects)
 
 		// Majoir
+		auth.GET(route.ViewMajor, middleware.PermissionMiddleware(permission.ViewMajor), classcontroller.GetMajor)
 		auth.POST(route.AddMajor, middleware.PermissionMiddleware(permission.AddMajor), majorcontroller.Create)
 		auth.PUT(route.EditMajor, middleware.PermissionMiddleware(permission.EditMajor), majorcontroller.Update)
 		auth.GET(route.ViewMajorWithPagination, middleware.PermissionMiddleware(permission.ViewMajor), majorcontroller.GetWithPagination)
@@ -161,20 +178,22 @@ func SetupRoutes(r *gin.Engine) {
 		auth.DELETE(route.RemoveMajorSubject, middleware.PermissionMiddleware(permission.Editsubject), majorcontroller.RemoveSubject)
 
 		// Class Schedule
-		auth.GET(route.GetClassSchedule, middleware.PermissionMiddleware(permission.ViewCompany), classschedulecontroller.GetByClass)
-		auth.GET(route.GetClassAvailableSubjects, middleware.PermissionMiddleware(permission.Viewsubject), classschedulecontroller.GetAvailableSubjects)
-		auth.POST(route.CreateClassSchedule, middleware.PermissionMiddleware(permission.AddCompany), classschedulecontroller.Create)
-		auth.PATCH(route.ToggleClassSchedule, middleware.PermissionMiddleware(permission.Editsubject), classschedulecontroller.Toggle)
+		auth.GET(route.GetClassSchedule, middleware.PermissionMiddleware(permission.GetClassSchedule), classschedulecontroller.GetByClass)
+		auth.POST(route.CreateClassSchedule, middleware.PermissionMiddleware(permission.CreateClassSchedule), classschedulecontroller.Create)
+		auth.PATCH(route.ToggleClassSchedule, middleware.PermissionMiddleware(permission.ToggleClassSchedule), classschedulecontroller.Toggle)
+
+		// grade component
+		auth.GET(route.ViewGradeComponent, middleware.PermissionMiddleware(permission.ViewGradeComponent), scorecontroller.GetGradeComponent)
+
+		// Transcript
+		auth.GET(route.ViewTranscript, middleware.PermissionMiddleware(permission.ViewUser), transcriptcontroller.Transcript)
 
 		// Score
-		auth.GET(route.ViewGradeComponent, middleware.PermissionMiddleware(permission.ViewGradeComponent), scorecontroller.GetGradeComponent)
 		auth.POST(route.AddScore, middleware.PermissionMiddleware(permission.AddScore), scorecontroller.CreateScore)
 		auth.POST(route.AddScoreFromExcel, middleware.PermissionMiddleware(permission.AddScore), scorecontroller.ImportScoreExcel)
 		auth.GET(route.ViewScore, middleware.PermissionMiddleware(permission.ViewScore), scorecontroller.GetScore)
 		auth.PUT(route.EditScore, middleware.PermissionMiddleware(permission.EditScore), scorecontroller.UpdateScore)
 		auth.GET(route.ViewScoreReport, middleware.PermissionMiddleware(permission.ViewScore), scorecontroller.GetScoreReport)
-
-		auth.GET(route.ViewTranscript, middleware.PermissionMiddleware(permission.ViewUser), transcriptcontroller.Transcript)
 
 		// Location
 		auth.GET(route.ViewProvince, middleware.PermissionMiddleware(permission.ViewLocation), locationcontroller.GetProvince)
@@ -190,7 +209,6 @@ func SetupRoutes(r *gin.Engine) {
 		// Fee
 		auth.GET(route.ViewFeeSchedule, middleware.PermissionMiddleware(permission.ViewFeeSchedule), feecontroller.GetFeeSchedule)
 		auth.POST(route.AddFee, middleware.PermissionMiddleware(permission.AddFee), feecontroller.AddFee)
-		auth.GET(route.ViewUserClass, middleware.PermissionMiddleware(permission.ViewUser), feecontroller.GetUserClass)
 		auth.GET(route.ViewSchoolarship, middleware.PermissionMiddleware(permission.ViewFeeSchedule), feecontroller.GetSchoolarship)
 		auth.POST(route.AddFeeTransaction, middleware.PermissionMiddleware(permission.AddFee), feecontroller.AddFeeTransaction)
 		auth.GET(route.PrintInvoice, middleware.PermissionMiddleware(permission.ViewFeeSchedule), feecontroller.PrintInvoice)
@@ -218,6 +236,8 @@ func SetupRoutes(r *gin.Engine) {
 		auth.POST(route.AddStudentDocument, middleware.PermissionMiddleware(permission.AddUser), authcontroller.AddStudentDocument)
 		auth.GET(route.ViewStudentDocument, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetStudentDocuments)
 		auth.PUT(route.UpdateStudentDocument, middleware.PermissionMiddleware(permission.AddUser), authcontroller.UpdateStudentDocument)
+
+		// Teacher
 		auth.POST(route.AddTeacherProfile, middleware.PermissionMiddleware(permission.AddUser), authcontroller.AddTeacherProfile)
 		auth.GET(route.ViewTeacherProfile, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetTeacherProfile)
 		auth.PUT(route.UpdateTeacherProfile, middleware.PermissionMiddleware(permission.AddUser), authcontroller.UpdateTeacherProfile)

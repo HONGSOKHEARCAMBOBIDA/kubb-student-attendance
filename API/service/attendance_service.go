@@ -446,19 +446,19 @@ func applyAccessFilterAttendance(query *gorm.DB, db *gorm.DB, role model.Role, u
 	case role.Level <= 1:
 		return query.Where("u.id = ?", user.ID)
 
-	case role.Level > 1 && role.Level <= 6:
-		var classIDs []int
-		db.WithContext(query.Statement.Context).
-			Model(&model.UserClass{}).
-			Where("user_id = ?", user.ID).
-			Pluck("class_id", &classIDs)
+		// case role.Level > 1 && role.Level <= 6:
+		// 	var classIDs []int
+		// 	db.WithContext(query.Statement.Context).
+		// 		Model(&model.UserClass{}).
+		// 		Where("user_id = ?", user.ID).
+		// 		Pluck("class_id", &classIDs)
 
-		if len(classIDs) == 0 {
-			return query.Where("1 = 0")
-		}
-		return query.Where("a.class_id IN ?", classIDs)
+		// 	if len(classIDs) == 0 {
+		// 		return query.Where("1 = 0")
+		// 	}
+		// 	return query.Where("a.class_id IN ?", classIDs)
 
-	case role.Level >= 7:
+	case role.Level >= 2:
 		return query
 
 	default:

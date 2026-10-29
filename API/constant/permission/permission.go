@@ -2,16 +2,51 @@ package permission
 
 const (
 	// Company
-	AddCompany       = "add.company"
-	ViewCompany      = "view.company"
-	EditCompany      = "edit.company"
+	AddClass         = "add.class"
+	ViewClass        = "view.class"
+	EditClass        = "edit.class"
 	ViewMajor        = "view.Major"
 	ViewShift        = "view.Shift"
 	ViewGeneration   = "view.Generation"
 	AddGeneration    = "add.Generation"
 	UpdateGeneration = "update.Generation"
 	ViewProgramme    = "view.Programme"
-	ViewFaculty      = "view.Faculty"
+
+	// Exam
+	CreateExamPlatform       = "create.exam.platform"
+	UpdateExamPlatform       = "update.exam.platform"
+	UpdateExamPlatformDetail = "update.exam.platform.detail"
+	DeleteExamPlatform       = "delete.exam.platform"
+	GetExamPlatform          = "get.exam.platform"
+
+	// Class Detail
+	AddClassDetail    = "add.class.detail"
+	ViewClassDetail   = "view.class.detail"
+	UpdateClassDetail = "updaste.class.detail"
+
+	// UserClass
+	AddUserClass    = "add.user.class"
+	UpdateUserClass = "update.user.class"
+	ViewUserClass   = "view.user.class"
+
+	// Student Exam
+	AddStudentExam    = "add.student.exam"
+	ViewStudentExam   = "view.student.exam"
+	DeleteStudentExam = "delete.student.exam"
+
+	// Class Schedule
+	GetClassSchedule    = "get.class.schedule"
+	CreateClassSchedule = "add.class.schedule"
+	ToggleClassSchedule = "toggle.class.schedule"
+
+	// Role
+	ViewRole = "view.role"
+	EditRole = "edit.role"
+	AddRole  = "add.role"
+
+	// Faculty
+	ViewFaculty = "view.Faculty"
+	SaveFaculty = "save.Faculty"
 	// User
 	AddUser        = "add.user"
 	ViewUser       = "view.user"
