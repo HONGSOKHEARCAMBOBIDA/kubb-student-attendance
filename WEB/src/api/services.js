@@ -66,6 +66,7 @@ export const deleteuser = (id) => api.delete(`/delete.user/${id}`);
 export const changePassword = (data) => api.put("/change.password", data);
 export const countuser = () => api.get("/count.user");
 export const getrole = () => api.get("/view.role");
+export const createrole = (data) => api.post("/add.role", data);
 export const getuserdata = () => api.get(`/view.user.data`);
 export const getuserapprove = () => api.get(`/view.user.approve`);
 export const verifyuser = (id) => api.put(`verify.user/${id}`);

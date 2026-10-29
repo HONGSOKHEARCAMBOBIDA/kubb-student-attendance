@@ -8,6 +8,7 @@ import (
 	"mysql/model"
 	"mysql/request"
 	"mysql/response"
+	"mysql/utils"
 
 	"gorm.io/gorm"
 )
@@ -17,6 +18,7 @@ type RoleService interface {
 	DeleteRoleHasPermission(ctx context.Context, input request.DeleteRolePermissionsInput) error
 	GetRolePermission(ctx context.Context, id int) ([]response.PermissionWithAssignedRole, error)
 	UpdateRole(ctx context.Context, id int, input request.RoleRequestUpdate) error
+	CreateRole(ctx context.Context, input request.RoleRequestCreate) error
 }
 
 type roleservice struct {
@@ -121,4 +123,21 @@ func (s *roleservice) UpdateRole(ctx context.Context, id int, input request.Role
 		return result.Error
 	}
 	return nil
+}
+
+func (s *roleservice) CreateRole(ctx context.Context, input request.RoleRequestCreate) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newdata := model.Role{
+			Name:        *input.Name,
+			DisPlayName: *input.DisPlayName,
+			Level:       input.Level,
+		}
+		if err := tx.Create(&newdata).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }

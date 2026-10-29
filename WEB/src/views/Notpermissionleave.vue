@@ -10,7 +10,7 @@
         { slot: 'year', span: 2 },
         { slot: 'semester', span: 2 },
 
-        { slot: 'class', span: 2 },
+        { slot: 'class', span: 6 },
         { slot: 'subject', span: 2 },
         { slot: 'check_date', span: 2 },
       ]"

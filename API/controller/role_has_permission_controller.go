@@ -2,6 +2,7 @@ package controller
 
 import (
 	"mysql/constant/share"
+	"mysql/pattern/res"
 	"mysql/request"
 	"mysql/service"
 	"net/http"
@@ -79,4 +80,17 @@ func (cr *RoleHasPermissionController) UpdateRole(c *gin.Context) {
 		return
 	}
 	share.ResponseSuccess(c, http.StatusOK, "Updated")
+}
+
+func (cr *RoleHasPermissionController) CreateRole(c *gin.Context) {
+	var input request.RoleRequestCreate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		res.Fail(c, 400, "BAD REQUEST", err.Error())
+		return
+	}
+	if err := cr.service.CreateRole(c, input); err != nil {
+		res.Fail(c, 500, "CAN NOT CREATE", err.Error())
+		return
+	}
+	res.OK(c, 200)
 }

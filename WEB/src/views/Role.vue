@@ -11,6 +11,7 @@ import {
   deleterolehaspermission,
   addrolehaspermission,
   editrole,
+  createrole
 } from "../api/services.js";
 
 const role = ref([]);
@@ -27,6 +28,7 @@ const total = ref(0);
 const searchKeyword = ref("");
 
 // reactive object សម្រាប់ form (មិនមែន factory function ទេ)
+const isEditRole = ref(false); 
 const roleForm = reactive({
   id: null,
   name: "",
@@ -39,8 +41,22 @@ const roleFormRules = {
   display_name: [
     { required: true, message: "សូមបញ្ចូលឈ្មោះបង្ហាញ", trigger: "blur" },
   ],
+  level: [{ required: true, message: "សូមបញ្ចូលកម្រិត", trigger: "change" }], // NEW
 };
 
+function resetRoleForm() {
+  roleForm.id = null;
+  roleForm.name = "";
+  roleForm.display_name = "";
+  roleForm.level = 1;
+}
+
+
+function openAddRoleDialog() {
+  resetRoleForm();
+  isEditRole.value = false;
+  roledialogvisible.value = true;
+}
 // ត្រងបញ្ជី role តាមអក្សរដែល User វាយស្វែងរក
 const filteredRoles = computed(() => {
   if (!searchKeyword.value) return role.value;
@@ -91,12 +107,45 @@ function openRoleDialog(row) {
   roleForm.id = row.id;
   roleForm.name = row.name;
   roleForm.display_name = row.display_name;
+  isEditRole.value = true;
   roledialogvisible.value = true;
 }
+
 
 function closeRoleDialog() {
   roledialogvisible.value = false;
   roleFormRef.value?.clearValidate();
+  resetRoleForm();
+}
+
+async function addrole() {
+  const payload = {
+    name: roleForm.name,
+    display_name: roleForm.display_name,
+    level: roleForm.level,
+  };
+
+  submitting.value = true;
+  try {
+    await createrole(payload);
+    notify.success("បន្ថែមតួនាទីដោយជោគជ័យ");
+    closeRoleDialog();
+    fetchrole();
+  } catch (e) {
+    notify.error(e.response?.data?.error || "មានបញ្ហាក្នុងការបន្ថែមតួនាទី");
+  } finally {
+    submitting.value = false;
+  }
+}
+
+async function saveRole() {
+  const valid = await roleFormRef.value.validate().catch(() => false);
+  if (!valid) return;
+  if (isEditRole.value) {
+    await updaterole();
+  } else {
+    await addrole();
+  }
 }
 
 // នៅពេលបិទ/បើក switch លើ permission ណាមួយ
@@ -124,8 +173,7 @@ async function handleToggleAssigned(row) {
 }
 
 async function updaterole() {
-  const valid = await roleFormRef.value.validate().catch(() => false);
-  if (!valid) return;
+
 
   const payload = {
     name: roleForm.name,
@@ -162,9 +210,13 @@ onMounted(() => {
         prefix-icon="Search"
         style="width: 260px"
       />
+          <AppButton type="primary" icon="Plus" @click="openAddRoleDialog">
+      បន្ថែមតួនាទី
+    </AppButton>
     </div>
 
     <AppTable
+      :show-pagination="false"
       :data="filteredRoles"
       :loading="loading"
       show-index
@@ -205,6 +257,7 @@ onMounted(() => {
         បិទ/បើក ដើម្បីផ្តល់ ឬដកសិទ្ធិចេញពីតួនាទីនេះ
       </p>
       <AppTable
+        :show-pagination="false"
         :data="rolehaspermission"
         :loading="loading"
         show-index
@@ -232,51 +285,62 @@ onMounted(() => {
     </AppDialog>
 
     <!-- Dialog កែប្រែតួនាទី -->
-    <AppDialog
-      v-model="roledialogvisible"
-      title="កែប្រែតួនាទី"
-      width="480px"
-      :close-on-click-modal="false"
-    >
-      <el-form
-        ref="roleFormRef"
-        :model="roleForm"
-        :rules="roleFormRules"
-        label-position="top"
-        @submit.prevent="updaterole"
-      >
-          <AppInput
-            label="ឈ្មោះ"
-            prop="name"
-            v-model="roleForm.name"
-            placeholder="បញ្ចូលឈ្មោះតួនាទី"
-            clearable
-            :disabled="submitting"
-            @enter="updaterole"
-          />
+<AppDialog
+  v-model="roledialogvisible"
+  :title="isEditRole ? 'កែប្រែតួនាទី' : 'បន្ថែមតួនាទី'"
+  width="480px"
+  :close-on-click-modal="false"
+  @closed="closeRoleDialog"
+>
+  <el-form
+    ref="roleFormRef"
+    :model="roleForm"
+    :rules="roleFormRules"
+    label-position="top"
+    @submit.prevent="saveRole"
+  >
+    <AppInput
+      label="ឈ្មោះ"
+      prop="name"
+      v-model="roleForm.name"
+      placeholder="បញ្ចូលឈ្មោះតួនាទី"
+      clearable
+      :disabled="submitting"
+      @enter="saveRole"
+    />
 
-          <AppInput
-            label="ឈ្មោះបង្ហាញ"
-            prop="display_name"
-            v-model="roleForm.display_name"
-            placeholder="បញ្ចូលឈ្មោះបង្ហាញ"
-            clearable
-            @enter="updaterole"
-            :disabled="submitting"
-          />
-      </el-form>
+    <AppInput
+      label="ឈ្មោះបង្ហាញ"
+      prop="display_name"
+      v-model="roleForm.display_name"
+      placeholder="បញ្ចូលឈ្មោះបង្ហាញ"
+      clearable
+      :disabled="submitting"
+      @enter="saveRole"
+    />
 
-      <template #footer>
-        <div class="dialog-footer">
-          <AppButton @click="closeRoleDialog" :disabled="submitting" plain>
-            បោះបង់
-          </AppButton>
-          <AppButton @click="updaterole" :loading="submitting" type="primary">
-            រក្សាទុក
-          </AppButton>
-        </div>
-      </template>
-    </AppDialog>
+    <!-- NEW: only shown when adding -->
+    <el-form-item v-if="!isEditRole" label="កម្រិត" prop="level">
+      <el-input-number
+        v-model="roleForm.level"
+        :min="1"
+        :disabled="submitting"
+        style="width: 100%"
+      />
+    </el-form-item>
+  </el-form>
+
+  <template #footer>
+    <div class="dialog-footer">
+      <AppButton @click="closeRoleDialog" :disabled="submitting" plain>
+        បោះបង់
+      </AppButton>
+      <AppButton @click="saveRole" :loading="submitting" type="primary">
+        រក្សាទុក
+      </AppButton>
+    </div>
+  </template>
+</AppDialog>
   </div>
 </template>
 
@@ -308,5 +372,10 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 </style>

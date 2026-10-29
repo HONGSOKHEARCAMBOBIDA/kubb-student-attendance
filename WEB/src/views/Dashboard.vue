@@ -377,7 +377,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
 
-  color: #a2a2a3;
+  color: #0b48ee;
   background: #eff6ff;
   border: 1px solid #dbeafe;
   border-radius: 10px;

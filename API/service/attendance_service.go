@@ -869,8 +869,27 @@ func (s *attendanceservice) GetAttendance(ctx context.Context, id int, pf reques
 		if v, ok := filter["check_date"]; ok && v != "" {
 			tx = tx.Where("a.check_date = ?", v)
 		}
+		if v, ok := filter["programme_id"]; ok && v != "" {
+			tx = tx.Where("c.programme_id = ?", v)
+		}
+		if v, ok := filter["generation_id"]; ok && v != "" {
+			tx = tx.Where("c.generation_id = ?", v)
+		}
+		if v, ok := filter["major_id"]; ok && v != "" {
+			tx = tx.Where("c.major_id = ?", v)
+		}
+		if v, ok := filter["shift_id"]; ok && v != "" {
+			tx = tx.Where("c.shift_id = ?", v)
+		}
+		if v, ok := filter["year"]; ok && v != "" {
+			tx = tx.Where("c.year = ?", v)
+		}
+		if v, ok := filter["semester"]; ok && v != "" {
+			tx = tx.Where("c.semester = ?", v)
+		}
 		return tx
 	}
+
 	if err := applyFilters(base()).Count(&total).Error; err != nil {
 		return nil, nil, fmt.Errorf("count product: %w", err)
 	}

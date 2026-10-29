@@ -59,7 +59,7 @@ func SetupRoutes(r *gin.Engine) {
 	auth.Use(middleware.APIKeyAuth())
 	auth.Use(middleware.AuthMiddleware())
 	{
-		// Company
+		// Class
 		auth.GET(route.ViewClassNoPagination, middleware.PermissionMiddleware(permission.ViewCompany), companycontroller.GetClassNoPagination)
 		auth.GET(route.ViewMajor, middleware.PermissionMiddleware(permission.ViewMajor), companycontroller.GetMajor)
 		auth.GET(route.ViewShift, middleware.PermissionMiddleware(permission.ViewShift), companycontroller.GetShift)
@@ -96,6 +96,7 @@ func SetupRoutes(r *gin.Engine) {
 		auth.PUT(route.ToggleUserStatus, middleware.PermissionMiddleware(permission.EditUser), authcontroller.ToggleUserStatus)
 		auth.PUT(route.EditUser, middleware.PermissionMiddleware(permission.EditUser), authcontroller.UpdateUser)
 		auth.GET(route.ViewRole, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetRole)
+		auth.POST(route.AddRole, middleware.PermissionMiddleware(permission.EditUser), rolehaspermissioncontroller.CreateRole)
 		auth.GET(route.ViewUserData, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetUserData)
 		auth.PUT(route.UpdateUserClass, middleware.PermissionMiddleware(permission.EditCompany), authcontroller.UpdateUserClass)
 		auth.GET(route.ViewUser, middleware.PermissionMiddleware(permission.ViewUser), authcontroller.GetUserNotStudent)
