@@ -6,7 +6,7 @@
         <el-image src="/logo.png" alt="University Logo" fit="contain" />
       </div>
 
-        <span v-if="!collapsed" class="brand">
+        <span v-if="!collapsed" class="brand" style="color: #08677e;">
           សាកលវិទ្យាល័យខេរាវិទូ
         </span>
       </div>
@@ -46,7 +46,7 @@
             @click="collapsed = !collapsed"
           />
 
-          <b>{{ pageTitle }}</b>
+          <b style="color: white;">{{ pageTitle }}</b>
         </div>
 
         <el-dropdown @command="handleCommand">
@@ -60,7 +60,7 @@
             </el-avatar> -->
 
             
-            <el-text tag="b"  style="font-size: 15px;color:black">{{ userName }}</el-text>
+            <el-text tag="b"  style="font-size: 15px;color:white">{{ userName }}</el-text>
           </div>
 
           <template #dropdown>
@@ -83,6 +83,14 @@
       <main class="content">
         <router-view />
       </main>
+      <footer class="footer">
+  <span>© 2026 សាកលវិទ្យាល័យខេរាវិទូ</span>
+  <span class="divider">|</span>
+  <span >
+    Powered by
+    <a href="https://go.dev" target="_blank" rel="noopener" class="go-link">Golang</a>
+  </span>
+</footer>
     </div>
 
     <!-- Mobile bottom nav -->
@@ -155,6 +163,25 @@ onMounted(() => {
 
 <style scoped>
 
+.footer {
+  text-align: center;
+  gap: 8px; /* add this to your existing .footer rule */
+}
+
+.footer .divider {
+  color: #dcdfe6;
+}
+
+.go-link {
+  color: #00add8; /* Go brand color */
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.go-link:hover {
+  text-decoration: underline;
+}
+
 .login-logo {
   display: flex;
   justify-content: center;
@@ -183,7 +210,7 @@ onMounted(() => {
 }
 
 .sidebar.collapsed {
-  width: 64px;
+  width: 80px;
 }
 
 .sidebar-header {
@@ -225,7 +252,7 @@ onMounted(() => {
 
 .topbar {
   height: 54px;
-  background: #fff;
+  background: #07a5c8;
   border-bottom: 1px solid #ebeef5;
   display: flex;
   align-items: center;
@@ -250,9 +277,6 @@ onMounted(() => {
   border-radius: 8px;
 }
 
-.avatar-row:hover {
-  background: #f5f7fa;
-}
 
 .content {
   flex: 1;

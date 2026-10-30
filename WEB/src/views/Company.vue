@@ -7,7 +7,9 @@
         { slot: 'generation', span: 3 },
         { slot: 'major', span: 3 },
         { slot: 'shift', span: 3 },
-        { slot: 'controll', span: 3 },
+        { slot: 'controll', span: 2 },
+                { slot: 'year', span: 2 },
+        { slot: 'semester', span: 2 },
       ]"
     >
       <template #name>
@@ -32,6 +34,7 @@
 
       <template #shift>
         <AppSelect
+          filterable
           v-model="filters.shift_id"
           placeholder="វេន"
           clearable
@@ -42,6 +45,7 @@
 
       <template #generation>
         <AppSelect
+        filterable
           v-model="filters.generation_id"
           placeholder="ជំនាន់"
           clearable
@@ -52,6 +56,7 @@
 
       <template #programm>
         <AppSelect
+        filterable
           v-model="filters.programme_id"
           placeholder="កម្មវិធីសិក្សា"
           clearable
@@ -69,6 +74,26 @@
           size="large"
           :options="users"
         ></AppSelect>
+      </template>
+            <template #year>
+        <AppSelect
+          v-model="filters.year"
+          :options="years"
+          placeholder="ឆ្នាំសិក្សា"
+          size="large"
+          clearable
+          @change="onYearchange"
+        />
+      </template>
+      <template #semester>
+        <AppSelect
+          v-model="filters.semester"
+          :options="semesters"
+          placeholder="ឆមាស"
+          size="large"
+          clearable
+          @change="onSemesterchange"
+        />
       </template>
 
       <template #actions>
@@ -237,7 +262,21 @@ const filters = reactive({
   generation_id: "",
   programme_id: "",
   controlled_by: "",
+    year: null,
+  semester: null,
 });
+
+const years = [
+  { label: "ឆ្នាំទី 1", value: 1 },
+  { label: "ឆ្នាំទី 2", value: 2 },
+  { label: "ឆ្នាំទី 3", value: 3 },
+  { label: "ឆ្នាំទី 4", value: 4 },
+];
+
+const semesters = [
+  { label: "ឆមាសទី 1", value: 1 },
+  { label: "ឆមាសទី 2", value: 2 },
+];
 
 const adminLevel = computed(() => userDataStore.level >= 2);
 const canAddClass = computed(() =>
@@ -272,6 +311,8 @@ async function fetchClasses() {
       generation_id: filters.generation_id || undefined,
       programme_id: filters.programme_id || undefined,
       controlled_by: filters.controlled_by || undefined,
+      year: filters.year || "",
+      semester: filters.semester || " "
     });
     classes.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;

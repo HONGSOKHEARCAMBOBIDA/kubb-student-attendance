@@ -91,7 +91,7 @@
         <template #student_education="{ row }">
           <AppButton
             size="small"
-            icon="user"
+            icon="School"
             type="primary"
             circle
             @click="openEducationDialog(row)"

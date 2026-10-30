@@ -257,6 +257,7 @@ async function handleSave() {
         <el-col :xs="24" :sm="12">
           <el-form-item label="ប្រភេទនិស្សិត" prop="student_category_id">
             <el-select
+              filterable
               v-model="form.student_category_id"
               size="large"
               style="width: 100%"

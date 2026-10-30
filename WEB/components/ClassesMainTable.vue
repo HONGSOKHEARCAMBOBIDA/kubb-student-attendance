@@ -12,7 +12,7 @@
       @page-change="$emit('page-change')"
       actions-width="410px"
       :columns="[
-        { slot: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
+        { slot: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 200 },
         //{ slot: 'major_name', label: 'ជំនាញ', Width: 100 },
         { label: 'មហាវិទ្យាល័យ', slot: 'faculty', width: 150 },
         { slot: 'generation_name', label: 'ជំនាន់', width: 260 },
@@ -44,6 +44,9 @@
       </template>
       <template #name="{ row }">
         <div style="display: flex; flex-direction: column; text-align: start; gap: 2px;">
+          <div>
+            <el-text tag="b" size="large" type="danger">{{ row.name }}</el-text>
+          </div>
           <div> 
              <el-text size="large" style="color: black;"
         >{{ row.major_name }} | {{ row.programme_name }}</el-text

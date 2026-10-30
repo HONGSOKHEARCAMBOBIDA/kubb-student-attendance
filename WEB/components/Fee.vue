@@ -57,7 +57,7 @@ async function handleDeleteFee(row) {
     );
 
     await deletefee(row.fee_id);
-
+    
     ElMessage.success("លុបថ្លៃសិក្សាបានជោគជ័យ");
     fetchUserClass();
   } catch (e) {
@@ -318,11 +318,11 @@ async function submit() {
       scholarship_id: form.scholarship_id || 0, // 0 = no scholarship (backend must handle)
       date: form.date,
     });
-    notify.success?.("រក្សាទុកបានជោគជ័យ");
+    ElMessage.success("រក្សាទុកបានជោគជ័យ");
     emit("saved");
     emit("update:modelValue", false);
   } catch (e) {
-    notify.error(errMsg(e, "មានបញ្ហាក្នុងការរក្សាទុក"));
+    ElMessage.error(e,"មានបញ្ហាក្នុងការរក្សាទុក");
   } finally {
     saving.value = false;
   }

@@ -94,7 +94,11 @@ const teacherOptions = ref([]);
 const typeOptions = [
   { label: "ពាក់កណ្តាលឆមាស", value: "MIDTERM" },
   { label: "បញ្ចប់ឆមាស", value: "FINAL" },
+  { label: "ប្រឡងចូល", value: "ENTRANCE" },
+  { label: "ប្រឡងចេញ", value: "EXIT" },
+  { label: "ប្រឡងសង", value: "MAKEUP" },
 ];
+
 const typeLabels = Object.fromEntries(
   typeOptions.map((type) => [type.value, type.label]),
 );

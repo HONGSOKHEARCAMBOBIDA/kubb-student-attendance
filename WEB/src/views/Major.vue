@@ -506,7 +506,7 @@ onUnmounted(() => clearTimeout(searchTimer));
       :title="
         activeMajor ? `មុខវិជ្ជាសម្រាប់ ${activeMajor.name_kh}` : 'មុខវិជ្ជា'
       "
-      width="70%"
+      width="80%"
     >
       <el-form
         ref="subjectFormRef"

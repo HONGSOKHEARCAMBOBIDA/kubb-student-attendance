@@ -5,7 +5,7 @@ type IncomeRequest struct {
 	DueDate     string                `json:"due_date"`
 	Tax         float64               `json:"tax"`
 	Discount    float64               `json:"discount"`
-	Description *string               `json:"description" binding:"required"`
+	Description *string               `json:"description"`
 	IncomeItems []IncomeItemRequest   `json:"income_items"`
 	Payment     *IncomePaymentRequest `json:"payment"`
 }

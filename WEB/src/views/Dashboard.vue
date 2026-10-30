@@ -379,7 +379,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
 
-  color: #0b48ee;
+  color: #07a5c8;
   background: #eff6ff;
   border: 1px solid #dbeafe;
   border-radius: 10px;
@@ -389,7 +389,7 @@ onMounted(() => {
 
 .action-btn:hover .icon-box {
   color: #000000;
-  background: #e0e4e4;
+  background: #fddd00;
   border-color: #727274;
 }
 

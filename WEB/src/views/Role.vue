@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from "vue";
 import { useNotification } from "../../composables/useNotification.js";
+import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
 import AppTable from "../../components/AppTable.vue";
 import AppButton from "../../components/AppButton.vue";
 import AppDialog from "../../components/AppDialog.vue";
@@ -159,10 +160,10 @@ async function handleToggleAssigned(row) {
   try {
     if (row.assigned) {
       await addrolehaspermission(payload);
-      notify.success("បន្ថែមសិទ្ធិដោយជោគជ័យ");
+      ElMessage.success("បន្ថែមសិទ្ធិដោយជោគជ័យ");
     } else {
       await deleterolehaspermission(payload);
-      notify.success("ដកសិទ្ធិដោយជោគជ័យ");
+      ElMessage.success("ដកសិទ្ធិដោយជោគជ័យ")
     }
   } catch (e) {
     row.assigned = !row.assigned;

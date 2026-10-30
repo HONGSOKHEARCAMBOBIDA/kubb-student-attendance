@@ -539,6 +539,7 @@ func (s *authservice) GetUserIncludeStudent(ctx context.Context, id int, pf requ
 		Joins("LEFT JOIN role r ON r.id = u.role_id")
 	q = applyAccessFilterUserIncludeStudent(q, s.db, user)
 	q = applyCommonFilterUserIncludeStudent(q, filter)
+	q = q.Order("id DESC")
 	var totalCount int64
 	if err := q.Count(&totalCount).Error; err != nil {
 		return nil, nil, err
