@@ -117,7 +117,7 @@ const auth = useAuthStore()
 const userdataStore = useUserDataStore()
 
 const userName = computed(() => userdataStore.name || 'User')
-const collapsed = ref(false)
+const collapsed = ref(true)
 
 const nav = computed(() => {
   return router.getRoutes()

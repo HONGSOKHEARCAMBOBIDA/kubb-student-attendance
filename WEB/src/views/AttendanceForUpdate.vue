@@ -29,7 +29,7 @@
         <AppDatePicker
           v-model="filters.check_date"
           type="date"
-          placeholder="ជ្រេីសរេីសថ្ងៃទី"
+          placeholder="ថ្ងៃទី"
           value-format="YYYY-MM-DD"
           clearable
           @change="fetchAttendance"
@@ -54,7 +54,7 @@
           v-model="filters.subject_id"
           :options="subjectOptions"
           :loading="subjectsLoading"
-          placeholder="ជ្រើសរើសមុខវិជ្ជា"
+          placeholder="មុខវិជ្ជា"
           size="large"
           filterable
           clearable
@@ -65,7 +65,7 @@
         <AppSelect
           v-model="filters.programme_id"
           :options="programmes"
-          placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
+          placeholder="កម្មវិធីសិក្សា"
           size="large"
           filterable
           clearable
@@ -76,7 +76,7 @@
         <AppSelect
           v-model="filters.generation_id"
           :options="generations"
-          placeholder="ជ្រើសរើសជំនាន់"
+          placeholder="ជំនាន់"
           size="large"
           filterable
           clearable
@@ -87,7 +87,7 @@
         <AppSelect
           v-model="filters.major_id"
           :options="majors"
-          placeholder="ជ្រើសរើសជំនាញ"
+          placeholder="ជំនាញ"
           size="large"
           filterable
           clearable
@@ -98,7 +98,7 @@
         <AppSelect
           v-model="filters.shift_id"
           :options="shifts"
-          placeholder="ជ្រើសរើសវេនសិក្សា"
+          placeholder="វេនសិក្សា"
           size="large"
           filterable
           clearable
@@ -109,7 +109,7 @@
         <AppSelect
           v-model="filters.year"
           :options="years"
-          placeholder="ជ្រើសរើសឆ្នាំសិក្សា"
+          placeholder="ឆ្នាំសិក្សា"
           size="large"
           filterable
           clearable
@@ -120,7 +120,7 @@
         <AppSelect
           v-model="filters.semester"
           :options="semesters"
-          placeholder="ជ្រើសរើសឆមាស"
+          placeholder="ឆមាស"
           size="large"
           filterable
           clearable

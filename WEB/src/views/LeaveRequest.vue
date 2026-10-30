@@ -31,6 +31,8 @@ let searchTimer = null;
 const notify = useNotification();
 const userDataStore = useUserDataStore();
 
+
+
 const leaveRequests = ref([]);
 const deductTypes = ref([]);
 const classes = ref([]);
@@ -300,6 +302,7 @@ const canApproveLeave = computed(() =>
 const canDeleteLeave = computed(() =>
   userDataStore.permissions?.some((p) => p.name === "delete.leave.request"),
 );
+
 
 async function fetchClasses() {
   try {

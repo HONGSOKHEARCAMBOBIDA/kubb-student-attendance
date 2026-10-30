@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, watch, markRaw } from "vue";
+import { ref, reactive, onMounted, watch, markRaw,computed } from "vue";
 import { ElMessage ,ElMessageBox, ElNotification} from "element-plus";
 import { getincome,deleteincome } from "../api/services";
 import AppTable from "../../components/AppTable.vue";
@@ -8,13 +8,17 @@ import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppInput from "../../components/AppInput.vue";
 import { View } from "@element-plus/icons-vue";
 import { Delete } from "@element-plus/icons-vue";
+import { useUserDataStore } from "../stores/user_data.js";
 const incomes = ref([]);
 const loading = ref(false);
 const page = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 const filters = reactive({ name: "", income_date: "" });
-
+const userDataStore = useUserDataStore();
+const canDeleteIncome = computed(() =>
+  userDataStore.permissions?.some((p) => p.name === "delete.income"),
+);
 async function fetchincome() {
   loading.value = true;
   try {
@@ -112,7 +116,7 @@ onMounted(() => {
       ]">
       <template #actions="{ row }">
         <el-tooltip content="លុប" placement="top">
-          <AppButton size="small" icon="Delete" type="danger" circle @click="handleDeleteIncome(row)"/>
+          <AppButton v-if="canDeleteIncome" size="small" icon="Delete" type="danger" circle @click="handleDeleteIncome(row)"/>
         </el-tooltip>
       </template>
       <template #total="{ row }">

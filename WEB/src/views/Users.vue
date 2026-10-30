@@ -116,9 +116,10 @@
             @click="openTeacherDialog(row)"
           />
         </template>
-        <template #actions="{ row }" v-if="canedit">
+        <template #actions="{ row }">
           <el-tooltip content="កែប្រែ" placement="top">
             <AppButton
+              v-if="canedit"
               size="small"
               icon="Edit"
               type="warning"
@@ -135,9 +136,10 @@
               @click="toggleStatus(row)"
             />
           </el-tooltip> -->
-          <template v-if="isStudent(row)">
+          <template v-if="isStudent(row)" >
             <el-tooltip content="បង់ថ្លៃសិក្សា" placement="top">
               <AppButton
+                v-if="candaddfee"
                 size="small"
                 icon="ArrowRightBold"
                 type="success"
@@ -147,6 +149,7 @@
             </el-tooltip>
             <el-tooltip content="បង់ថ្លៃសេវាផ្សេងៗ" placement="top">
               <AppButton
+                v-if="candaddincome"
                 size="small"
                 icon="Money"
                 type="primary"
@@ -223,6 +226,7 @@
                 v-model="createForm.role_id"
                 placeholder="ជ្រើសតួនាទី"
                 clearable
+                filterable
                 size="large"
                 style="width: 100%"
               >
@@ -301,6 +305,7 @@ import {
   toggleUserStatus,
   getrole,
   registerUsersMain,
+  addFee,
 } from "../api/services";
 import { watch } from "vue";
 import { useUserDataStore } from "../stores/user_data";
@@ -384,7 +389,9 @@ const columns = computed(() => {
   const base = [
     { prop: "name_kh", label: "ឈ្មោះខ្មែរ", minWidth: 130 },
     { prop: "name_en", label: "ឈ្មោះឡាតាំង", minWidth: 130 },
-    { prop: "code", label: "កូដ", minWidth: 110 },
+    ...(adminLevel.value
+      ? [{ prop: "code", label: "កូដ", minWidth: 110 }]
+      : []),
     { slot: "gender", label: "ភេទ", minWidth: 90 },
     { prop: "role_name", label: "តួនាទី", minWidth: 110 },
   ];
@@ -461,7 +468,13 @@ const canedit = computed(() =>
 const candadd = computed(() =>
   userDataStore.permissions?.some((p) => p.name === "add.user"),
 );
-
+const candaddfee = computed(() =>
+  userDataStore.permissions?.some((p) => p.name === "add.fee"),
+);
+const candaddincome = computed(() =>
+  userDataStore.permissions?.some((p) => p.name === "add.income"),
+);
+const adminLevel = computed(() => userDataStore.level === 7)
 const createForm = reactive({
   name_kh: "",
   name_en: "",

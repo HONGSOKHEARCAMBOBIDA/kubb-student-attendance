@@ -92,7 +92,7 @@
             </el-icon>
           </div>
 
-          <div class="action-btn" @click="$router.push('/createattendance')">
+          <div v-if="addattendance" class="action-btn" @click="$router.push('/createattendance')">
             <div class="icon-box">
               <el-icon :size="23">
                 <Camera />
@@ -241,7 +241,7 @@
               <ArrowRight />
             </el-icon>
           </div>
-          <div v-if="adminLevel || managerLevel" class="action-btn" @click="$router.push('/Income')">
+          <div v-if="viewincome" class="action-btn" @click="$router.push('/Income')">
             <div class="icon-box">
               <el-icon :size="23">
                 <Money />
@@ -288,9 +288,11 @@ import { computed, onMounted, ref } from "vue";
 import { useUserDataStore } from "../stores/user_data";
 import { getcountleave } from "../api/services";
 const userDataStore = useUserDataStore();
-const adminLevel = computed(() => userDataStore.level === 7)
+const adminLevel = computed(() => userDataStore.level >= 2)
 const staftLevel = computed(() => userDataStore.level === 2)
 const managerLevel = computed(() => userDataStore.level === 3)
+const viewincome = computed(() => userDataStore.permissions?.some((p) => p.name === "view.income"))
+const addattendance = computed(() => userDataStore.permissions?.some((p) => p.name === "add.attendance"))
 const leaves = ref([])
 async function fetchCountLeave() {
   try {

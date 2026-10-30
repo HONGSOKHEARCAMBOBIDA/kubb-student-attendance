@@ -41,13 +41,13 @@ func NewLeaveRequestService() LeaveRequestService {
 
 func applyAccessFilterLeaveRequest(query *gorm.DB, db *gorm.DB, role model.Role, user model.User) *gorm.DB {
 	if role.Level > 1 && role.Level < 7 {
-
-		var classIDs []int
-		db.Model(&model.UserClass{}).Where("user_id =?", user.ID).Pluck("class_id", &classIDs)
-		if len(classIDs) == 0 {
-			return query.Where("1 = 0")
-		}
-		return query.Where("l.class_id IN ?", classIDs)
+		return query
+		// var classIDs []int
+		// db.Model(&model.UserClass{}).Where("user_id =?", user.ID).Pluck("class_id", &classIDs)
+		// if len(classIDs) == 0 {
+		// 	return query.Where("1 = 0")
+		// }
+		// return query.Where("l.class_id IN ?", classIDs)
 
 	} else if role.Level <= 1 {
 		return query.Where("l.user_id =?", user.ID)

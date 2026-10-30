@@ -175,7 +175,7 @@ func SetupRoutes(r *gin.Engine) {
 		auth.POST(route.AddMajorSubject, middleware.PermissionMiddleware(permission.AddMajor), majorcontroller.AddSubject)
 		auth.POST(route.GetMajorSubject, middleware.PermissionMiddleware(permission.ViewMajor), majorcontroller.GetSubjects)
 		auth.PUT(route.ToggleMajorSubject, middleware.PermissionMiddleware(permission.Editsubject), majorcontroller.ToggleSubject)
-		auth.DELETE(route.RemoveMajorSubject, middleware.PermissionMiddleware(permission.Editsubject), majorcontroller.RemoveSubject)
+		auth.DELETE(route.RemoveMajorSubject, middleware.PermissionMiddleware(permission.RemoveMajorSubject), majorcontroller.RemoveSubject)
 
 		// Class Schedule
 		auth.GET(route.GetClassSchedule, middleware.PermissionMiddleware(permission.GetClassSchedule), classschedulecontroller.GetByClass)

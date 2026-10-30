@@ -81,7 +81,8 @@ var requiredPermissions = []string{
 	"add.leave.type", "edit.leave.request", "edit.status.leave.request",
 	"add.role.has.permission", "add.leave.request", "edit.leave.request",
 	"edit.status.leave.request", "delete.leave.request", "add.subject", "edit.subject",
-	"add.Major", "edit.Major", "add.score",
+	"add.Major", "edit.Major", "add.score", "view.income", "add.attendance", "delete.leave.request",
+	"add.fee", "add.income", "delete.income",
 }
 
 func (s *authservice) RegisterMain(ctx context.Context, input request.UserInput) error {

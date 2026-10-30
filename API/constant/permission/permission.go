@@ -94,6 +94,9 @@ const (
 	Addsubject  = "add.subject"
 	Editsubject = "edit.subject"
 
+	// Major Subject
+	RemoveMajorSubject = "Remove.major.subject"
+
 	// Major
 
 	AddMajor  = "add.Major"

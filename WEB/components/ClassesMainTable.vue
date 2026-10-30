@@ -13,12 +13,12 @@
       actions-width="410px"
       :columns="[
         { slot: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 120 },
-        { slot: 'major_name', label: 'ជំនាញ', Width: 100 },
+        //{ slot: 'major_name', label: 'ជំនាញ', Width: 100 },
         { label: 'មហាវិទ្យាល័យ', slot: 'faculty', width: 150 },
         { slot: 'generation_name', label: 'ជំនាន់', width: 260 },
-        { slot: 'programme_name', label: 'កម្មវិធីសិក្សា', Width: 60 },
-        { prop: 'year', label: 'ឆ្នាំ', width: 60, align: 'center' },
-        { prop: 'semester', label: 'ឆមាស', width: 70, align: 'center' },
+        //{ slot: 'programme_name', label: 'កម្មវិធីសិក្សា', Width: 60 },
+        //{ prop: 'year', label: 'ឆ្នាំ', width: 60, align: 'center' },
+        //{ prop: 'semester', label: 'ឆមាស', width: 70, align: 'center' },
         { prop: 'group', label: 'ក្រុម', width: 60, align: 'center' },
         { prop: 'term', label: 'វគ្គ', width: 60, align: 'center' },
         { slot: 'type', label: 'ប្រភេទ', width: 100, align: 'center' },
@@ -46,7 +46,7 @@
         <div style="display: flex; flex-direction: column; text-align: start; gap: 2px;">
           <div> 
              <el-text size="large" style="color: black;"
-        >{{ row.name }} | {{ row.programme_name }}</el-text
+        >{{ row.major_name }} | {{ row.programme_name }}</el-text
         >
           </div>
         <div>

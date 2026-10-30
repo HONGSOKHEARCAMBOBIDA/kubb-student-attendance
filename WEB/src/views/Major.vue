@@ -441,7 +441,7 @@ onUnmounted(() => clearTimeout(searchTimer));
           <el-tooltip content="ថ្លៃសិក្សា" placement="top">
             <AppButton
               :disabled="row.is_active === false"
-              v-if="canCreateMajor"
+             
               size="small"
               icon="Money"
               circle
