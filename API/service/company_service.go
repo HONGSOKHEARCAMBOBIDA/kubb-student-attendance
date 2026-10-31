@@ -275,6 +275,9 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		if v, ok := filter["year"]; ok && v != "" {
 			tx = tx.Where("c.year = ?", v)
 		}
+		if v, ok := filter["semester"]; ok && v != "" {
+			tx = tx.Where("c.semester = ?", v)
+		}
 		return tx
 	}
 	if err := applyFilters(base()).Count(&total).Error; err != nil {

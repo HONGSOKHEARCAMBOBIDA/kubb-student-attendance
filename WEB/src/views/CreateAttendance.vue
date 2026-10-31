@@ -90,7 +90,7 @@ import {
 import { createAttendance, getAttendanceDraft, viewcompanyscan } from "../api/services";
 import AppButton from "../../components/AppButton.vue";
 import { useUserDataStore } from "../stores/user_data";
-
+import { ElMessage, ElMessageBox } from "element-plus";
 const userDataStore = useUserDataStore();
 
 const now = ref(new Date());
@@ -187,11 +187,11 @@ async function handleCheckIn() {
   loading.value = true;
   try {
     await createAttendance(attendForm);
-    ElNotification({ title: "ជោគជ័យ", message: "ចុះវត្តមានបានជោគជ័យ", type: "success" });
+    ElMessage.success("ចុះវត្តមានបានជោគជ័យ")
     attendForm.reason = "";
     await fetchDraft(); // refresh so the button reflects the next session
   } catch (e) {
-    ElNotification({ title: "មានបញ្ហា", message: e.response?.data?.error || "", type: "error" });
+    ElMessage.error(e,"មានបញ្ហា")
   } finally {
     loading.value = false;
   }

@@ -31,7 +31,7 @@
         <AppDatePicker
           v-model="filters.check_date"
           type="date"
-          placeholder="ជ្រេីសរេីសថ្ងៃទី"
+          placeholder="ថ្ងៃទី"
           value-format="YYYY-MM-DD"
           clearable
           @change="fetchData"
@@ -45,7 +45,7 @@
           v-model="filters.subject_id"
           :options="subjectOptions"
           :loading="subjectsLoading"
-          placeholder="ជ្រើសរើសមុខវិជ្ជា"
+          placeholder="មុខវិជ្ជា"
           size="large"
           filterable
           clearable
@@ -69,7 +69,7 @@
         <AppSelect
           v-model="filters.programme_id"
           :options="programmes"
-          placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
+          placeholder="កម្មវិធីសិក្សា"
           size="large"
           filterable
           clearable
@@ -80,7 +80,7 @@
         <AppSelect
           v-model="filters.generation_id"
           :options="generations"
-          placeholder="ជ្រើសរើសជំនាន់"
+          placeholder="ជំនាន់"
           size="large"
           filterable
           clearable
@@ -91,7 +91,7 @@
         <AppSelect
           v-model="filters.major_id"
           :options="majors"
-          placeholder="ជ្រើសរើសជំនាញ"
+          placeholder="ជំនាញ"
           size="large"
           filterable
           clearable
@@ -102,7 +102,7 @@
         <AppSelect
           v-model="filters.shift_id"
           :options="shifts"
-          placeholder="ជ្រើសរើសវេនសិក្សា"
+          placeholder="វេនសិក្សា"
           size="large"
           filterable
           clearable
@@ -113,7 +113,7 @@
         <AppSelect
           v-model="filters.year"
           :options="years"
-          placeholder="ជ្រើសរើសឆ្នាំសិក្សា"
+          placeholder="ឆ្នាំសិក្សា"
           size="large"
           clearable
           @change="onYearchange"
@@ -123,7 +123,7 @@
         <AppSelect
           v-model="filters.semester"
           :options="semesters"
-          placeholder="ជ្រើសរើសឆមាស"
+          placeholder="ឆមាស"
           size="large"
           clearable
           @change="onSemesterchange"
@@ -160,7 +160,7 @@
         :total="total"
         @page-change="fetchData"
         :columns="[
-          { prop: 'user_code', label: 'អត្តលេខ', width: 150 },
+          { prop: 'user_code', label: 'អត្តលេខ', width: 180 },
           { slot: 'name', label: 'ឈ្មោះ', minWidth: 140 },
           { slot: 'gender', label: 'ភេទ', width: 80 },
           { slot: 'class', label: 'ថ្នាក់', minWidth: 120 },
@@ -224,6 +224,9 @@ import { useNotification } from "../../composables/useNotification.js";
 import AppSelect from "../../components/AppSelect.vue";
 import AppDatePicker from "../../components/AppDatePicker.vue";
 import AppInput from "../../components/AppInput.vue";
+import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
+
+
 const notify = useNotification();
 const selectedRows = ref([]);
 const submitting = ref(false);
@@ -424,11 +427,24 @@ function debounce(fn, delay = 400) {
   debounceTimer = setTimeout(fn, delay);
 }
 
+async function confirmDelete(message) {
+  try {
+    await ElMessageBox.confirm(message, "បញ្ជាក់", { type: "warning" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function handleAddNotPermission() {
   if (!selectedRows.value.length) {
     notify.error("សូមជ្រើសរើសសិស្សយ៉ាងហោចណាស់ម្នាក់");
     return;
   }
+
+  const confirmed = await confirmDelete("តើអ្នកពិតជាចង់កត់ត្រាអវត្តមានគ្មានច្បាប់មែនទេ?");
+  if (!confirmed) return;
+
   submitting.value = true;
   try {
     await addNotPermissionLeave({

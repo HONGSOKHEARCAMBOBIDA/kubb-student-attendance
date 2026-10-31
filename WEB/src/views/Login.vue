@@ -54,7 +54,7 @@ import { login } from "../api/services";
 import AppButton from "../../components/AppButton.vue";
 import AppInput from "../../components/AppInput.vue";
 import { useNotification } from "../../composables/useNotification.js";
-
+import { ElMessage } from "element-plus";
 const notify = useNotification();
 const router = useRouter();
 const auth = useAuthStore();
@@ -101,7 +101,7 @@ async function handleLogin() {
 
     await router.push("/Dashboard");
 
-    notify.success("ចូលប្រព័ន្ធបានជោគជ័យ");
+    ElMessage.success("ចូលប្រព័ន្ធបានជោគជ័យ");
   } catch (e) {
     if (e?.response) {
       notify.error(e.response?.data?.message || "ការចូលប្រព័ន្ធបរាជ័យ");

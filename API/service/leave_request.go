@@ -693,7 +693,7 @@ func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, pf requ
 			tx = tx.Where("c.semester = ?", v)
 		}
 		if v, ok := filter["subject_id"]; ok && v != "" {
-			tx = tx.Where("l.subject_id = ?", v)
+			tx = tx.Where("cs.subject_id = ?", v)
 		}
 		// NOTE: no "check_date" branch here anymore — it's already baked into base()'s joins above.
 		return tx

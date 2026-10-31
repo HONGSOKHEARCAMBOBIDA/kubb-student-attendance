@@ -40,7 +40,7 @@
         <AppSelect
           v-model="filters.class_id"
           :options="classes"
-          placeholder="ជ្រើសរើសថ្នាក់"
+          placeholder="ថ្នាក់"
           size="large"
           filterable
           clearable
@@ -48,12 +48,12 @@
         >
         </AppSelect>
       </template>
-  
+
       <template #subject>
         <AppSelect
           v-model="filters.subject_id"
           :options="subjectOptions"
-          placeholder="ជ្រើសរើសមុខវិជ្ជា"
+          placeholder="មុខវិជ្ជា"
           size="large"
           filterable
           clearable
@@ -61,65 +61,65 @@
         >
         </AppSelect>
       </template>
-            <template #programm>
+      <template #programm>
         <AppSelect
           v-model="filters.programme_id"
           :options="programmes"
-          placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
+          placeholder="កម្មវិធីសិក្សា"
           size="large"
           filterable
           clearable
           @change="onProgrammchange"
         />
       </template>
-            <template #generation>
+      <template #generation>
         <AppSelect
           v-model="filters.generation_id"
           :options="generations"
-          placeholder="ជ្រើសរើសជំនាន់"
+          placeholder="ជំនាន់"
           size="large"
           filterable
           clearable
           @change="onGenerationchange"
         />
       </template>
-            <template #major>
+      <template #major>
         <AppSelect
           v-model="filters.major_id"
           :options="majors"
-          placeholder="ជ្រើសរើសជំនាញ"
+          placeholder="ជំនាញ"
           size="large"
           filterable
           clearable
           @change="onMajorchange"
         />
       </template>
-            <template #shift>
+      <template #shift>
         <AppSelect
           v-model="filters.shift_id"
           :options="shifts"
-          placeholder="ជ្រើសរើសវេនសិក្សា"
+          placeholder="វេនសិក្សា"
           size="large"
           filterable
           clearable
           @change="onShiftchange"
         />
       </template>
-            <template #year>
+      <template #year>
         <AppSelect
           v-model="filters.year"
           :options="years"
-          placeholder="ជ្រើសរើសឆ្នាំសិក្សា"
+          placeholder="ឆ្នាំសិក្សា"
           size="large"
           clearable
           @change="onYearchange"
         />
       </template>
-           <template #semester>
+      <template #semester>
         <AppSelect
           v-model="filters.semester"
           :options="semesters"
-          placeholder="ជ្រើសរើសឆមាស"
+          placeholder="ឆមាស"
           size="large"
           clearable
           @change="onSemesterchange"
@@ -253,8 +253,8 @@ const subjectsLoading = ref(false);
 const page = ref(1);
 const pageSize = ref(20);
 const getScore = (row) => {
-  return 10 - row.absent_count * 1 - row.permission_count * 0.5
-}
+  return 10 - row.absent_count * 1 - row.permission_count * 0.5;
+};
 
 const filters = reactive({
   name: "",
@@ -352,7 +352,7 @@ async function onProgrammchange(programmID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchReport();
+ // fetchReport();
 }
 
 async function onGenerationchange(generationID) {
@@ -363,7 +363,7 @@ async function onGenerationchange(generationID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchReport();
+  //fetchReport();
 }
 
 async function onMajorchange(majorID) {
@@ -374,7 +374,7 @@ async function onMajorchange(majorID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchReport();
+  //fetchReport();
 }
 
 async function onShiftchange(shiftID) {
@@ -385,7 +385,7 @@ async function onShiftchange(shiftID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchReport();
+  //fetchReport();
 }
 
 async function onYearchange(yearID) {
@@ -396,7 +396,7 @@ async function onYearchange(yearID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchReport();
+ // fetchReport();
 }
 
 async function onSemesterchange(semesterID) {
@@ -407,7 +407,7 @@ async function onSemesterchange(semesterID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchReport();
+  //fetchReport();
 }
 
 const dateGroups = computed(() => {
@@ -526,7 +526,7 @@ watch(
 );
 
 onMounted(() => {
-  fetchReport();
+  //fetchReport();
   // fetchClasses();
   fetchProgramme();
   fetchGeneration();
@@ -588,5 +588,16 @@ onMounted(() => {
 .cell-empty {
   color: #c0c4cc;
 }
-@media (max-width: 767px) { .report-scroll { max-height: 70vh; } .report-table { font-size: 11px; } .report-table th, .report-table td { padding: 4px 6px; } }
+@media (max-width: 767px) {
+  .report-scroll {
+    max-height: 70vh;
+  }
+  .report-table {
+    font-size: 11px;
+  }
+  .report-table th,
+  .report-table td {
+    padding: 4px 6px;
+  }
+}
 </style>

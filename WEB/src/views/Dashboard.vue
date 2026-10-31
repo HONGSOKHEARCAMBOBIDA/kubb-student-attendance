@@ -389,7 +389,7 @@ onMounted(() => {
 
 .action-btn:hover .icon-box {
   color: #000000;
-  background: #fddd00;
+ 
   border-color: #727274;
 }
 

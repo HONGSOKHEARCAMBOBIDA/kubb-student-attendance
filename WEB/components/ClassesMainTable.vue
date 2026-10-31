@@ -21,14 +21,14 @@
         //{ prop: 'semester', label: 'ឆមាស', width: 70, align: 'center' },
         { prop: 'group', label: 'ក្រុម', width: 60, align: 'center' },
         { prop: 'term', label: 'វគ្គ', width: 60, align: 'center' },
-        { slot: 'type', label: 'ប្រភេទ', width: 100, align: 'center' },
+        { slot: 'type', label: 'ប្រភេទ', width: 70, align: 'center' },
         {
           slot: 'exam_final',
           label: 'ប្រឡងគ្រប់មុខ',
           width: 110,
           align: 'center',
         },
-        { label: 'ស្ថានភាព', slot: 'status', width: 120 },
+        { label: 'ស្ថានភាព', slot: 'status', width: 89 },
         { label: 'សិស្សសរុប', slot: 'total', width: 100 },
         { label: 'កាន់ដោយ', prop: 'controlled_by_name', minwidth: 100 },
       ]"
@@ -145,7 +145,7 @@
             @click="$emit('copy', row)"
           />
         </el-tooltip>
-        <el-tooltip content="កាលវិភាគ" placement="top">
+        <el-tooltip content="បញ្ចូលម៉ោងសាស្រ្តាចារ្យ" placement="top">
           <AppButton
             v-if="adminLevel"
             :disabled="row.is_active === false"

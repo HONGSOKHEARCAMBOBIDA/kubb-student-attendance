@@ -164,6 +164,7 @@ onMounted(() => {
 <style scoped>
 
 .footer {
+  font-size: 12px;
   text-align: center;
   gap: 8px; /* add this to your existing .footer rule */
 }
@@ -210,7 +211,7 @@ onMounted(() => {
 }
 
 .sidebar.collapsed {
-  width: 80px;
+  width: 70px;
 }
 
 .sidebar-header {

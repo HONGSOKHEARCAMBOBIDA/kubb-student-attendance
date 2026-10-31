@@ -139,50 +139,127 @@
       <AppTable
         :data="attendance"
         :loading="loading"
-        show-index
         v-model:current-page="page"
         v-model:page-size="pageSize"
         :total="total"
         @page-change="fetchAttendance"
         :columns="[
           { slot: 'name', label: 'ឈ្មោះ', minWidth: 200 },
-          { prop: 'programme_name', label: 'កម្រិត', minWidth: 90 },
-          { prop: 'class_name', label: 'ថ្នាក់', minWidth: 110 },
+          {
+            slot: 'class_name',
+            label: 'ថ្នាក់',
+            minWidth: 150,
+            align: 'center',
+          },
           { prop: 'major_name', label: 'ជំនាញ', minWidth: 110 },
           { prop: 'faculty_name', label: 'មហាវិទ្យាល័យ', minWidth: 110 },
-          { prop: 'shift_name', label: 'វេនសិក្សា', minWidth: 100,align:'center'  },
-          { prop: 'generation_name', label: 'ជំនាន់', minWidth: 90,align:'center'  },
-          { prop: 'year', label: 'ឆ្នាំ', minWidth: 40,align:'center' },
-          { prop: 'semester', label: 'ឆមាស', minWidth: 50,align:'center' },
-          { prop: 'group', label: 'ក្រុម', minWidth: 50,align:'center' },
-          { prop: 'term', label: 'វគ្គ', minWidth:50,align:'center' },
+          {
+            prop: 'shift_name',
+            label: 'វេនសិក្សា',
+            minWidth: 100,
+            align: 'center',
+          },
+          {
+            prop: 'generation_name',
+            label: 'ជំនាន់',
+            minWidth: 90,
+            align: 'center',
+          },
+          // { prop: 'year', label: 'ឆ្នាំ', minWidth: 40,align:'center' },
+          // { prop: 'semester', label: 'ឆមាស', minWidth: 50,align:'center' },
+          // { prop: 'group', label: 'ក្រុម', minWidth: 50,align:'center' },
+          // { prop: 'term', label: 'វគ្គ', minWidth:50,align:'center' },
           { prop: 'subject_name', label: 'មុខវិជ្ជា', minWidth: 120 },
-          { prop: 'check_date', label: 'ថ្ងៃស្កែន', minWidth: 80,align:'center' },
-          { label: 'ម៉ោងទី ១', slot: 'session1', minWidth: 60,align:'center'  },
-          { label: 'ម៉ោងទី ២', slot: 'session2', minWidth: 60,align:'center'  },
-          { label: 'ម៉ោងទី ៣', slot: 'session3', minWidth: 60,align:'center'  },
-          { label: 'ម៉ោងទី ៤', slot: 'session4', minWidth: 60,align:'center'  },
-          { label: 'ម៉ោងទី ៥', slot: 'session5', minWidth: 60,align:'center'  },
+          {
+            slot: 'check_date',
+            label: 'ថ្ងៃស្កែន',
+            minWidth: 80,
+            align: 'center',
+          },
+          {
+            label: 'ម៉ោងទី ១',
+            slot: 'session1',
+            minWidth: 60,
+            align: 'center',
+          },
+          {
+            label: 'ម៉ោងទី ២',
+            slot: 'session2',
+            minWidth: 60,
+            align: 'center',
+          },
+          {
+            label: 'ម៉ោងទី ៣',
+            slot: 'session3',
+            minWidth: 60,
+            align: 'center',
+          },
+          {
+            label: 'ម៉ោងទី ៤',
+            slot: 'session4',
+            minWidth: 60,
+            align: 'center',
+          },
+          {
+            label: 'ម៉ោងទី ៥',
+            slot: 'session5',
+            minWidth: 60,
+            align: 'center',
+          },
         ]"
       >
-<template #name="{ row }">
-  <div style="display: flex; flex-direction: column; text-align: start; gap: 2px;">
-    <div>
-      <el-text type="primary" tag="b">
-        {{ row.name_kh }} |
-      </el-text>
-      <el-text type="default">
-        {{ row.name_en }} | {{ genderLabel(row.gender) }}
-      </el-text>
-    </div>
+        <template #class_name="{ row }">
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              text-align: start;
+              gap: 2px;
+            "
+          >
+            <div>
+              <el-text
+                >{{ row.class_name }} ឆ្នាំ{{ row.year }} ឆមាស{{
+                  row.semester
+                }}</el-text
+              >
+            </div>
+            <div>
+              <el-text
+                >ក្រុម{{ row.group }} វគ្គ{{ row.term }}
+                <el-text tag="b" type="primary"
+                  >({{ row.programme_name }})</el-text
+                ></el-text
+              >
+            </div>
+          </div>
+        </template>
+        <template #name="{ row }">
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              text-align: start;
+              gap: 2px;
+            "
+          >
+            <div>
+              <el-text type="primary" tag="b"> {{ row.name_kh }} | </el-text>
+              <el-text type="default">
+                {{ row.name_en }}
+              </el-text>
+            </div>
 
-    <div>
-      <el-text type="info" size="small">
-      {{ row.code }}
-    </el-text>
-    </div>
-  </div>
-</template>
+            <div>
+              <el-text type="info" size="small">
+                {{ row.code }} | {{ genderLabel(row.gender) }}
+              </el-text>
+            </div>
+          </div>
+        </template>
+        <template #check_date="{ row }">
+          <el-text tag="mark">{{ row.check_date }}</el-text>
+        </template>
 
         <template #status="{ row }">
           <el-tag
@@ -376,7 +453,7 @@ async function onProgrammchange(programmID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchAttendance();
+ // fetchAttendance();
 }
 
 async function onGenerationchange(generationID) {
@@ -387,7 +464,7 @@ async function onGenerationchange(generationID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchAttendance();
+ // fetchAttendance();
 }
 
 async function onMajorchange(majorID) {
@@ -398,7 +475,7 @@ async function onMajorchange(majorID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchAttendance();
+ // fetchAttendance();
 }
 
 async function onShiftchange(shiftID) {
@@ -409,7 +486,7 @@ async function onShiftchange(shiftID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchAttendance();
+ // fetchAttendance();
 }
 
 async function onYearchange(yearID) {
@@ -420,7 +497,7 @@ async function onYearchange(yearID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchAttendance();
+ // fetchAttendance();
 }
 
 async function onSemesterchange(semesterID) {
@@ -431,7 +508,7 @@ async function onSemesterchange(semesterID) {
   subjectOptions.value = [];
   await fetchClasses(); //
   page.value = 1;
-  fetchAttendance();
+ // fetchAttendance();
 }
 
 async function onclasschange(classID) {
@@ -440,7 +517,7 @@ async function onclasschange(classID) {
   if (classID) {
     await fetchSubjectOptions(classID);
   }
-  fetchAttendance();
+ // fetchAttendance();
 }
 
 async function fetchSubjectOptions(classID) {
@@ -516,7 +593,7 @@ async function fetchAttendance() {
 }
 
 onMounted(() => {
-  fetchAttendance();
+  //fetchAttendance();
   // fetchClasses();
   fetchProgramme();
   fetchGeneration();

@@ -82,7 +82,6 @@
           placeholder="ឆ្នាំសិក្សា"
           size="large"
           clearable
-          @change="onYearchange"
         />
       </template>
       <template #semester>
@@ -92,7 +91,6 @@
           placeholder="ឆមាស"
           size="large"
           clearable
-          @change="onSemesterchange"
         />
       </template>
 
@@ -262,7 +260,7 @@ const filters = reactive({
   generation_id: "",
   programme_id: "",
   controlled_by: "",
-    year: null,
+  year: null,
   semester: null,
 });
 
@@ -312,7 +310,7 @@ async function fetchClasses() {
       programme_id: filters.programme_id || undefined,
       controlled_by: filters.controlled_by || undefined,
       year: filters.year || "",
-      semester: filters.semester || " "
+      semester: filters.semester || ""
     });
     classes.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;
@@ -397,6 +395,8 @@ watch(
     () => filters.generation_id,
     () => filters.programme_id,
     () => filters.controlled_by,
+    () => filters.year,
+    () => filters.semester
   ],
   () => {
     page.value = 1;

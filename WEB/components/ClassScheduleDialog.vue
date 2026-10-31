@@ -730,25 +730,25 @@ watch(
 
     <AppTable
       class="schedule-table"
-      show-index
+     
       :data="schedules"
       :loading="loading"
       :show-pagination="false"
       actions-width="90px"
       :columns="[
-        { label: 'លេខកូដ', prop: 'subject_code', minWidth: 100 },
-        { label: 'មុខវិជ្ជា', prop: 'subject_name_kh', minWidth: 160 },
-        { label: 'ថ្ងៃ', slot: 'day', width: 120 },
-        { label: 'កាលបរិច្ឆេទ', prop: 'schedule_date', width: 120 },
-        { label: 'Session សរុប', prop: 'total_session', width: 120 },
-        { label: 'និស្សិតសរុប', slot: 'total_student', width: 120 },
-        { label: 'បន្ទប់', prop: 'room', width: 120 },
-        { label: 'សាស្រ្តាចារ្យ', slot: 'name_kh', minWidth: 120 },
-        { label: 'តម្លៃម៉ោង', slot: 'hourly_rate', width: 120 },
-        { label: 'ប្រាក់ម៉ោងគ្រូសរុប', slot: 'total_rate', width: 150 },
-        { label: 'បង្កើតដោយ', prop: 'created_by', minWidth: 120 },
-        { label: 'ស្ថានភាព', slot: 'status', width: 150 },
-        { label: 'ផ្សេងៗ', slot: 'is_mission', width: 110 },
+        { label: 'លេខកូដ', prop: 'subject_code', minWidth: 100,align: 'center' },
+        { label: 'មុខវិជ្ជា', prop: 'subject_name_kh', minWidth: 160,align: 'center' },
+        { label: 'ថ្ងៃ', slot: 'day', width: 60,align: 'center' },
+        { label: 'កាលបរិច្ឆេទ', prop: 'schedule_date', width: 120,align: 'center' },
+        { label: 'Session សរុប', prop: 'total_session', width: 120,align: 'center' },
+        { label: 'និស្សិតសរុប', slot: 'total_student', width: 120,align: 'center' },
+        { label: 'បន្ទប់', prop: 'room', width: 70,align: 'center' },
+        { label: 'សាស្រ្តាចារ្យ', slot: 'name_kh', minWidth: 120,align: 'center' },
+        { label: 'តម្លៃម៉ោង', slot: 'hourly_rate', width: 120,align: 'center' },
+        { label: 'ប្រាក់ម៉ោងគ្រូសរុប', slot: 'total_rate', width: 150,align: 'center' },
+        { label: 'បង្កើតដោយ', prop: 'created_by', minWidth: 120,align: 'center' },
+        { label: 'ស្ថានភាព', slot: 'status', width: 80,align: 'center' },
+        { label: 'ផ្សេងៗ', slot: 'is_mission', width: 110,align: 'center' },
       ]"
     >
       <template #is_mission="{ row }">
@@ -760,7 +760,7 @@ watch(
         >
       </template>
       <template #name_kh="{ row }">
-        <el-text>{{ row.name_kh }} - {{ row.name_en }}</el-text>
+        <el-text>{{ row.name_kh }}</el-text>
       </template>
       <template #day="{ row }">
         <el-text>{{ dayLabel(row.day_of_week) }}</el-text>
