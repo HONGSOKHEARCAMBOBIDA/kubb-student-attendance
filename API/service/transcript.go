@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"mysql/config"
+	"mysql/helper"
 	"mysql/response"
 
 	"gorm.io/gorm"
@@ -51,6 +52,8 @@ func (s *transcriptservice) Student(ctx context.Context, userID int) (*response.
 	if err := query.Scan(&st).Error; err != nil {
 		return nil, err
 	}
+
+	st.DateOfBirth = helper.FormatDate(st.DateOfBirth)
 
 	return &st, nil
 }

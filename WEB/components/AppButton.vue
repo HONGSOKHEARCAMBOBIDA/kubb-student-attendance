@@ -1,6 +1,6 @@
 <template>
   <el-button
-   
+    border-color="#07a5c8"
     v-bind="$attrs"
     type="default"
      size="small"
@@ -12,7 +12,7 @@
     :class="{ 'app-button--block': block, 'app-button--circle': circle }"
     @click="$emit('click')"
   >
-    <el-icon v-if="icon"><component :is="icon" /></el-icon>
+    <el-icon v-if="icon" color="#07a5c8"><component :is="icon" /></el-icon>
     <slot v-if="!circle" />
   </el-button>
 </template>
@@ -37,7 +37,6 @@ defineEmits(['click'])
   height: 44px;
   font-size: 15px;
   font-weight: 600;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;

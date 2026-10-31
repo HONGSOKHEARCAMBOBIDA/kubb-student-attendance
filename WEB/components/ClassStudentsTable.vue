@@ -1,11 +1,18 @@
 <template>
   <el-divider content-position="left">
-    <el-row :gutter="20">
-      <AppInput
-        v-model.trim="search"
-        placeholder="ស្វែងរកសិស្ស (ឈ្មោះ ឬ កូដ)"
-        clearable
-      />
+    <el-row :gutter="10">
+      <el-col :span="16">
+        <AppInput
+          v-model.trim="search"
+          placeholder="ស្វែងរកសិស្ស (ឈ្មោះ ឬ កូដ)"
+          clearable
+        />
+      </el-col>
+      <el-col :span="8">
+        <el-tooltip content="បោះពុម្ព" placement="top">
+          <AppButton circle icon="Printer" @click="exportExcel" />
+        </el-tooltip>
+      </el-col>
     </el-row>
   </el-divider>
 
@@ -168,6 +175,8 @@ import AppButton from "./AppButton.vue";
 import AppInput from "./AppInput.vue";
 import { getTranscript } from "../src/api/services.js";
 import AppDialog from "./AppDialog.vue";
+import * as XLSX from "xlsx";
+
 const transcriptDialog = ref(false);
 const transcript = ref(null);
 const isMobile = computed(() => window.innerWidth <= 768);
@@ -184,6 +193,44 @@ const resultColumns = [
   { prop: "gp", label: "Grade Point", width: 120, align: "center" },
   { prop: "remark", label: "Remark", width: 100, align: "center" },
 ];
+
+const exportColumns = [
+  { key: "name", label: "គោត្តនាម-នាម", width: 30 },
+  { key: "gender", label: "ភេទ", width: 10 },
+  { key: "code", label: "អត្តលេខ", width: 15 },
+  { key: "attendance", label: "វត្តមាននិស្សិត", width: 18 },
+  { key: "research", label: "កិច្ចការស្រាវជ្រាវ", width: 20 },
+  { key: "midterm", label: "ប្រឡងពាក់កណ្តាលឆមាស", width: 25 },
+  { key: "final", label: "ប្រឡងបញ្ចប់ឆមាស", width: 22 },
+];
+
+function exportExcel() {
+  const students = filteredStudents.value;
+
+  if (!students.length) {
+    ElMessage.warning("គ្មានទិន្នន័យសម្រាប់នាំចេញ");
+    return;
+  }
+  const header = exportColumns.map((c) => c.label);
+  const rows = students.map((s) => [
+    s.name_kh || s.name_en || "",
+    Number(s.gender) === 1 ? "ប្រុស" : "ស្រី",
+    s.code || "",
+    "", // attendance
+    "", // research
+    "", // midterm
+    "", // final
+  ]);
+
+  const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+  ws["!cols"] = exportColumns.map((c) => ({ wch: c.width }));
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Students");
+
+  const fileName = `បញ្ជីពន្ទុនិស្សិត_${props.classRow?.name || "class"}_មុខវិជ្ជា.xlsx`;
+  XLSX.writeFile(wb, fileName);
+}
 async function viewTranscript(student) {
   try {
     loadingTranscript.value = true;

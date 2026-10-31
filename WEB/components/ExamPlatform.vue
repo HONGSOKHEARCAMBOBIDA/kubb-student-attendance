@@ -8,7 +8,7 @@ import {
   onMounted,
   onBeforeUnmount,
 } from "vue";
-import { ElMessageBox } from "element-plus";
+import { ElMessageBox,ElMessage } from "element-plus";
 import { useNotification } from "../composables/useNotification.js";
 import {
   getUsers,
@@ -21,6 +21,7 @@ import {
   addStudentExam,
   getStudentExams,
   deleteStudentExam,
+  getStaft,
 } from "../src/api/services.js";
 import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
@@ -31,10 +32,9 @@ import PrintableTable from "./PrintableTable.vue";
 import PrintExamPlatform from "./PrintExamPlatform.vue";
 
 const props = defineProps({
-  modelValue: Boolean, 
+  modelValue: Boolean,
   classRow: Object,
 });
-
 
 const emit = defineEmits(["update:modelValue"]);
 
@@ -43,9 +43,10 @@ const visible = computed({
   set: (value) => emit("update:modelValue", value),
 });
 
-const notify = useNotification();
 
-const errorMessage = (error, fallback) => error.response?.data?.error || fallback;
+
+const errorMessage = (error, fallback) =>
+  error.response?.data?.error || fallback;
 
 const fmtDate = (value) => (value ? String(value).slice(0, 10) : "-");
 
@@ -56,25 +57,31 @@ const fmtTime = (value) => {
   return time.slice(0, 5);
 };
 
-
 const toTime = (value) => (value ? fmtTime(value) + ":00" : "");
-
 
 const toKh = (value) =>
   String(value ?? "").replace(/\d/g, (digit) => "០១២៣៤៥៦៧៨៩"[digit]);
 
 const khMonths = [
-  "មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា",
-  "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ",
+  "មករា",
+  "កុម្ភៈ",
+  "មីនា",
+  "មេសា",
+  "ឧសភា",
+  "មិថុនា",
+  "កក្កដា",
+  "សីហា",
+  "កញ្ញា",
+  "តុលា",
+  "វិច្ឆិកា",
+  "ធ្នូ",
 ];
-
 
 const khDate = (value) => {
   if (!value) return "";
   const [year, month, day] = String(value).slice(0, 10).split("-").map(Number);
   return `ថ្ងៃទី${toKh(day)} ខែ${khMonths[month - 1]} ឆ្នាំ${toKh(year)}`;
 };
-
 
 async function confirmDelete(message) {
   try {
@@ -85,11 +92,11 @@ async function confirmDelete(message) {
   }
 }
 
-
 const loading = ref(false);
 const exams = ref([]);
 const subjectOptions = ref([]);
-const teacherOptions = ref([]);
+
+const staftOptions = ref([]);
 
 const typeOptions = [
   { label: "ពាក់កណ្តាលឆមាស", value: "MIDTERM" },
@@ -111,12 +118,11 @@ async function fetchExams() {
     const res = await getExamPlatforms(props.classRow.id);
     exams.value = res.data.data || [];
   } catch (e) {
-    notify.error(errorMessage(e, "Failed to load exams"));
+    ElMessage.error(errorMessage(e, "Failed to load exams"));
   } finally {
     loading.value = false;
   }
 }
-
 
 async function fetchSubjects() {
   if (!props.classRow) return;
@@ -128,20 +134,19 @@ async function fetchSubjects() {
       value: s.id,
     }));
   } catch (e) {
-    notify.error(errorMessage(e, "Failed to load subjects"));
+    ElMessage.error(errorMessage(e, "Failed to load subjects"));
   }
 }
 
-
-async function fetchTeachers() {
+async function fetchStaft() {
   try {
-    const res = await getUsers({ page: 1, page_size: 100, role_id: 3 });
-    teacherOptions.value = (res.data.data || []).map((t) => ({
+    const res = await getStaft({ page: 1, page_size: 100, role_id: 3 });
+    staftOptions.value = (res.data.data || []).map((t) => ({
       label: `${t.name_kh} — ${t.name_en}`,
       value: t.id,
     }));
   } catch (e) {
-    notify.error(errorMessage(e, "Failed to load teachers"));
+    ElMessage.error(errorMessage(e, "Failed to load teachers"));
   }
 }
 
@@ -214,10 +219,8 @@ const detailColumns = [
   },
 ];
 
-
 const formRef = ref();
 const submitting = ref(false);
-
 
 let keySeq = 0;
 const newDetail = () => ({
@@ -298,12 +301,12 @@ async function handleSubmit() {
       details: form.details.map(({ _key, ...detail }) => detail),
     });
 
-    notify.success("បន្ថែមការប្រឡងជោគជ័យ");
+    ElMessage.success("បន្ថែមការប្រឡងជោគជ័យ");
     Object.assign(form, defaultForm()); // reset the form
     formRef.value.clearValidate();
     await fetchExams();
   } catch (e) {
-    notify.error(errorMessage(e, "មិនអាចបន្ថែមការប្រឡងបានទេ"));
+    ElMessage.error(errorMessage(e, "មិនអាចបន្ថែមការប្រឡងបានទេ"));
   } finally {
     submitting.value = false;
   }
@@ -344,11 +347,11 @@ async function handleUpdate() {
       show_result: editForm.show_result || null,
       check_by: editForm.check_by,
     });
-    notify.success("កែប្រែជោគជ័យ");
+    ElMessage.success("កែប្រែជោគជ័យ");
     editVisible.value = false;
     await fetchExams();
   } catch (e) {
-    notify.error(errorMessage(e, "មិនអាចកែប្រែបានទេ"));
+    ElMessage.error(errorMessage(e, "មិនអាចកែប្រែបានទេ"));
   } finally {
     editSubmitting.value = false;
   }
@@ -360,10 +363,10 @@ async function handleDelete(row) {
 
   try {
     await deleteExamPlatform(row.id);
-    notify.success("លុបការប្រឡងជោគជ័យ");
+    ElMessage.success("លុបការប្រឡងជោគជ័យ");
     await fetchExams();
   } catch (e) {
-    notify.error(errorMessage(e, "មិនអាចលុបការប្រឡងបានទេ"));
+    ElMessage.error(errorMessage(e, "មិនអាចលុបការប្រឡងបានទេ"));
   }
 }
 
@@ -384,7 +387,9 @@ const detailEditForm = reactive({
 
 // Subjects the user can pick: hide the ones used by the other rows of the same exam
 const detailEditSubjects = computed(() => {
-  const exam = exams.value.find((e) => e.id === detailEditForm.exam_platform_id);
+  const exam = exams.value.find(
+    (e) => e.id === detailEditForm.exam_platform_id,
+  );
   const usedIds = (exam?.details || [])
     .filter((d) => d.id !== detailEditForm.id)
     .map((d) => d.subject_id);
@@ -411,7 +416,7 @@ async function handleUpdateDetail() {
   if (!valid) return;
 
   if (detailEditForm.end_time <= detailEditForm.start_time) {
-    notify.error("ម៉ោងបញ្ចប់ត្រូវធំជាងម៉ោងចាប់ផ្តើម");
+    ElMessage.error("ម៉ោងបញ្ចប់ត្រូវធំជាងម៉ោងចាប់ផ្តើម");
     return;
   }
 
@@ -420,11 +425,11 @@ async function handleUpdateDetail() {
     // "id" goes in the URL and "exam_platform_id" is not needed in the body
     const { id, exam_platform_id, ...payload } = detailEditForm;
     await updateExamPlatformDetail(id, payload);
-    notify.success("កែប្រែជោគជ័យ");
+    ElMessage.success("កែប្រែជោគជ័យ");
     detailEditVisible.value = false;
     await fetchExams();
   } catch (e) {
-    notify.error(errorMessage(e, "មិនអាចកែប្រែបានទេ"));
+    ElMessage.error(errorMessage(e, "មិនអាចកែប្រែបានទេ"));
   } finally {
     detailEditSubmitting.value = false;
   }
@@ -469,7 +474,7 @@ async function openTableNumber(detail) {
       }
     });
   } catch (e) {
-    notify.error(errorMessage(e, "មិនអាចទាញយកលេខតុបានទេ"));
+    ElMessage.error(errorMessage(e, "មិនអាចទាញយកលេខតុបានទេ"));
   } finally {
     tableLoading.value = false;
   }
@@ -495,7 +500,7 @@ async function handleSaveTables() {
     .filter((n) => n != null);
 
   if (new Set(numbers).size !== numbers.length) {
-    notify.error("លេខតុមានស្ទួន");
+    ElMessage.error("លេខតុមានស្ទួន");
     return;
   }
 
@@ -510,10 +515,10 @@ async function handleSaveTables() {
         table_number: s.table_number ?? null,
       })),
     });
-    notify.success("ដាក់លេខតុជោគជ័យ");
+    ElMessage.success("ដាក់លេខតុជោគជ័យ");
     tableVisible.value = false;
   } catch (e) {
-    notify.error(errorMessage(e, "មិនអាចដាក់លេខតុបានទេ"));
+    ElMessage.error(errorMessage(e, "មិនអាចដាក់លេខតុបានទេ"));
   } finally {
     tableSubmitting.value = false;
   }
@@ -531,11 +536,11 @@ async function handleDeleteStudentExam(row) {
 
   try {
     await deleteStudentExam(row.id);
-    notify.success("ជោគជ័យ");
+    ElMessage.success("ជោគជ័យ");
     row.id = null;
     row.table_number = null;
   } catch (e) {
-    notify.error(errorMessage(e, "មិនអាចលុបបានទេ"));
+    ElMessage.error(errorMessage(e, "មិនអាចលុបបានទេ"));
   }
 }
 
@@ -663,7 +668,7 @@ watch(
     Object.assign(form, defaultForm());
     fetchExams();
     fetchSubjects();
-    fetchTeachers();
+    fetchStaft();
   },
 );
 </script>
@@ -698,7 +703,7 @@ watch(
         <el-form-item label="អ្នកត្រួតពិនិត្យ" prop="check_by">
           <AppSelect
             v-model="form.check_by"
-            :options="teacherOptions"
+            :options="staftOptions"
             placeholder="ជ្រើសរើសអ្នកត្រួតពិនិត្យ"
             size="large"
             filterable
@@ -771,7 +776,7 @@ watch(
           placeholder="គ្រូបង្រៀន"
           :prop="`details.${i}.teacher_id`"
           :rules="detailRules.teacher_id"
-          :options="teacherOptions"
+          :options="staftOptions"
           size="large"
           filterable
         />
@@ -889,7 +894,7 @@ watch(
         <AppSelect
           v-model="editForm.check_by"
           label="អ្នកត្រួតពិនិត្យ"
-          :options="teacherOptions"
+          :options="staftOptions"
           size="large"
           filterable
         />
@@ -961,7 +966,7 @@ watch(
           label="គ្រូបង្រៀន"
           prop="teacher_id"
           :rules="detailRules.teacher_id"
-          :options="teacherOptions"
+          :options="staftOptions"
           size="large"
           filterable
         />

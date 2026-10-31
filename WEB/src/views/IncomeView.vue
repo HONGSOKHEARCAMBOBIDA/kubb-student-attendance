@@ -6,7 +6,6 @@ import AppTable from "../../components/AppTable.vue";
 import AppButton from "../../components/AppButton.vue";
 import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppInput from "../../components/AppInput.vue";
-import { View } from "@element-plus/icons-vue";
 import { Delete } from "@element-plus/icons-vue";
 import { useUserDataStore } from "../stores/user_data.js";
 const incomes = ref([]);
@@ -105,9 +104,9 @@ onMounted(() => {
         { prop: 'customer_name', label: 'អតិថិជន', minWidth: 130 },
         { prop: 'income_date', label: 'ថ្ងៃបង់ប្រាក់', minWidth: 130 },
         { prop: 'due_date', label: 'ថ្ងៃត្រូវបង់', minWidth: 130 },
-        { prop: 'subtotal', label: 'សរុបរង', minWidth: 130, align: 'center' },
-        { prop: 'tax', label: 'ពន្ធ', minWidth: 130, align: 'center' },
-        { prop: 'discount', label: 'បញ្ចុះតម្លៃ', minWidth: 130, align: 'center' },
+        { prop: 'subtotal', label: 'សរុបរង', minWidth: 130, align: 'center',formatter: (row) =>`${row.subtotal}$` },
+        { prop: 'tax', label: 'ពន្ធ', minWidth: 130, align: 'center',formatter: (row) =>`${row.tax}$` },
+        { prop: 'discount', label: 'បញ្ចុះតម្លៃ', minWidth: 130, align: 'center',formatter: (row) =>`${row.discount}$`  },
         { slot: 'total', label: 'សរុបត្រូវបង់', minWidth: 130, align: 'center' },
         { slot: 'paid', label: 'បានបង់', minWidth: 130, align: 'center' },
         { prop: 'status', label: 'ស្ថានភាព', minWidth: 70, align: 'center' },
@@ -128,7 +127,7 @@ onMounted(() => {
           :value-style="{ fontSize: '20px', color: '#75c406' }" />
       </template>
       <template #details="{ row }">
-        <el-popover placement="left" :width="320" trigger="click">
+        <el-popover placement="top" :width="320" trigger="click">
           <template #reference>
             <AppButton circle size="small" icon="View" type="success" plain>
             </AppButton>

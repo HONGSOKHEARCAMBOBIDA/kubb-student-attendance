@@ -5,14 +5,11 @@
         <template #header>
           <div>
             <div class="card-title">សកម្មភាពរហ័ស</div>
-            <div class="card-subtitle">
-              ជ្រើសរើសមុខងារដែលអ្នកចង់ប្រើ
-            </div>
+            <div class="card-subtitle">ជ្រើសរើសមុខងារដែលអ្នកចង់ប្រើ</div>
           </div>
         </template>
 
         <div class="action-grid">
-
           <div class="action-btn" @click="$router.push('/attendance')">
             <div class="icon-box">
               <el-icon :size="23">
@@ -22,9 +19,7 @@
 
             <div class="action-content">
               <span class="action-title">មើលវត្តមានសង្ខែប</span>
-              <span class="action-description">
-                ពិនិត្យវត្តមានសង្ខែប
-              </span>
+              <span class="action-description"> ពិនិត្យវត្តមានសង្ខែប </span>
             </div>
 
             <el-icon class="arrow-icon">
@@ -41,9 +36,7 @@
 
             <div class="action-content">
               <span class="action-title">របាយការណ៍វត្តមាន</span>
-              <span class="action-description">
-                របាយការណ៍វត្តមានសរុប
-              </span>
+              <span class="action-description"> របាយការណ៍វត្តមានសរុប </span>
             </div>
 
             <el-icon class="arrow-icon">
@@ -62,9 +55,7 @@
 
             <div class="action-content">
               <span class="action-title">សុំច្បាប់</span>
-              <span class="action-description">
-                គ្រប់គ្រងការសុំច្បាប់
-              </span>
+              <span class="action-description"> គ្រប់គ្រងការសុំច្បាប់ </span>
             </div>
 
             <el-icon class="arrow-icon">
@@ -72,7 +63,11 @@
             </el-icon>
           </div>
 
-          <div v-if="adminLevel" class="action-btn" @click="$router.push('/Notpermissionleave')">
+          <div
+            v-if="adminLevel"
+            class="action-btn"
+            @click="$router.push('/Notpermissionleave')"
+          >
             <div class="icon-box">
               <el-icon :size="23">
                 <CircleClose />
@@ -80,11 +75,8 @@
             </div>
 
             <div class="action-content">
-
               <span class="action-title">ឈប់មិនសុំច្បាប់</span>
-              <span class="action-description">
-                កត់ត្រាអវត្តមាន
-              </span>
+              <span class="action-description"> កត់ត្រាអវត្តមាន </span>
             </div>
 
             <el-icon class="arrow-icon">
@@ -92,7 +84,11 @@
             </el-icon>
           </div>
 
-          <div v-if="addattendance" class="action-btn" @click="$router.push('/createattendance')">
+          <div
+            v-if="addattendance"
+            class="action-btn"
+            @click="$router.push('/createattendance')"
+          >
             <div class="icon-box">
               <el-icon :size="23">
                 <Camera />
@@ -101,9 +97,7 @@
 
             <div class="action-content">
               <span class="action-title">កត់ត្រាវត្តមាន</span>
-              <span class="action-description">
-                ស្កែន និងកត់ត្រាវត្តមាន
-              </span>
+              <span class="action-description"> ស្កែន និងកត់ត្រាវត្តមាន </span>
             </div>
 
             <el-icon class="arrow-icon">
@@ -120,9 +114,7 @@
 
             <div class="action-content">
               <span class="action-title">ថ្នាក់រៀន</span>
-              <span class="action-description">
-                គ្រប់គ្រងថ្នាក់រៀន
-              </span>
+              <span class="action-description"> គ្រប់គ្រងថ្នាក់រៀន </span>
             </div>
 
             <el-icon class="arrow-icon">
@@ -130,7 +122,11 @@
             </el-icon>
           </div>
 
-          <div v-if="adminLevel" class="action-btn" @click="$router.push('/subject')">
+          <div
+            v-if="adminLevel"
+            class="action-btn"
+            @click="$router.push('/subject')"
+          >
             <div class="icon-box">
               <el-icon :size="23">
                 <Reading />
@@ -139,9 +135,7 @@
 
             <div class="action-content">
               <span class="action-title">មុខវិជ្ជា</span>
-              <span class="action-description">
-                គ្រប់គ្រងមុខវិជ្ជា
-              </span>
+              <span class="action-description"> គ្រប់គ្រងមុខវិជ្ជា </span>
             </div>
 
             <el-icon class="arrow-icon">
@@ -149,7 +143,11 @@
             </el-icon>
           </div>
 
-          <div v-if="adminLevel" class="action-btn" @click="$router.push('/Major')">
+          <div
+            v-if="adminLevel"
+            class="action-btn"
+            @click="$router.push('/Major')"
+          >
             <div class="icon-box">
               <el-icon :size="23">
                 <Collection />
@@ -158,9 +156,7 @@
 
             <div class="action-content">
               <span class="action-title">ជំនាញ</span>
-              <span class="action-description">
-                គ្រប់គ្រងជំនាញសិក្សា
-              </span>
+              <span class="action-description"> គ្រប់គ្រងជំនាញសិក្សា </span>
             </div>
 
             <el-icon class="arrow-icon">
@@ -168,7 +164,11 @@
             </el-icon>
           </div>
 
-          <div v-if="adminLevel" class="action-btn" @click="$router.push('/AttendanceForUpdate')">
+          <div
+            v-if="adminLevel"
+            class="action-btn"
+            @click="$router.push('/AttendanceForUpdate')"
+          >
             <div class="icon-box">
               <el-icon :size="23">
                 <Edit />
@@ -177,9 +177,7 @@
 
             <div class="action-content">
               <span class="action-title">កែវត្តមាន</span>
-              <span class="action-description">
-                កែវត្តមាន
-              </span>
+              <span class="action-description"> កែវត្តមាន </span>
             </div>
 
             <el-icon class="arrow-icon">
@@ -187,7 +185,11 @@
             </el-icon>
           </div>
 
-          <div v-if="adminLevel" class="action-btn" @click="$router.push('/Generation')">
+          <div
+            v-if="adminLevel"
+            class="action-btn"
+            @click="$router.push('/Generation')"
+          >
             <div class="icon-box">
               <el-icon :size="23">
                 <Collection />
@@ -196,16 +198,18 @@
 
             <div class="action-content">
               <span class="action-title">ជំនាន់</span>
-              <span class="action-description">
-                ជំនាន់
-              </span>
+              <span class="action-description"> ជំនាន់ </span>
             </div>
 
             <el-icon class="arrow-icon">
               <ArrowRight />
             </el-icon>
           </div>
-          <div v-if="adminLevel" class="action-btn" @click="$router.push('/Shift')">
+          <div
+            v-if="adminLevel"
+            class="action-btn"
+            @click="$router.push('/Shift')"
+          >
             <div class="icon-box">
               <el-icon :size="23">
                 <Clock />
@@ -214,16 +218,18 @@
 
             <div class="action-content">
               <span class="action-title">ម៉ោងសិក្សា</span>
-              <span class="action-description">
-                ម៉ោងសិក្សា
-              </span>
+              <span class="action-description"> ម៉ោងសិក្សា </span>
             </div>
 
             <el-icon class="arrow-icon">
               <ArrowRight />
             </el-icon>
           </div>
-          <div v-if="adminLevel || staftLevel" class="action-btn" @click="$router.push('/users')">
+          <div
+            v-if="adminLevel || staftLevel"
+            class="action-btn"
+            @click="$router.push('/users')"
+          >
             <div class="icon-box">
               <el-icon :size="23">
                 <User />
@@ -231,7 +237,9 @@
             </div>
 
             <div class="action-content">
-              <span class="action-title">អ្នកប្រើប្រាស់/និស្សិត/សាស្រ្តាចារ្យ</span>
+              <span class="action-title"
+                >អ្នកប្រើប្រាស់/និស្សិត/សាស្រ្តាចារ្យ</span
+              >
               <span class="action-description">
                 អ្នកប្រើប្រាស់/និស្សិត/សាស្រ្តាចារ្យ
               </span>
@@ -241,7 +249,11 @@
               <ArrowRight />
             </el-icon>
           </div>
-          <div v-if="viewincome" class="action-btn" @click="$router.push('/Income')">
+          <div
+            v-if="viewincome"
+            class="action-btn"
+            @click="$router.push('/Income')"
+          >
             <div class="icon-box">
               <el-icon :size="23">
                 <Money />
@@ -259,7 +271,11 @@
               <ArrowRight />
             </el-icon>
           </div>
-          <div v-if="adminLevel || managerLevel" class="action-btn" @click="$router.push('/Report')">
+          <div
+            v-if="adminLevel || managerLevel"
+            class="action-btn"
+            @click="$router.push('/Report')"
+          >
             <div class="icon-box">
               <el-icon :size="23">
                 <Eleme />
@@ -268,9 +284,7 @@
 
             <div class="action-content">
               <span class="action-title">របាយការណ៍ផ្សេងៗ</span>
-              <span class="action-description">
-                របាយការណ៍ផ្សេងៗ
-              </span>
+              <span class="action-description"> របាយការណ៍ផ្សេងៗ </span>
             </div>
 
             <el-icon class="arrow-icon">
@@ -288,23 +302,25 @@ import { computed, onMounted, ref } from "vue";
 import { useUserDataStore } from "../stores/user_data";
 import { getcountleave } from "../api/services";
 const userDataStore = useUserDataStore();
-const adminLevel = computed(() => userDataStore.level >= 2)
-const staftLevel = computed(() => userDataStore.level === 2)
-const managerLevel = computed(() => userDataStore.level === 3)
-const viewincome = computed(() => userDataStore.permissions?.some((p) => p.name === "view.income"))
-const addattendance = computed(() => userDataStore.permissions?.some((p) => p.name === "add.attendance"))
-const leaves = ref([])
+const adminLevel = computed(() => userDataStore.level >= 2);
+const staftLevel = computed(() => userDataStore.level === 2);
+const managerLevel = computed(() => userDataStore.level === 3);
+const viewincome = computed(() =>
+  userDataStore.permissions?.some((p) => p.name === "view.income"),
+);
+const addattendance = computed(() =>
+  userDataStore.permissions?.some((p) => p.name === "add.attendance"),
+);
+const leaves = ref([]);
 async function fetchCountLeave() {
   try {
     const res = await getcountleave();
-    leaves.value = (res.data.data || [])
-  } catch (e) {
-
-  }
+    leaves.value = res.data.data || [];
+  } catch (e) {}
 }
 onMounted(() => {
-  fetchCountLeave()
-})
+  fetchCountLeave();
+});
 </script>
 
 <style scoped>
@@ -364,7 +380,7 @@ onMounted(() => {
 }
 
 .action-btn:hover {
-  border-color: #2f3338;
+  border-color: #07a5c8;
   box-shadow: 0 4px 12px rgba(18, 33, 51, 0.08);
   transform: translateY(-1px);
 }
@@ -388,9 +404,9 @@ onMounted(() => {
 }
 
 .action-btn:hover .icon-box {
-  color: #000000;
- 
-  border-color: #727274;
+  color: #07a5c8;
+
+  border-color: #07a5c8;
 }
 
 /* Content */
