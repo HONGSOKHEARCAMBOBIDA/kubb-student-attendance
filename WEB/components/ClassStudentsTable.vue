@@ -71,6 +71,15 @@
           @click="viewTranscript(student)"
         />
       </el-tooltip>
+      <el-tooltip content="លិខិតបញ្ជាកើការសិក្សា" placement="top">
+        <AppButton
+          v-if="canEditClass"
+          size="small"
+          icon="Document"
+          type="success"
+          circle
+        />
+      </el-tooltip>
     </template>
   </AppTable>
   <AppDialog

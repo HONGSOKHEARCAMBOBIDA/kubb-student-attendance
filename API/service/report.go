@@ -14,6 +14,7 @@ import (
 
 type ReportService interface {
 	GetWeekSchedule(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.WeekSchedule, *model.PaginationMetadata, error)
+	GetAcademicConfirmation(ctx context.Context, userclassID int) (response.AcademicConfirmation, error)
 }
 
 type reportservice struct {
@@ -87,11 +88,40 @@ func (s *reportservice) GetWeekSchedule(ctx context.Context, pf request.Paginati
 		cs.day_of_week AS day_of_week
 	`)
 
-	if err := Query.Offset(offset).Limit(pf.PageSize).Order("id DESC").Scan(&data).Error; err != nil {
+	if err := Query.Offset(offset).Limit(pf.PageSize).Order("id").Scan(&data).Error; err != nil {
 		return nil, nil, fmt.Errorf("fetch data: %w", err)
 	}
 	for i := range data {
 		data[i].ScheduleDate = helper.FormatDate(data[i].ScheduleDate)
 	}
 	return data, helper.BuildPaginationMeta(pf, total), nil
+}
+
+func (s *reportservice) GetAcademicConfirmation(ctx context.Context, userclassID int) (response.AcademicConfirmation, error) {
+	var data response.AcademicConfirmation
+	base := func() *gorm.DB {
+		return s.db.WithContext(ctx).
+			Table("user_class uc").
+			Joins("LEFT JOIN user u ON u.id = uc.user_id").
+			Joins("LEFT JOIN class c ON c.id = uc.class_id").
+			Joins("LEFT JOIN student_profile sp ON sp.user_id = uc.user_id").
+			Joins("LEFT JOIN villages v ON v.id = sp.village_id").
+			Joins("LEFT JOIN communes c ON c.id = v.commune_id").
+			Joins("LEFT JOIN districts d ON d.id = c.district_id").
+			Joins("LEFT JOIN provinces p ON p.id = d.province_id").
+			Joins("LEFT JOIN generation g ON g.id = c.generation_id").
+			Joins("LEFT JOIN major m ON m.id = c.major_id").
+			Joins("LEFT JOIN programmes pm ON pm.id = c.programme_id").
+			Joins("LEFT JOIN faculties f ON f.id = m.faculty_id").
+			Where("uc.id =?", userclassID)
+	}
+	query := base().Select(`
+		u.name_kh AS name_kh,
+		u.name_en AS name_en,
+		u.gender AS gender,
+		sp.nationality AS national_kh,
+		u.code AS code_en
+		sp.date_of_birth AS dob_en,
+		
+	`)
 }
