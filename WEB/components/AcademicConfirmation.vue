@@ -1,3 +1,4 @@
+
 <template>
   <div style="text-align: right; margin-bottom: 8px">
     <AppButton icon="Printer" type="primary" @click="print">
@@ -5,10 +6,11 @@
     </AppButton>
   </div>
 
-
   <div class="confirm-page" ref="pageEl">
-    <!-- Photo box -->
-    <div class="photo-box"><span>Photo</span></div>
+    <!-- Photo -->
+    <div class="photo-box">
+      <span>Photo</span>
+    </div>
 
     <!-- Title -->
     <div class="title-block">
@@ -24,6 +26,7 @@
         <div>នៃសាកលវិទ្យាល័យខេមរៈ</div>
         <div>បញ្ជាក់ថា</div>
       </div>
+
       <div class="auth-en">
         <div>Under Authority of the rector</div>
         <div>of Khemarak University</div>
@@ -31,7 +34,7 @@
       </div>
     </div>
 
-    <!-- Data rows: left = Khmer, right = English -->
+    <!-- Data rows -->
     <div class="rows" v-if="d">
       <!-- Name -->
       <div class="row">
@@ -43,6 +46,7 @@
           <span class="lbl">សញ្ជាតិ</span>
           <span class="val">{{ d.national_kh }}</span>
         </div>
+
         <div class="side en">
           <span class="lbl">Name</span>
           <span class="val grow">{{ d.name_en }}</span>
@@ -53,13 +57,14 @@
         </div>
       </div>
 
-      <!-- ID + campus -->
+      <!-- ID + Campus -->
       <div class="row">
         <div class="side kh">
           <span class="lbl">អត្តលេខ:</span>
           <span class="val grow center">{{ d.code_kh }}</span>
           <span class="lbl">{{ d.campus_kh }}</span>
         </div>
+
         <div class="side en">
           <span class="lbl">ID:</span>
           <span class="val grow center">{{ d.code_en }}</span>
@@ -73,6 +78,7 @@
           <span class="lbl">ថ្ងៃ-ខែ-ឆ្នាំកំណើត :</span>
           <span class="val grow center">{{ d.dob_kh }}</span>
         </div>
+
         <div class="side en">
           <span class="lbl">Date of Birth :</span>
           <span class="val grow center">{{ d.dob_en }}</span>
@@ -85,6 +91,7 @@
           <span class="lbl">ទីកន្លែងកំណើត :</span>
           <span class="val grow">{{ d.pob_kh }}</span>
         </div>
+
         <div class="side en">
           <span class="lbl">Place of Birth :</span>
           <span class="val grow">{{ d.pob_en }}</span>
@@ -99,6 +106,7 @@
           <span class="lbl">សង្កាត់</span>
           <span class="val grow center">{{ d.communce_kh }}</span>
         </div>
+
         <div class="side en">
           <span class="lbl">Current Address :</span>
           <span class="val grow center">{{ d.village_en }}</span>
@@ -115,6 +123,7 @@
           <span class="lbl">ខេត្ត</span>
           <span class="val grow center">{{ d.province_kh }}</span>
         </div>
+
         <div class="side en">
           <span class="lbl">Sangkat</span>
           <span class="val grow center">{{ d.communce_en }}</span>
@@ -124,7 +133,7 @@
         </div>
       </div>
 
-      <!-- Level / year / semester -->
+      <!-- Level / Year / Semester -->
       <div class="row">
         <div class="side kh">
           <span class="lbl">ពិតជានិស្សិតថ្នាក់</span>
@@ -134,15 +143,18 @@
           <span class="lbl">ឆមាសទី</span>
           <span class="val num">{{ d.semester_kh }}</span>
         </div>
+
         <div class="side en">
           <span class="lbl">Is The</span>
           <span class="val num">
             {{ d.semester_en }}<sup>{{ ordinal(d.semester_en) }}</sup>
           </span>
+
           <span class="lbl">Semester,</span>
           <span class="val num">
             {{ d.year_en }}<sup>{{ ordinal(d.year_en) }}</sup>
           </span>
+
           <span class="lbl">Year of</span>
           <span class="val bold">{{ d.programme_en }}</span>
           <span class="lbl">'s Student</span>
@@ -155,6 +167,7 @@
           <span class="lbl">មហាវិទ្យាល័យ</span>
           <span class="val grow center">{{ d.faculty_kh }}</span>
         </div>
+
         <div class="side en">
           <span class="lbl">Faculty of</span>
           <span class="val grow center">{{ d.faculty_en }}</span>
@@ -167,6 +180,7 @@
           <span class="lbl">ឯកទេស</span>
           <span class="val grow center">{{ d.major_kh }}</span>
         </div>
+
         <div class="side en">
           <span class="lbl">Speciality in</span>
           <span class="val grow center">{{ d.major_en }}</span>
@@ -177,20 +191,30 @@
       <div class="row">
         <div class="side kh">
           <span class="lbl">ក្នុងឆ្នាំសិក្សា</span>
-          <span class="val grow center">{{ d.start_kh }}-{{ d.end_kh }}</span>
+          <span class="val grow center">
+            {{ d.start_kh }}-{{ d.end_kh }}
+          </span>
           <span class="lbl">ប្រាកដមែន ។</span>
         </div>
+
         <div class="side en">
           <span class="lbl">In the academic year</span>
-          <span class="val grow center">{{ d.start_en }}-{{ d.end_en }}</span>
+          <span class="val grow center">
+            {{ d.start_en }}-{{ d.end_en }}
+          </span>
         </div>
       </div>
     </div>
 
     <!-- Purpose -->
     <div class="purpose">
-      <p class="purpose-kh">លិខិតនេះ ចេញឱ្យសាមីខ្លួនប្រើប្រាស់តាមការដែលអាចប្រើបាន ។</p>
-      <p class="purpose-en">This confirmation is issued for any official purposes it may serve</p>
+      <p class="purpose-kh">
+        លិខិតនេះ ចេញឱ្យសាមីខ្លួនប្រើប្រាស់តាមការដែលអាចប្រើបាន ។
+      </p>
+
+      <p class="purpose-en">
+        This confirmation is issued for any official purposes it may serve
+      </p>
     </div>
 
     <!-- Signature -->
@@ -200,7 +224,9 @@
       <p class="en-line">{{ issuedEn }}</p>
       <p class="moul sign-title">ជ.សាកលវិទ្យាធិការ</p>
       <p class="moul sign-title">{{ signerTitle }}</p>
+
       <div class="space"></div>
+
       <p class="moul sign-title">{{ signerName }}</p>
     </div>
   </div>
@@ -214,13 +240,9 @@ const taktieng = "/image.png";
 const pageEl = ref(null);
 
 const props = defineProps({
-  // the object returned by the backend (AcademicConfirmation)
   data: { type: Object, default: null },
-  // e.g. "ថ្ងៃអង្គារ ១រោច ខែអស្សុជ ឆ្នាំមមី អដ្ឋស័ក ព.ស.២៥៧០"
   issuedKhLunar: { type: String, default: "" },
-  // e.g. "រាជធានីភ្នំពេញ ថ្ងៃទី២៧ ខែតុលា ឆ្នាំ២០២៦"
   issuedKh: { type: String, default: "" },
-  // e.g. "Phnom Penh, date: October 27, 2026"
   issuedEn: { type: String, default: "" },
   signerTitle: { type: String, default: "សាកលវិទ្យាធិការរង" },
   signerName: { type: String, default: "" },
@@ -228,12 +250,16 @@ const props = defineProps({
 
 const d = computed(() => props.data);
 
-// 1 -> st, 2 -> nd, 3 -> rd, others -> th (accepts "1" or 1)
+// Ordinal: 1st, 2nd, 3rd, 4th...
 function ordinal(n) {
   const v = Number(n);
+
   if (!v) return "";
+
   const mod100 = v % 100;
+
   if (mod100 >= 11 && mod100 <= 13) return "th";
+
   switch (v % 10) {
     case 1:
       return "st";
@@ -246,84 +272,111 @@ function ordinal(n) {
   }
 }
 
-/*
- * Why the old version was cut off:
- * the form lived inside the dialog, which has fixed width/height and
- * overflow hidden, so the print output was clipped at the dialog's edges.
- * Fix: copy the form into a temporary element directly under <body>,
- * print only that element, then remove it.
- */
-async function print() {
+// Wait until images are loaded
+async function waitForImages(element) {
+  const images = element.querySelectorAll("img");
 
+  await Promise.all(
+    [...images].map((img) => {
+      if (img.complete) return Promise.resolve();
 
-  const src = pageEl.value;
-  if (!src) return;
-
-  // Wait for images
-  const images = src.querySelectorAll("img");
-
-  for (const img of images) {
-    if (!img.complete) {
-      await new Promise((resolve) => {
-        img.onload = resolve;
-        img.onerror = resolve;
+      return new Promise((resolve) => {
+        img.addEventListener("load", resolve, { once: true });
+        img.addEventListener("error", resolve, { once: true });
       });
-    }
+    })
+  );
+}
+
+// Wait for browser layout
+function waitForLayout() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(resolve);
+    });
+  });
+}
+
+// Print
+async function print() {
+  const src = pageEl.value;
+
+  if (!src) {
+    console.error("Print element not found");
+    return;
   }
 
-  await document.fonts.ready;
-
-  // Remove previous print element
-  document.getElementById("confirm-page")?.remove();
-
-  // Clone original element
-  const root = document.createElement("div");
-  root.id = "confirm-page";
-
-  const clone = src.cloneNode(true);
-  root.appendChild(clone);
-
-  document.body.appendChild(root);
-  document.body.classList.add("confirm-page");
-
-  // Cleanup
+  let root = null;
   let cleaned = false;
 
-  const cleanup = () => {
-    if (cleaned) return;
-    cleaned = true;
-
-    window.removeEventListener("afterprint", cleanup);
-    document.body.classList.remove("confirm-page");
-    root.remove();
-  };
-
-  window.addEventListener("afterprint", cleanup);
-
-  // Wait for browser layout
-  await new Promise((resolve) =>
-    requestAnimationFrame(() =>
-      requestAnimationFrame(resolve)
-    )
-  );
-
-  await document.fonts.ready;
+  // Remove previous print copy
+  document.getElementById("confirm-page")?.remove();
 
   try {
-    window.print();
-  } catch (e) {
-    cleanup();
-    throw e;
-  }
+    // Wait for original images and fonts
+    await waitForImages(src);
+    await document.fonts.ready;
 
-  setTimeout(cleanup, 60000);
+    // Create temporary print element
+    root = document.createElement("div");
+    root.id = "confirm-page";
+
+    // Clone original content
+    const clone = src.cloneNode(true);
+
+    root.appendChild(clone);
+    document.body.appendChild(root);
+
+    // Activate print mode
+    document.body.classList.add("confirm-page");
+
+    // Wait for cloned images and layout
+    await waitForImages(clone);
+    await document.fonts.ready;
+    await waitForLayout();
+
+    // Check print content
+    if (!root.querySelector(".confirm-page")) {
+      throw new Error("Print content not found");
+    }
+
+    // Cleanup after printing
+    const cleanup = () => {
+      if (cleaned) return;
+
+      cleaned = true;
+
+      window.removeEventListener("afterprint", cleanup);
+
+      document.body.classList.remove("confirm-page");
+
+      root?.remove();
+    };
+
+    window.addEventListener("afterprint", cleanup);
+
+    // Open print preview
+    window.print();
+
+    // Fallback cleanup
+    setTimeout(cleanup, 60000);
+
+  } catch (error) {
+    console.error("Print error:", error);
+
+    document.body.classList.remove("confirm-page");
+
+    root?.remove();
+
+    throw error;
+  }
 }
 
 defineExpose({ print });
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Moul&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Moul&family=Battambang:wght@400;700&display=swap");
 
 .confirm-page {
   position: relative;
@@ -387,7 +440,7 @@ defineExpose({ print });
   margin: 6px auto;
 }
 
-/* Authority block */
+/* Authority */
 .authority {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -406,7 +459,7 @@ defineExpose({ print });
   line-height: 1.9;
 }
 
-/* Rows: minmax(0, 1fr) lets both columns shrink instead of overflowing */
+/* Rows */
 .rows {
   display: flex;
   flex-direction: column;
@@ -523,10 +576,9 @@ sup {
 }
 </style>
 
+<!-- Global print styles -->
 <style>
-/* Hidden on screen; only shown while printing */
-
-/* Hide print copy on screen */
+/* Hide temporary print element on screen */
 #confirm-page {
   display: none;
 }
@@ -547,20 +599,22 @@ sup {
     background: #fff !important;
   }
 
-  /* Hide everything except print copy */
+  /* Hide all original application content */
   body.confirm-page > *:not(#confirm-page) {
     display: none !important;
   }
 
-  /* Show print copy */
-  body.confirm-page #confirm-page {
+  /* Show temporary print element */
+  body.confirm-page > #confirm-page {
     display: block !important;
     position: static !important;
     width: 210mm !important;
     margin: 0 !important;
     padding: 0 !important;
+    visibility: visible !important;
   }
 
+  /* Print document */
   #confirm-page .confirm-page {
     display: block !important;
     position: relative !important;
@@ -568,10 +622,24 @@ sup {
     min-height: 297mm;
     margin: 0 !important;
     padding: 0 4px 8px !important;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
     background: #fff !important;
     color: #000 !important;
+    visibility: visible !important;
+  }
+
+  #confirm-page .confirm-page * {
+    visibility: visible !important;
+  }
+
+  #confirm-page .row,
+  #confirm-page .sign {
+    break-inside: avoid;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
-
 </style>

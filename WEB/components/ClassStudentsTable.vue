@@ -2,11 +2,7 @@
   <el-divider content-position="left">
     <el-row :gutter="10">
       <el-col :span="16">
-        <AppInput
-          v-model.trim="search"
-          placeholder="ស្វែងរកសិស្ស (ឈ្មោះ ឬ កូដ)"
-          clearable
-        />
+        <AppInput v-model.trim="search" placeholder="ស្វែងរកសិស្ស (ឈ្មោះ ឬ កូដ)" clearable />
       </el-col>
       <el-col :span="8">
         <el-tooltip content="បោះពុម្ព" placement="top">
@@ -16,24 +12,15 @@
     </el-row>
   </el-divider>
 
-  <AppTable
-    show-index
-    :data="filteredStudents"
-    :columns="studentcolumn"
-    :show-pagination="false"
-  >
+  <AppTable show-index :data="filteredStudents" :columns="studentcolumn" :show-pagination="false">
     <template #gender="{ row }">
       <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
     </template>
 
     <template #status="{ row }">
       <el-tooltip content="ចុចដើម្បីផ្លាស់ប្តូរស្ថានភាព" placement="top">
-        <el-tag
-          :type="statusTagType(row.status)"
-          size="large"
-          style="cursor: pointer"
-          @click="canEditClass && $emit('edit-status', row)"
-        >
+        <el-tag :type="statusTagType(row.status)" size="large" style="cursor: pointer"
+          @click="canEditClass && $emit('edit-status', row)">
           {{ getUserClassStatusLabel(row.status) }}
         </el-tag>
       </el-tooltip>
@@ -41,53 +28,31 @@
 
     <template #actions="{ row: student }">
       <el-tooltip content="បញ្ចូលពិន្ទុ" placement="top">
-        <AppButton
-          v-if="canAddScore"
-          size="small"
-          icon="EditPen"
-          type="primary"
-          circle
-          @click="$emit('score-student', student)"
-        />
+        <AppButton v-if="canAddScore" size="small" icon="EditPen" type="primary" circle
+          @click="$emit('score-student', student)" />
       </el-tooltip>
       <el-tooltip content="កែប្រែសិស្ស" placement="top">
-        <AppButton
-          v-if="canEditClass"
-          size="small"
-          icon="Edit"
-          type="warning"
-          circle
-          @click="$emit('edit-student', student)"
-        />
+        <AppButton v-if="canEditClass" size="small" icon="Edit" type="warning" circle
+          @click="$emit('edit-student', student)" />
       </el-tooltip>
       <el-tooltip content="Transcript" placement="top">
-        <AppButton
-          v-if="canEditClass"
-          size="small"
-          icon="View"
-          type="success"
-          circle
-          :loading="loadingTranscript"
-          @click="viewTranscript(student)"
-        />
+        <AppButton v-if="canEditClass" size="small" icon="View" type="success" circle :loading="loadingTranscript"
+          @click="viewTranscript(student)" />
       </el-tooltip>
-      <el-tooltip content="លិខិតបញ្ជាកើការសិក្សា" placement="top">
-        <AppButton
-          v-if="canEditClass"
-          size="small"
-          icon="Document"
-          type="success"
-          circle
-        />
-      </el-tooltip>
+<el-tooltip content="លិខិតបញ្ជាក់ការសិក្សា" placement="top">
+  <AppButton
+    v-if="canEditClass"
+    size="small"
+    icon="Document"
+    type="success"
+    circle
+    :loading="loadingConfirmation"
+    @click="viewConfirmation(student)"
+  />
+</el-tooltip>
     </template>
   </AppTable>
-  <AppDialog
-    append-to-body
-    v-model="transcriptDialog"
-    title="Transcript"
-    width="80%"
-  >
+  <AppDialog append-to-body v-model="transcriptDialog" title="Transcript" width="80%">
     <template v-if="transcript">
       <!-- Student info -->
       <el-descriptions :column="isMobile ? 1 : 6" border size="small">
@@ -107,7 +72,7 @@
           {{ transcript.Student.nationality }}
           <b v-if="transcript.Student.campus">{{
             transcript.Student.campus
-          }}</b>
+            }}</b>
         </el-descriptions-item>
         <el-descriptions-item label="មហាវិទ្យាល័យ" :span="s(2)">
           {{ transcript.Header.faculty_name }}
@@ -136,27 +101,14 @@
       </el-descriptions>
 
       <!-- Results grouped by year / semester -->
-      <div
-        v-for="group in groupedResults"
-        :key="group.key"
-        style="margin-top: 20px"
-      >
+      <div v-for="group in groupedResults" :key="group.key" style="margin-top: 20px">
         <el-divider content-position="left">
           ឆ្នាំទី {{ group.year }} - ឆមាសទី {{ group.semester }}
         </el-divider>
 
-        <AppTable
-          show-index
-          :data="group.items"
-          :columns="resultColumns"
-          :show-pagination="false"
-        />
+        <AppTable show-index :data="group.items" :columns="resultColumns" :show-pagination="false" />
 
-        <el-text
-          tag="b"
-          size="large"
-          style="display: block; text-align: right; margin-top: 8px"
-        >
+        <el-text tag="b" size="large" style="display: block; text-align: right; margin-top: 8px">
           ក្រេឌីតសរុប: {{ group.totalCredits }} | GPA:
           {{ group.gpa.toFixed(2) }}
         </el-text>
@@ -169,12 +121,89 @@
         <el-descriptions-item label="GPAX/CGPA">
           <el-tag type="success" size="large">{{
             gpax.gpax.toFixed(2)
-          }}</el-tag>
+            }}</el-tag>
         </el-descriptions-item>
       </el-descriptions>
       <el-empty v-if="!groupedResults.length" description="គ្មានទិន្នន័យ" />
     </template>
   </AppDialog>
+
+
+  <AppDialog
+  append-to-body
+  v-model="confirmationDialog"
+  title="លិខិតបញ្ជាក់ការសិក្សា"
+  width="900px"
+>
+
+  <AcademicConfirmation
+    ref="confirmRef"
+    :data="confirmation"
+    :issued-kh-lunar="issuedKhLunar"
+    :issued-kh="issuedKh"
+    :issued-en="issuedEn"
+    signer-name=""
+  />
+</AppDialog>
+
+<!-- <AppDialog
+  append-to-body
+  v-model="confirmationDialog"
+  title="លិខិតបញ្ជាក់ការសិក្សា"
+  width="90%"
+>
+  <template v-if="confirmation">
+    <el-descriptions :column="isMobile ? 1 : 2" border size="small">
+      <el-descriptions-item label="ឈ្មោះ (ខ្មែរ)">{{ confirmation.name_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Name (EN)">{{ confirmation.name_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="ភេទ">{{ confirmation.gender_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Gender">{{ confirmation.gender_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="សញ្ជាតិ">{{ confirmation.national_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Nationality">{{ confirmation.national_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="អត្តលេខ">{{ confirmation.code_kh }}</el-descriptions-item>
+      <el-descriptions-item label="ID">{{ confirmation.code_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="ថ្ងៃខែឆ្នាំកំណើត">{{ confirmation.dob_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Date of Birth">{{ confirmation.dob_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="ភូមិ">{{ confirmation.village_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Village">{{ confirmation.village_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="ឃុំ/សង្កាត់">{{ confirmation.communce_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Commune">{{ confirmation.communce_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="ស្រុក/ខណ្ឌ">{{ confirmation.district_kh }}</el-descriptions-item>
+      <el-descriptions-item label="District">{{ confirmation.district_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="ខេត្ត/រាជធានី">{{ confirmation.province_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Province">{{ confirmation.province_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="មហាវិទ្យាល័យ">{{ confirmation.faculty_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Faculty">{{ confirmation.faculty_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="ជំនាញ">{{ confirmation.major_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Major">{{ confirmation.major_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="កម្មវិធីសិក្សា">{{ confirmation.programme_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Programme">{{ confirmation.programme_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="ឆ្នាំទី">{{ confirmation.year_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Year">{{ confirmation.year_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="ឆមាសទី">{{ confirmation.semester_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Semester">{{ confirmation.semester_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="ចាប់ផ្តើម">{{ confirmation.start_kh }}</el-descriptions-item>
+      <el-descriptions-item label="Start">{{ confirmation.start_en }}</el-descriptions-item>
+
+      <el-descriptions-item label="បញ្ចប់">{{ confirmation.end_kh }}</el-descriptions-item>
+      <el-descriptions-item label="End">{{ confirmation.end_en }}</el-descriptions-item>
+    </el-descriptions>
+  </template>
+</AppDialog> -->
 </template>
 
 <script setup>
@@ -182,15 +211,42 @@ import { ref, computed } from "vue";
 import AppTable from "./AppTable.vue";
 import AppButton from "./AppButton.vue";
 import AppInput from "./AppInput.vue";
-import { getTranscript } from "../src/api/services.js";
+import { getTranscript,getAcademicConfirmation } from "../src/api/services.js";
 import AppDialog from "./AppDialog.vue";
 import * as XLSX from "xlsx";
+import { ElMessage } from "element-plus"; 
+import AcademicConfirmation from "./AcademicConfirmation.vue";
+
+const confirmRef = ref(null);
+const issuedKhLunar = "ថ្ងៃអង្គារ ១រោច ខែអស្សុជ ឆ្នាំមមី អដ្ឋស័ក ព.ស.២៥៧០";
+const issuedKh = "រាជធានីភ្នំពេញ ថ្ងៃទី២៧ ខែតុលា ឆ្នាំ២០២៦";
+const issuedEn = "Phnom Penh, date: October 27, 2026";
 
 const transcriptDialog = ref(false);
 const transcript = ref(null);
 const isMobile = computed(() => window.innerWidth <= 768);
 const s = (n) => (isMobile.value ? 1 : n);
 const loadingTranscript = ref(false);
+
+const confirmationDialog = ref(false);
+const confirmation = ref(null);
+const loadingConfirmation = ref(false);
+
+async function viewConfirmation(student) {
+  try {
+    loadingConfirmation.value = true;
+    // send the user_class_id, not the user's id
+    const userClassId = student.UserClassID ?? student.id;
+    const res = await getAcademicConfirmation(userClassId);
+    confirmation.value = res.data.data;
+    confirmationDialog.value = true;
+  } catch (e) {
+    ElMessage.error(e.response?.data?.error || "មិនអាចទាញយកទិន្នន័យបានទេ");
+  } finally {
+    loadingConfirmation.value = false;
+  }
+}
+
 const resultColumns = [
   { prop: "code", label: "កូដ", "min-width": 90 },
   { prop: "name_kh", label: "មុខវិជ្ជា (ខ្មែរ)", "min-width": 180 },

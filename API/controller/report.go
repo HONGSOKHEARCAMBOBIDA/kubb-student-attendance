@@ -5,6 +5,7 @@ import (
 	"errors"
 	"mysql/constant/share"
 	"mysql/helper"
+	"mysql/pattern/res"
 	"mysql/request"
 	"mysql/service"
 	"net/http"
@@ -45,4 +46,17 @@ func (cr *ReportController) GetWeekSchedule(c *gin.Context) {
 		return
 	}
 	share.ResponsePagination(c, 200, data, meta)
+}
+
+func (cr *ReportController) AcademicConfirmation(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.GetAcademicConfirmation(c, id)
+	if err != nil {
+		res.Fail(c, 500, "NO DATA", err.Error())
+		return
+	}
+	share.RespondDate(c, 200, data)
 }

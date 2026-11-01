@@ -200,5 +200,6 @@ const (
 	ViewClassDetail   = "view.class.detail/:id"
 	UpdateClassDetail = "updaste.class.detail/:id"
 
-	ViewReportWeekSchedule = "view.report.weed.schedule"
+	ViewReportWeekSchedule         = "view.report.weed.schedule"
+	ViewReportAcademicConfirmation = "view.report.academic.confirmation/:id"
 )

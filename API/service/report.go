@@ -106,8 +106,8 @@ func (s *reportservice) GetAcademicConfirmation(ctx context.Context, userclassID
 			Joins("LEFT JOIN class c ON c.id = uc.class_id").
 			Joins("LEFT JOIN student_profile sp ON sp.user_id = uc.user_id").
 			Joins("LEFT JOIN villages v ON v.id = sp.village_id").
-			Joins("LEFT JOIN communes c ON c.id = v.commune_id").
-			Joins("LEFT JOIN districts d ON d.id = c.district_id").
+			Joins("LEFT JOIN communes cm ON cm.id = v.commune_id").
+			Joins("LEFT JOIN districts d ON d.id = cm.district_id").
 			Joins("LEFT JOIN provinces p ON p.id = d.province_id").
 			Joins("LEFT JOIN generation g ON g.id = c.generation_id").
 			Joins("LEFT JOIN major m ON m.id = c.major_id").
@@ -120,8 +120,43 @@ func (s *reportservice) GetAcademicConfirmation(ctx context.Context, userclassID
 		u.name_en AS name_en,
 		u.gender AS gender,
 		sp.nationality AS national_kh,
-		u.code AS code_en
+		u.code AS code_en,
 		sp.date_of_birth AS dob_en,
-		
+		v.name_kh AS village_kh,
+		v.name_en AS village_en,
+		cm.name_kh AS communce_kh,
+		cm.name_en AS communce_en,
+		d.name_kh AS district_kh,
+		d.name_en AS district_en,
+		p.name_kh AS province_kh,
+		p.name_en AS province_en,
+		pm.name AS programme_kh,
+		pm.degree_title_en AS programme_en,
+		c.year AS year_en,
+		c.semester AS semester_en,
+		f.name AS faculty_kh,
+		f.name_en AS faculty_en,
+		m.name_kh AS major_kh,
+		m.name_en AS major_en,
+		g.start_year AS start_en,
+		g.end_year AS end_en
 	`)
+
+	if err := query.Scan(&data).Error; err != nil {
+		return response.AcademicConfirmation{}, err
+	}
+	data.DobEn = helper.FormatDate(data.DobEn)
+	gender_kh, gender_en := helper.GenderKhftEn(data.Gender)
+	data.GenderEn = gender_en
+	data.GenderKh = gender_kh
+	data.NationEn = helper.National(data.Nationalkh)
+	data.Codekh = helper.ConvertToKhmerNumber(data.CodeEN)
+	data.Dobkh = helper.ConvertDateToKhmer(data.DobEn)
+	data.Yearkh = helper.ConvertToKhmerNumber(data.YearEn)
+	data.Semesterkh = helper.ConvertToKhmerNumber(data.SemesterEn)
+	data.StartKh = helper.ConvertToKhmerNumber(data.StartEn)
+	data.Endkh = helper.ConvertToKhmerNumber(data.EndEn)
+
+	return data, nil
+
 }

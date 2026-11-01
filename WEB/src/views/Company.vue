@@ -314,6 +314,7 @@ async function fetchClasses() {
     });
     classes.value = res.data.data || [];
     total.value = res.data.pagination?.totalCount || 0;
+    console.log(classes.value)
   } catch (e) {
     notify.error(e.response?.data?.error || "");
   } finally {

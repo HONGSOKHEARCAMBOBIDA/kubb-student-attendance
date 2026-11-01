@@ -274,3 +274,4 @@ export const updateClassDetail = (id,data) => api.put(`/updaste.class.detail/${i
 
 
 export const getWeekSchedule  = (params) => api.get(`/view.report.weed.schedule`,{params})
+export const getAcademicConfirmation = (id) => api.get(`/view.report.academic.confirmation/${id}`)
