@@ -24,6 +24,8 @@ type StudentProfile struct {
 	TelegramUsername  *string        `gorm:"type:varchar(191);default:null" json:"telegram_username"`
 	ExamIn            bool           `gorm:"type:tinyint;default:null" json:"exam_in"`
 	ExamOut           bool           `gorm:"type:tinyint;default:null" json:"exam_out"`
+	ExamInDate        string         `gorm:"type:tinyint;default:null" json:"exam_in_date"`
+	ExamOutDate       string         `gorm:"type:tinyint;default:null" json:"exam_out_date"`
 }
 
 func (StudentProfile) TableName() string {

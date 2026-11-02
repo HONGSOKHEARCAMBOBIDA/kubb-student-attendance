@@ -246,5 +246,6 @@ func SetupRoutes(r *gin.Engine) {
 		// Report
 		auth.GET(route.ViewReportWeekSchedule, middleware.PermissionMiddleware(permission.ViewReport), reportcontroller.GetWeekSchedule)
 		auth.GET(route.ViewReportAcademicConfirmation, middleware.PermissionMiddleware(permission.ViewReport), reportcontroller.AcademicConfirmation)
+		auth.GET(route.ViewReportTemporaryCertificate, middleware.PermissionMiddleware(permission.ViewReport), reportcontroller.TemporaryCertificate)
 	}
 }

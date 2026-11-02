@@ -202,4 +202,5 @@ const (
 
 	ViewReportWeekSchedule         = "view.report.weed.schedule"
 	ViewReportAcademicConfirmation = "view.report.academic.confirmation/:id"
+	ViewReportTemporaryCertificate = "view.report.temporary.certificate/:id"
 )

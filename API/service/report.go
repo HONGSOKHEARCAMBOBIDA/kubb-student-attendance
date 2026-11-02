@@ -15,6 +15,7 @@ import (
 type ReportService interface {
 	GetWeekSchedule(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.WeekSchedule, *model.PaginationMetadata, error)
 	GetAcademicConfirmation(ctx context.Context, userclassID int) (response.AcademicConfirmation, error)
+	GetTemporaryCertificate(ctx context.Context, userclassID int) (response.TemporaryCertificate, error)
 }
 
 type reportservice struct {
@@ -153,6 +154,7 @@ func (s *reportservice) GetAcademicConfirmation(ctx context.Context, userclassID
 	data.NationEn = helper.National(data.Nationalkh)
 	data.Codekh = helper.ConvertToKhmerNumber(data.CodeEN)
 	data.Dobkh = helper.ConvertDateToKhmer(data.DobEn)
+	data.DobEn = helper.ConvertDateToEnlish(data.DobEn)
 	data.Yearkh = helper.ConvertToKhmerNumber(data.YearEn)
 	data.Semesterkh = helper.ConvertToKhmerNumber(data.SemesterEn)
 	data.StartKh = helper.ConvertToKhmerNumber(data.StartEn)
@@ -160,4 +162,40 @@ func (s *reportservice) GetAcademicConfirmation(ctx context.Context, userclassID
 
 	return data, nil
 
+}
+
+func (s *reportservice) GetTemporaryCertificate(ctx context.Context, userclassID int) (response.TemporaryCertificate, error) {
+	var data response.TemporaryCertificate
+	base := func() *gorm.DB {
+		return s.db.WithContext(ctx).
+			Table("user_class uc").
+			Joins("LEFT JOIN user u ON u.id = uc.user_id").
+			Joins("LEFT JOIN class c ON c.id = uc.class_id").
+			Joins("LEFT JOIN student_profile sp ON sp.user_id = uc.user_id").
+			Joins("LEFT JOIN student_families sf ON sf.student_id = uc.user_id").
+			Joins("LEFT JOIN major m ON m.id = c.major_id").
+			Joins("LEFT JOIN programmes pm ON pm.id = c.programme_id").
+			Where("uc.id =?", userclassID)
+	}
+	query := base().Select(`
+		u.name_kh AS name_kh,
+		u.name_en AS name_en,
+		u.gender AS gender,
+		sp.nationality AS national_kh,
+		sp.date_of_birth AS dob_en,
+		pm.name AS programme_kh,
+		m.name_kh AS major_kh,
+		sf.father_name AS father_name,
+		sf.mother_name AS mother_name,
+		sp.exam_out_date AS exam_out_date
+	`)
+	if err := query.Scan(&data).Error; err != nil {
+		return response.TemporaryCertificate{}, err
+	}
+	gender_kh, gender_en := helper.GenderKhftEn(data.Gender)
+	data.GenderKh = gender_kh
+	data.GenderEN = gender_en
+	data.Dobkh = helper.ConvertDateToKhmer(data.DobEn)
+	data.ExamOutDate = helper.ConvertDateToKhmer(data.ExamOutDate)
+	return data, nil
 }

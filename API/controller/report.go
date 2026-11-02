@@ -60,3 +60,16 @@ func (cr *ReportController) AcademicConfirmation(c *gin.Context) {
 	}
 	share.RespondDate(c, 200, data)
 }
+
+func (cr *ReportController) TemporaryCertificate(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	data, err := cr.service.GetTemporaryCertificate(c, id)
+	if err != nil {
+		res.Fail(c, 500, "NO DATA", err.Error())
+		return
+	}
+	share.RespondDate(c, 200, data)
+}

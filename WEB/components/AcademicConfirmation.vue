@@ -91,12 +91,12 @@
       <div class="row">
         <div class="side kh">
           <span class="lbl">ទីកន្លែងកំណើត :</span>
-          <span class="val grow">{{ d.pob_kh }}</span>
+          <EditableText class="kh-line val grow" v-model="provincebirthkh" />
         </div>
 
         <div class="side en">
           <span class="lbl">Place of Birth :</span>
-          <span class="val grow">{{ d.pob_en }}</span>
+          <EditableText class="en-line val grow" v-model="provincebirthen" />
         </div>
       </div>
 
@@ -257,6 +257,8 @@ const issuedEnText = ref(props.issuedEn);
 const titleText = ref("ជ.សាកលវិទ្យាធិការ");
 const signerTitleText = ref(props.signerTitle);
 const signerNameText = ref(props.signerName);
+const provincebirthkh = ref("")
+const provincebirthen = ref("")
 
 watch(() => props.issuedKhLunar, (v) => (lunar.value = v));
 watch(() => props.issuedKh, (v) => (issuedKhText.value = v));
@@ -408,7 +410,7 @@ defineExpose({ print });
 
 .moul {
   font-family: "Moul", serif;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 /* Photo */
@@ -614,7 +616,7 @@ sup {
   @page {
     size: A4 portrait;
     margin: 0 0.2mm;
-   padding: 80px 1px 1px;
+   padding: 80px 0px 0px;
   }
 
   html,
@@ -647,7 +649,7 @@ sup {
     display: block !important;
     position: relative !important;
     width: 210mm !important;
-    min-height: 297mm;
+    min-height: 207mm;
     margin: 0 !important;
     padding: 0 0px 0px !important;
     box-sizing: border-box !important;

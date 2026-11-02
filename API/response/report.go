@@ -36,3 +36,19 @@ type AcademicConfirmation struct {
 	Endkh       string `json:"end_kh"`
 	EndEn       string `json:"end_en"`
 }
+
+type TemporaryCertificate struct {
+	ProgrammeKh string  `json:"programme_kh"`
+	Namekh      string  `json:"name_kh" gorm:"column:name_kh"`
+	NameEn      string  `json:"name_en"`
+	Gender      int     `json:"gender"`
+	GenderKh    string  `json:"gender_kh"`
+	GenderEN    string  `json:"gender_en"`
+	Nationalkh  string  `json:"national_kh" gorm:"column:national_kh"`
+	Dobkh       string  `json:"dob_kh"`
+	DobEn       string  `json:"dob_en"`
+	FatherName  string  `gorm:"type:varchar(191);default:null" json:"father_name"`
+	MotherName  *string `gorm:"type:varchar(191);default:null" json:"mother_name"`
+	Majorkh     string  `json:"major_kh" gorm:"column:major_kh"`
+	ExamOutDate string  `gorm:"type:tinyint;default:null" json:"exam_out_date"`
+}

@@ -88,3 +88,20 @@ func ConvertDateToKhmer(date string) string {
 
 	return day + " " + months[int(t.Month())-1] + " " + year
 }
+
+func ConvertDateToEnlish(date string) string {
+	t, err := time.Parse("2006-01-02", date)
+	if err != nil {
+		return ""
+	}
+
+	months := []string{
+		"January", "February", "March", "April",
+		"May", "June", "July", "August",
+		"September", "October", "November", "December",
+	}
+	day := strconv.Itoa(t.Day())
+	year := strconv.Itoa(t.Year())
+
+	return months[int(t.Month())-1] + " " + day + " " + year
+}
