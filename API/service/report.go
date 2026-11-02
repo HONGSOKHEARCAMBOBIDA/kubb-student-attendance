@@ -130,6 +130,7 @@ func (s *reportservice) GetAcademicConfirmation(ctx context.Context, userclassID
 		d.name_en AS district_en,
 		p.name_kh AS province_kh,
 		p.name_en AS province_en,
+		p.is_capital AS is_capital,
 		pm.name AS programme_kh,
 		pm.degree_title_en AS programme_en,
 		c.year AS year_en,

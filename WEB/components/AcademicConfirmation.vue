@@ -63,12 +63,14 @@
           <span class="lbl">អត្តលេខ:</span>
           <span class="val grow center">{{ d.code_kh }}</span>
           <span class="lbl">{{ d.campus_kh }}</span>
+          <span class="lbl">សាខាខេត្តបាត់ដំបង</span>
         </div>
 
         <div class="side en">
           <span class="lbl">ID:</span>
           <span class="val grow center">{{ d.code_en }}</span>
           <span class="lbl">{{ d.campus_en }}</span>
+          <span class="lbl">Battambang Branch</span>
         </div>
       </div>
 
@@ -103,7 +105,7 @@
         <div class="side kh">
           <span class="lbl">អាសយដ្ឋានបច្ចុប្បន្ន :ភូមិ</span>
           <span class="val grow center">{{ d.village_kh }}</span>
-          <span class="lbl">សង្កាត់</span>
+          <span class="lbl">{{ d.is_capital === true ? 'សង្កាត' : 'ឃុំ' }}</span>
           <span class="val grow center">{{ d.communce_kh }}</span>
         </div>
 
@@ -118,18 +120,18 @@
       <!-- Address line 2 -->
       <div class="row">
         <div class="side kh">
-          <span class="lbl">ក្រុង</span>
+          <span class="lbl">{{ d.is_capital === true ? 'ខណ្ឌ' : 'ស្រុក'}}</span>
           <span class="val grow center">{{ d.district_kh }}</span>
-          <span class="lbl">ខេត្ត</span>
+          <span class="lbl">{{ d.is_capital === true ? 'រាជធានី' : 'ខេត្ត'}}</span>
           <span class="val grow center">{{ d.province_kh }}</span>
         </div>
 
         <div class="side en">
-          <span class="lbl">Sangkat</span>
-          <span class="val grow center">{{ d.communce_en }}</span>
-          <span class="lbl">City</span>
+          <span class="lbl">{{ d.is_capital === true ? 'Sangkat' : 'Commune' }}</span>
           <span class="val grow center">{{ d.district_en }}</span>
-          <span class="lbl">Province</span>
+          <span class="lbl">{{ d.is_capital === true ? 'Khan' : 'District' }}</span>
+          <span class="val grow center">{{ d.province_en }}</span>
+          <span class="lbl">{{ d.is_capital === true ? 'Capital' : 'Province' }}</span>        
         </div>
       </div>
 
@@ -156,7 +158,7 @@
           </span>
 
           <span class="lbl">Year of</span>
-          <span class="val bold">{{ d.programme_en }}</span>
+          <span class="val bold simple">{{ d.programme_en }}</span>
           <span class="lbl">'s Student</span>
         </div>
       </div>
@@ -218,24 +220,25 @@
     </div>
 
     <!-- Signature -->
-    <div class="sign">
-      <p class="kh-line">{{ issuedKhLunar }}</p>
-      <p class="kh-line">{{ issuedKh }}</p>
-      <p class="en-line">{{ issuedEn }}</p>
-      <p class="moul sign-title">ជ.សាកលវិទ្យាធិការ</p>
-      <p class="moul sign-title">{{ signerTitle }}</p>
+<!-- Signature -->
+<div class="sign">
+  <EditableText class="kh-line" v-model="lunar" />
+  <EditableText class="kh-line" v-model="issuedKhText" />
+  <EditableText class="en-line" v-model="issuedEnText" />
+  <EditableText class="moul sign-title" v-model="titleText" />
+  <EditableText class="moul sign-title" v-model="signerTitleText" />
 
-      <div class="space"></div>
+  <div class="space"></div>
 
-      <p class="moul sign-title">{{ signerName }}</p>
-    </div>
+  <EditableText class="moul sign-title" v-model="signerNameText" />
+</div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import AppButton from "./AppButton.vue";
-
+import EditableText from "./EditableText.vue";
 const taktieng = "/image.png";
 const pageEl = ref(null);
 
@@ -247,6 +250,19 @@ const props = defineProps({
   signerTitle: { type: String, default: "សាកលវិទ្យាធិការរង" },
   signerName: { type: String, default: "" },
 });
+
+const lunar = ref(props.issuedKhLunar);
+const issuedKhText = ref(props.issuedKh);
+const issuedEnText = ref(props.issuedEn);
+const titleText = ref("ជ.សាកលវិទ្យាធិការ");
+const signerTitleText = ref(props.signerTitle);
+const signerNameText = ref(props.signerName);
+
+watch(() => props.issuedKhLunar, (v) => (lunar.value = v));
+watch(() => props.issuedKh, (v) => (issuedKhText.value = v));
+watch(() => props.issuedEn, (v) => (issuedEnText.value = v));
+watch(() => props.signerTitle, (v) => (signerTitleText.value = v));
+watch(() => props.signerName, (v) => (signerNameText.value = v));
 
 const d = computed(() => props.data);
 
@@ -400,7 +416,7 @@ defineExpose({ print });
   position: absolute;
   top: 0;
   right: 4px;
-  width: 100px;
+  width: 120px;
   height: 128px;
   box-sizing: border-box;
   border: 2px solid #000;
@@ -422,14 +438,14 @@ defineExpose({ print });
 }
 
 .title-kh {
-  font-size: 22px;
+  font-size: 20px;
   margin: 0;
 }
 
 .title-en {
   font-family: Arial, sans-serif;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 20px;
   margin: 2px 0 0;
 }
 
@@ -444,18 +460,18 @@ defineExpose({ print });
 .authority {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  margin: 14px 0 12px;
+  margin: 10px 0 8px;
   text-align: center;
 }
 
 .auth-kh {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.9;
 }
 
 .auth-en {
   font-family: Arial, sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.9;
 }
 
@@ -482,14 +498,15 @@ defineExpose({ print });
 
 .side.en {
   font-family: Arial, sans-serif;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .side.kh {
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .lbl {
+  font-size: 17px;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -503,11 +520,13 @@ defineExpose({ print });
   overflow: hidden;
   text-overflow: clip;
   flex-shrink: 1;
+  text-align: center;
 }
 
 .val.grow {
   flex: 1 1 0;
   min-width: 0;
+  align-items: center;
 }
 
 .val.center {
@@ -515,7 +534,15 @@ defineExpose({ print });
 }
 
 .val.bold {
-  font-weight: 700;
+  font-family: "Moul", serif;
+  font-weight: 400;
+  align-items: center;
+}
+
+.val.bold.simple {
+  font-family: Arial, sans-serif;
+  font-weight: 600;
+  align-items: center;
 }
 
 .val.num {
@@ -538,12 +565,12 @@ sup {
 }
 
 .purpose-kh {
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .purpose-en {
   font-family: Arial, sans-serif;
-  font-size: 14px;
+  font-size: 18px;
 }
 
 /* Signature */
@@ -559,16 +586,16 @@ sup {
 }
 
 .kh-line {
-  font-size: 15px;
+  font-size: 17px;
 }
 
 .en-line {
   font-family: Arial, sans-serif;
-  font-size: 14px;
+  font-size: 17px;
 }
 
 .sign-title {
-  font-size: 14px;
+  font-size: 17px;
 }
 
 .space {
@@ -586,7 +613,8 @@ sup {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 0;
+    margin: 0 0.2mm;
+   padding: 80px 1px 1px;
   }
 
   html,
@@ -621,7 +649,7 @@ sup {
     width: 210mm !important;
     min-height: 297mm;
     margin: 0 !important;
-    padding: 0 4px 8px !important;
+    padding: 0 0px 0px !important;
     box-sizing: border-box !important;
     background: #fff !important;
     color: #000 !important;

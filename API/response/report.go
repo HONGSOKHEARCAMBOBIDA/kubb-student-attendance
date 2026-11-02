@@ -20,6 +20,7 @@ type AcademicConfirmation struct {
 	DistrictEn  string `json:"district_en"`
 	Provicekh   string `json:"province_kh" gorm:"column:province_kh"`
 	ProviceEn   string `json:"province_en" gorm:"column:province_en"`
+	IsCapital   bool   `json:"is_capital" gorm:"column:is_capital"`
 	ProgrammeKh string `json:"programme_kh"`
 	ProgrammeEn string `json:"programme_en"`
 	Yearkh      string `json:"year_kh"`
