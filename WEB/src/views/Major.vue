@@ -391,11 +391,12 @@ onUnmounted(() => clearTimeout(searchTimer));
         show-index
         :data="majors"
         :loading="loading"
-        :actions-width="180"
+        :actions-width="200"
         v-model:current-page="pagination.page"
         v-model:page-size="pagination.page_size"
         :total="pagination.total"
         @page-change="handlePageChange"
+        
         :columns="[
           { label: 'លេខកូដ', prop: 'code', minWidth: 100 },
           { label: 'ឈ្មោះខ្មែរ', prop: 'name_kh', minWidth: 160 },
@@ -444,6 +445,15 @@ onUnmounted(() => clearTimeout(searchTimer));
              
               size="small"
               icon="Money"
+              circle
+              @click="openPriceDialog(row)"
+            />
+          </el-tooltip>
+          <el-tooltip content="ប្រឡងចូល/ប្រឡងចេញ" placement="top">
+            <AppButton
+              :disabled="row.is_active === false"      
+              size="small"
+              icon="FolderOpened"
               circle
               @click="openPriceDialog(row)"
             />

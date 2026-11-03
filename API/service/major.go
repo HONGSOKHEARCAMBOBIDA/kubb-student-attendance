@@ -30,6 +30,13 @@ type MajorService interface {
 	ToggleSubject(ctx context.Context, majorSubjectID int) error
 	RemoveSubject(ctx context.Context, majorSubjectID int) error
 
+	// Major Exam
+	AddMajorExam(ctx context.Context, input model.MajorExam) error
+	GetMajorExam(ctx context.Context, majorID int, pf request.Pagination) ([]response.MajorExam, *model.PaginationMetadata, error)
+	UpdateMajorExam(ctx context.Context, majorExamID int, input model.MajorExam) error
+	ToggleMajorExam(ctx context.Context, majorExamID int) error
+	RemoveMajorExam(ctx context.Context, majorExamID int) error
+
 	// Major Price
 	AddMajorPrice(ctx context.Context, input request.MajorPriceRequestCreate) error
 	GetMajorPrice(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.MajorPrice, *model.PaginationMetadata, error)
