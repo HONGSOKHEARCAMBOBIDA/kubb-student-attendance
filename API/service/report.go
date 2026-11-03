@@ -195,6 +195,7 @@ func (s *reportservice) GetTemporaryCertificate(ctx context.Context, userclassID
 	gender_kh, gender_en := helper.GenderKhftEn(data.Gender)
 	data.GenderKh = gender_kh
 	data.GenderEN = gender_en
+	data.DobEn = helper.FormatDate(data.DobEn)
 	data.Dobkh = helper.ConvertDateToKhmer(data.DobEn)
 	data.ExamOutDate = helper.ConvertDateToKhmer(data.ExamOutDate)
 	return data, nil

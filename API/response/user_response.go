@@ -13,6 +13,10 @@ type UserResponse struct {
 	Status             string `json:"status"`
 	UserClassID        int    `josn:"user_class_id" gorm:"column:user_class_id"`
 	UserClassFeeStatus string `json:"fee_status" gorm:"column:fee_status"`
+	ExamIn             bool   `gorm:"type:tinyint;default:null" json:"exam_in"`
+	ExamOut            bool   `gorm:"type:tinyint;default:null" json:"exam_out"`
+	ExamInDate         string `gorm:"type:tinyint;default:null" json:"exam_in_date"`
+	ExamOutDate        string `gorm:"type:tinyint;default:null" json:"exam_out_date"`
 }
 
 type UserCount struct {

@@ -336,6 +336,7 @@ async function viewTemporary(student) {
     const res = await getTemporaryCertificate(userClassId);
     temporarytion.value = res.data.data;
     temporaryDialog.value = true;
+    console.log(temporarytion.value)
   } catch (e) {
     ElMessage.error(e.response?.data?.error || "មិនអាចទាញយកទិន្នន័យបានទេ");
   } finally {
@@ -507,6 +508,8 @@ const studentcolumn = [
   { prop: "code", label: "អត្តលេខ", minwidth: 100 },
   { slot: "status", label: "ស្ថានភាព", minwidth: 100 },
   { prop: "fee_status", label: "បង់ប្រាក់", minwidth: 100 },
+  { prop: "exam_in_date", label: "ថ្ងៃ-ខែ-ឆ្នាំ ប្រឡងចូល", minwidth: 100 },
+  { prop: "exam_out_date", label: "ថ្ងៃ-ខែ-ឆ្នាំ ប្រឡងចេញ", minwidth: 100 },
 ];
 
 const userClassStatus = [

@@ -343,7 +343,11 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		uc.class_id AS class_id,
 		uc.status AS status,
 		uc.id AS user_class_id,
-		uc.fee_status AS fee_status
+		uc.fee_status AS fee_status,
+		uc.exam_in AS exam_in,
+		uc.exam_out AS exam_out,
+		uc.exam_in_date AS exam_in_date,
+		uc.exam_out_date
 	`).Scan(&students).Error; err != nil {
 		return nil, nil, err
 	}

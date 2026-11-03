@@ -22,12 +22,16 @@ const (
 
 type UserClass struct {
 	base.ModelBase
-	UserID    int64              `gorm:"column:user_id;not null" json:"user_id"`
-	ClassID   int64              `gorm:"column:class_id;not null" json:"class_id"`
-	IsActive  bool               `gorm:"column:is_active;not null;default:true" json:"is_active"`
-	Status    UserClassStatus    `json:"status"`
-	FeeStatus FeeStatusUserClass `json:"fee_status"`
-	Class     Class
+	UserID      int64              `gorm:"column:user_id;not null" json:"user_id"`
+	ClassID     int64              `gorm:"column:class_id;not null" json:"class_id"`
+	IsActive    bool               `gorm:"column:is_active;not null;default:true" json:"is_active"`
+	Status      UserClassStatus    `json:"status"`
+	FeeStatus   FeeStatusUserClass `json:"fee_status"`
+	ExamIn      bool               `gorm:"type:tinyint;default:null" json:"exam_in"`
+	ExamOut     bool               `gorm:"type:tinyint;default:null" json:"exam_out"`
+	ExamInDate  string             `gorm:"type:tinyint;default:null" json:"exam_in_date"`
+	ExamOutDate string             `gorm:"type:tinyint;default:null" json:"exam_out_date"`
+	Class       Class
 }
 
 func (UserClass) TableName() string {
