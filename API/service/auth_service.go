@@ -683,23 +683,22 @@ func (s *authservice) Logout(ctx context.Context, userID int) error {
 func (s *authservice) UpdateUserClass(ctx context.Context, id int, input request.UserClassUpdateStatus) error {
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
 	defer cancel()
-	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		var data model.UserClass
-		if err := tx.Where("id = ?", id).First(&data).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return apperror.New(apperror.CodeNotFound, "classcurriculumn not found", nil)
-			}
-			return apperror.New(apperror.CodeInternal, "failed to fetch classcurriculumn", nil)
-		}
-		data.Status = input.Status
-		if err := tx.Save(&data).Error; err != nil {
-			return apperror.New(apperror.CodeInternal, "failed to update student", nil)
-		}
-		return nil
-	})
-	return err
-}
 
+	result := s.db.WithContext(ctx).
+		Model(&model.UserClass{}).
+		Where("id = ?", id).
+		Update("status", input.Status)
+
+	if result.Error != nil {
+		return apperror.New(apperror.CodeInternal, "failed to update student", nil)
+	}
+
+	if result.RowsAffected == 0 {
+		return apperror.New(apperror.CodeNotFound, "user class not found", nil)
+	}
+
+	return nil
+}
 func (s *authservice) GetStudentCategory(ctx context.Context) ([]model.StudentCategory, error) {
 	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
 	defer cancel()
