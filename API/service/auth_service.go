@@ -1276,11 +1276,12 @@ func (s *authservice) AddStudentExam(ctx context.Context, input request.StudentE
 			return err
 		}
 		var info struct {
+			ID       int
 			Type     string
 			ExamDate string
 		}
 		if err := tx.Table("exam_platform_detail epd").
-			Select("ep.type AS type, DATE_FORMAT(epd.exam_date, '%Y-%m-%d') AS exam_date").
+			Select("ep.id AS id, ep.type AS type, DATE_FORMAT(epd.exam_date, '%Y-%m-%d') AS exam_date").
 			Joins("JOIN exam_platform ep ON ep.id = epd.exam_platform_id").
 			Where("epd.id = ?", input.ExamPlatformDetailID).
 			Take(&info).Error; err != nil {
@@ -1293,9 +1294,11 @@ func (s *authservice) AddStudentExam(ctx context.Context, input request.StudentE
 		case string(model.ExamPlatformTypeENTRANCE): // ប្រឡងចូល
 			updates["exam_in"] = true
 			updates["exam_in_date"] = info.ExamDate
+			updates["exam_platform_id"] = info.ID
 		case string(model.ExamPlatformTypeEXIT): // ប្រឡងចេញ
 			updates["exam_out"] = true
 			updates["exam_out_date"] = info.ExamDate
+			updates["exam_platform_id"] = info.ID
 		}
 
 		// MIDTERM / FINAL / MAKEUP: nothing to update on user_class
@@ -1387,11 +1390,12 @@ func (s *authservice) GetStudentStudyHistory(ctx context.Context, id int) (respo
 		Joins("LEFT JOIN shift s ON s.id = c.shift_id").
 		Joins("LEFT JOIN generation g ON g.id = c.generation_id").
 		Joins("LEFT JOIN programmes p ON p.id = c.programme_id").
-		Where("uc.user_id = ?", id).
+		Where("uc.user_id = ? AND uc.status = ?", id, model.UserClassStatusSTUDY).
 		Order("c.year ASC, c.semester ASC").
 		Select(`
 			uc.id AS user_class_id,
 			uc.user_id AS user_id,
+			uc.status AS status,
 			c.name AS class_name,
 			c.type AS type,
 			c.is_active AS active,

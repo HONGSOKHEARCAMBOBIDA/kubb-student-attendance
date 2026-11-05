@@ -45,15 +45,15 @@
       <template #name="{ row }">
         <div style="display: flex; flex-direction: column; text-align: start; gap: 2px;">
           <div>
-            <el-text tag="b" size="large" type="danger">{{ row.name }}</el-text>
+            <el-text tag="b" size="default" style="color: #aa0909;">{{ row.name }}</el-text>
           </div>
           <div> 
-             <el-text size="large" style="color: black;"
+             <el-text size="default" style="color: black;"
         >{{ row.major_name }} | {{ row.programme_name }}</el-text
         >
           </div>
         <div>
-         <el-text size="large" style="color: black;"
+         <el-text size="default" style="color: black;"
           >ឆ្នាំទី{{
             row.year
           }} | ឆមាសទី{{ row.semester }}</el-text

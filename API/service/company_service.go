@@ -688,6 +688,31 @@ func (s *companyservice) DeleteExamPlatform(ctx context.Context, id int) error {
 			return apperror.New(apperror.CodeInternal, "failed to delete exam details", nil)
 		}
 
+		updates := map[string]any{}
+		var data model.ExamPlatform
+		if err := tx.First(&data, id).Error; err != nil {
+			return err
+		}
+
+		switch data.Type {
+		case string(model.ExamPlatformTypeENTRANCE):
+			updates["exam_in"] = true
+			updates["exam_in_date"] = nil
+			updates["exam_platform_id"] = nil
+		case string(model.ExamPlatformTypeEXIT): // ប្រឡងចេញ
+			updates["exam_out"] = true
+			updates["exam_out_date"] = nil
+			updates["exam_platform_id"] = nil
+		}
+
+		if len(updates) == 0 {
+			return nil
+		}
+
+		if err := tx.Model(&model.UserClass{}).Where("exam_platform_id =?", id).Updates(updates).Error; err != nil {
+			return err
+		}
+
 		res := tx.Where("id = ?", id).Delete(&model.ExamPlatform{})
 		if res.Error != nil {
 			return apperror.New(apperror.CodeInternal, "failed to delete exam platform", nil)
@@ -695,6 +720,7 @@ func (s *companyservice) DeleteExamPlatform(ctx context.Context, id int) error {
 		if res.RowsAffected == 0 {
 			return apperror.New(apperror.CodeNotFound, "exam platform not found", nil)
 		}
+
 		return nil
 	})
 }

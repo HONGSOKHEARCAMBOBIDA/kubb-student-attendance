@@ -107,10 +107,10 @@
                 </el-tag>
                 <el-tag
                   size="large"
-                  :type="c.active ? 'success' : 'info'"
+                  :type="statusInfo(c.status).type"
                   effect="plain"
                 >
-                  {{ c.active ? "កំពុងសិក្សា" : "បានបញ្ចប់" }}
+                  {{ statusInfo(c.status).label }}
                 </el-tag>
               </div>
             </template>
@@ -200,6 +200,16 @@ const visible = computed({
   set: (v) => emit("update:modelValue", v),
 });
 
+const STATUS_MAP = {
+  STUDY: { label: "កំពុងសិក្សា", type: "success" },
+  SUSPEND: { label: "ព្យួរការសិក្សា", type: "warning" },
+  TRANSFER: { label: "ផ្ទេរ", type: "info" },
+  DROPPED: { label: "បោះបង់ការសិក្សា", type: "danger" },
+  EXAM_BANNED: { label: "ហាមឃាត់ការប្រឡង", type: "danger" },
+};
+
+const statusInfo = (s) => STATUS_MAP[s] || { label: dash(s), type: "info" };
+
 const loading = ref(false);
 const errorMsg = ref("");
 const data = ref(null);
@@ -210,8 +220,7 @@ const classes = computed(() => data.value?.user_class_res || []);
 const totalCredits = computed(() =>
   classes.value.reduce(
     (sum, c) =>
-      sum +
-      (c.subject_res || []).reduce((s, x) => s + (x.credit_hour || 0), 0),
+      sum + (c.subject_res || []).reduce((s, x) => s + (x.credit_hour || 0), 0),
     0,
   ),
 );

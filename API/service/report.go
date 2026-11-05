@@ -187,7 +187,7 @@ func (s *reportservice) GetTemporaryCertificate(ctx context.Context, userclassID
 		m.name_kh AS major_kh,
 		sf.father_name AS father_name,
 		sf.mother_name AS mother_name,
-		sp.exam_out_date AS exam_out_date
+		uc.exam_out_date AS exam_out_date
 	`)
 	if err := query.Scan(&data).Error; err != nil {
 		return response.TemporaryCertificate{}, err
@@ -197,6 +197,7 @@ func (s *reportservice) GetTemporaryCertificate(ctx context.Context, userclassID
 	data.GenderEN = gender_en
 	data.DobEn = helper.FormatDate(data.DobEn)
 	data.Dobkh = helper.ConvertDateToKhmer(data.DobEn)
+	data.ExamOutDate = helper.FormatDate(data.ExamOutDate)
 	data.ExamOutDate = helper.ConvertDateToKhmer(data.ExamOutDate)
 	return data, nil
 }

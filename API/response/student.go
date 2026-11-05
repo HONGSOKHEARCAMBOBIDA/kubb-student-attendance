@@ -30,26 +30,27 @@ type StudentStudyHistory struct {
 }
 
 type UserClassRes struct {
-	UserClassID     int             `json:"user_class_id" gorm:"column:user_class_id"`
-	UserID          int             `json:"user_id"`
-	ClassName       string          `json:"class_name"`
-	Type            model.ClassType `json:"type"`
-	Active          bool            `json:"active"`
-	MajorID         *int64          `gorm:"column:major_id" json:"major_id"`
-	MajorName       string          `json:"major_name"`
-	ShiftID         *int64          `gorm:"column:shift_id" json:"shift_id"`
-	ShiftName       string          `json:"shift_name"`
-	GenerationID    *int64          `gorm:"column:generation_id" json:"generation_id"`
-	GenerationName  string          `json:"generation_name"`
-	GenerationStart string          `json:"generation_start"`
-	GenerationEnd   string          `json:"generation_end"`
-	Year            *int8           `gorm:"column:year" json:"year"`
-	Semester        int             `json:"semester"`
-	Group           *int8           `gorm:"column:group_name" json:"group_name"`
-	Term            *int8           `gorm:"column:term" json:"term"`
-	ProgrammeID     *int64          `gorm:"column:programme_id" json:"programme_id"`
-	ProgrammeName   string          `json:"programme_name"`
-	SubjectRes      []SubjectRes    `json:"subject_res" gorm:"-"`
+	UserClassID     int                   `json:"user_class_id" gorm:"column:user_class_id"`
+	UserID          int                   `json:"user_id"`
+	ClassName       string                `json:"class_name"`
+	Type            model.ClassType       `json:"type"`
+	Status          model.UserClassStatus `json:"status"`
+	Active          bool                  `json:"active"`
+	MajorID         *int64                `gorm:"column:major_id" json:"major_id"`
+	MajorName       string                `json:"major_name"`
+	ShiftID         *int64                `gorm:"column:shift_id" json:"shift_id"`
+	ShiftName       string                `json:"shift_name"`
+	GenerationID    *int64                `gorm:"column:generation_id" json:"generation_id"`
+	GenerationName  string                `json:"generation_name"`
+	GenerationStart string                `json:"generation_start"`
+	GenerationEnd   string                `json:"generation_end"`
+	Year            *int8                 `gorm:"column:year" json:"year"`
+	Semester        int                   `json:"semester"`
+	Group           *int8                 `gorm:"column:group_name" json:"group_name"`
+	Term            *int8                 `gorm:"column:term" json:"term"`
+	ProgrammeID     *int64                `gorm:"column:programme_id" json:"programme_id"`
+	ProgrammeName   string                `json:"programme_name"`
+	SubjectRes      []SubjectRes          `json:"subject_res" gorm:"-"`
 }
 
 type SubjectRes struct {

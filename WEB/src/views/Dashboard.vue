@@ -380,8 +380,7 @@ onMounted(() => {
 }
 
 .action-btn:hover {
-  border-color: #07a5c8;
-  box-shadow: 0 4px 12px rgba(18, 33, 51, 0.08);
+  border-color: #aa0909;
   transform: translateY(-1px);
 }
 
@@ -395,7 +394,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
 
-  color: #07a5c8;
+  color: #aa0909;
   background: #eff6ff;
   border: 1px solid #dbeafe;
   border-radius: 10px;
@@ -404,9 +403,9 @@ onMounted(() => {
 }
 
 .action-btn:hover .icon-box {
-  color: #07a5c8;
+  color: #aa0909;
 
-  border-color: #07a5c8;
+  border-color: #aa0909;
 }
 
 /* Content */
