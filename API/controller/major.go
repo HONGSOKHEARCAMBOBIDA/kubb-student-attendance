@@ -5,6 +5,7 @@ import (
 	"errors"
 	"mysql/constant/share"
 	"mysql/helper"
+	"mysql/model"
 	"mysql/request"
 	"mysql/service"
 	"net/http"
@@ -234,4 +235,83 @@ func (cr *MajorController) GetMajorPrice(c *gin.Context) {
 		return
 	}
 	share.ResponsePagination(c, 200, data, meta)
+}
+
+func (cr *MajorController) AddMajorExam(c *gin.Context) {
+	var input model.MajorExam
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.AddMajorExam(c, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "created")
+}
+
+func (cr *MajorController) GetMajorExam(c *gin.Context) {
+	page, pageSize := helper.GetPagination(c)
+	filter := map[string]string{
+		"generation_id": c.Query("generation_id"),
+		"programme_id":  c.Query("programme_id"),
+		"major_id":      c.Query("major_id"),
+		"exam_type":     c.Query("exam_type"),
+	}
+
+	data, meta, err := cr.service.GetMajorExam(c.Request.Context(), request.Pagination{
+		Page:     page,
+		PageSize: pageSize,
+	}, filter)
+
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			share.ResponseError(c, http.StatusGatewayTimeout, err.Error())
+			return
+		}
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponsePagination(c, 200, data, meta)
+}
+
+func (cr *MajorController) UpdateMajorExam(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	var input model.MajorExam
+	if err := c.ShouldBindJSON(&input); err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := cr.service.UpdateMajorExam(c, id, input); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "major exam update")
+}
+
+func (cr *MajorController) ToggleMajorExam(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	if err := cr.service.ToggleMajorExam(c, id); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "status major exam changed")
+}
+
+func (cr *MajorController) RemoveMajorExam(c *gin.Context) {
+	id, ok := helper.GetParamID(c)
+	if !ok {
+		return
+	}
+	if err := cr.service.RemoveMajorExam(c, id); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, http.StatusOK, "status major exam deleted")
 }

@@ -1267,11 +1267,54 @@ func (s *authservice) AddStudentExam(ctx context.Context, input request.StudentE
 			Room:                 input.Room,
 		})
 	}
+
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		return tx.Clauses(clause.OnConflict{
+		if err := tx.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "exam_platform_detail_id"}, {Name: "student_id"}},
 			DoUpdates: clause.AssignmentColumns([]string{"table_number", "room", "class_id"}),
-		}).Create(&data).Error
+		}).Create(&data).Error; err != nil {
+			return err
+		}
+		var info struct {
+			Type     string
+			ExamDate string
+		}
+		if err := tx.Table("exam_platform_detail epd").
+			Select("ep.type AS type, DATE_FORMAT(epd.exam_date, '%Y-%m-%d') AS exam_date").
+			Joins("JOIN exam_platform ep ON ep.id = epd.exam_platform_id").
+			Where("epd.id = ?", input.ExamPlatformDetailID).
+			Take(&info).Error; err != nil {
+			return err
+		}
+
+		// 3. Decide which columns to update
+		updates := map[string]any{}
+		switch info.Type {
+		case string(model.ExamPlatformTypeENTRANCE): // ប្រឡងចូល
+			updates["exam_in"] = true
+			updates["exam_in_date"] = info.ExamDate
+		case string(model.ExamPlatformTypeEXIT): // ប្រឡងចេញ
+			updates["exam_out"] = true
+			updates["exam_out_date"] = info.ExamDate
+		}
+
+		// MIDTERM / FINAL / MAKEUP: nothing to update on user_class
+		if len(updates) == 0 {
+			return nil
+		}
+
+		// 4. Update user_class only for students who got a table number
+		for _, st := range input.Student {
+			if st.TableNumber == nil {
+				continue
+			}
+			if err := tx.Model(&model.UserClass{}).
+				Where("user_id = ? AND class_id = ?", st.StudentID, st.ClassID).
+				Updates(updates).Error; err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 }
 

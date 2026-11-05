@@ -24,6 +24,7 @@ type ClassScheduleService interface {
 	// scheduled for this class: subjects attached (active) to the class's
 	// major for the class's own year/semester.
 	GetAvailableSubjects(ctx context.Context, classID int) ([]response.SubjectOption, error)
+	GetMajorExam(ctx context.Context, classID int) ([]response.SubjectOption, error)
 
 	Create(ctx context.Context, classID int, input request.ClassScheduleRequestCreate, userID int) error
 	Toggle(ctx context.Context, id int) error
@@ -94,6 +95,36 @@ func (s *classScheduleService) GetAvailableSubjects(ctx context.Context, classID
 		Joins("JOIN subject sub ON sub.id = ms.subject_id").
 		Where("ms.major_id = ? AND ms.year = ? AND ms.semester = ? AND ms.is_active = ? AND ms.generation_id = ? AND ms.programme_id = ?",
 			class.MajorID, class.Year, class.Semester, true, class.GenerationID, class.ProgrammeID).
+		Select(`
+			sub.id AS id,
+			sub.code AS code,
+			sub.name_kh AS name_kh,
+			sub.name_en AS name_en
+		`).
+		Order("sub.id ASC").
+		Scan(&data).Error
+	if err != nil {
+		return nil, fmt.Errorf("fetch available subjects: %w", err)
+	}
+
+	return data, nil
+}
+
+func (s *classScheduleService) GetMajorExam(ctx context.Context, classID int) ([]response.SubjectOption, error) {
+	var class model.Class
+	if err := s.db.WithContext(ctx).Where("id = ?", classID).First(&class).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.New(apperror.CodeNotFound, "class not found", nil)
+		}
+		return nil, apperror.New(apperror.CodeInternal, "failed to fetch class", nil)
+	}
+
+	var data []response.SubjectOption
+	err := s.db.WithContext(ctx).
+		Table("major_exam ms").
+		Joins("JOIN subject sub ON sub.id = ms.subject_id").
+		Where("ms.major_id = ? AND ms.is_active = ? AND ms.generation_id = ? AND ms.programme_id = ?",
+			class.MajorID, true, class.GenerationID, class.ProgrammeID).
 		Select(`
 			sub.id AS id,
 			sub.code AS code,

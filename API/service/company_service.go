@@ -352,6 +352,11 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		return nil, nil, err
 	}
 
+	for i := range students {
+		students[i].ExamInDate = helper.FormatDate(students[i].ExamInDate)
+		students[i].ExamOutDate = helper.FormatDate(students[i].ExamOutDate)
+	}
+
 	studentByClass := make(map[int][]response.UserResponse, len(data))
 	for _, st := range students {
 		studentByClass[st.ClassID] = append(studentByClass[st.ClassID], st.UserResponse)
@@ -541,7 +546,7 @@ func (s *companyservice) CreateExamPlatform(ctx context.Context, input request.E
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		newexamplatform := model.ExamPlatform{
 			ClassID:    input.ClassID,
-			Type:       string(model.ExamPlatformTypeFINAL),
+			Type:       input.Type,
 			StartUse:   input.StartUse,
 			ExpireDate: input.ExpireDate,
 			ShowResult: input.ShowResult,

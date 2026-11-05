@@ -22,6 +22,7 @@ import {
   getStudentExams,
   deleteStudentExam,
   getStaft,
+  getMaojrSubjectforExam,
 } from "../src/api/services.js";
 import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
@@ -129,6 +130,20 @@ async function fetchSubjects() {
 
   try {
     const res = await getClassAvailableSubjects(props.classRow.id);
+    subjectOptions.value = (res.data.data || []).map((s) => ({
+      label: `${s.code} — ${s.name_kh}`,
+      value: s.id,
+    }));
+  } catch (e) {
+    ElMessage.error(errorMessage(e, "Failed to load subjects"));
+  }
+}
+
+async function fetchSubjectsv2() {
+  if (!props.classRow) return;
+
+  try {
+    const res = await getMaojrSubjectforExam(props.classRow.id);
     subjectOptions.value = (res.data.data || []).map((s) => ({
       label: `${s.code} — ${s.name_kh}`,
       value: s.id,
@@ -659,6 +674,25 @@ function resetPrint() {
 onMounted(() => window.addEventListener("afterprint", resetPrint));
 onBeforeUnmount(() => window.removeEventListener("afterprint", resetPrint));
 
+const majorExamTypes = ["ENTRANCE", "EXIT"];
+function loadSubjectsByType(type) {
+  if (majorExamTypes.includes(type)) {
+    return fetchSubjectsv2(); // ENTRANCE / EXIT
+  }
+  return fetchSubjects(); // MIDTERM / FINAL / MAKEUP
+}
+
+watch(
+  () => form.type,
+  (type) => {
+    // the old subject choices may not exist in the new list, so clear them
+    form.details.forEach((d) => {
+      d.subject_id = null;
+    });
+    loadSubjectsByType(type);
+  },
+);
+
 // When the dialog opens: reset the form and load fresh data
 watch(
   () => [props.modelValue, props.classRow?.id],
@@ -667,7 +701,7 @@ watch(
 
     Object.assign(form, defaultForm());
     fetchExams();
-    fetchSubjects();
+    loadSubjectsByType(form.type); // was: fetchSubjects()
     fetchStaft();
   },
 );
@@ -926,7 +960,7 @@ watch(
           label="មុខវិជ្ជា"
           prop="subject_id"
           :rules="detailRules.subject_id"
-          :options="detailEditSubjects"
+          :options="subjectOptions"
           size="large"
           filterable
         />

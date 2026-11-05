@@ -32,7 +32,7 @@ type MajorService interface {
 
 	// Major Exam
 	AddMajorExam(ctx context.Context, input model.MajorExam) error
-	GetMajorExam(ctx context.Context, majorID int, pf request.Pagination) ([]response.MajorExam, *model.PaginationMetadata, error)
+	GetMajorExam(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.MajorExam, *model.PaginationMetadata, error)
 	UpdateMajorExam(ctx context.Context, majorExamID int, input model.MajorExam) error
 	ToggleMajorExam(ctx context.Context, majorExamID int) error
 	RemoveMajorExam(ctx context.Context, majorExamID int) error
@@ -400,4 +400,133 @@ func (s *majorService) GetMajorPrice(
 	}
 
 	return data, helper.BuildPaginationMeta(pf, totalCount), nil
+}
+
+func (s *majorService) AddMajorExam(ctx context.Context, input model.MajorExam) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		newdata := model.MajorExam{
+			MajorID:      input.MajorID,
+			GenerationID: input.GenerationID,
+			ProgrammeID:  input.ProgrammeID,
+			SubjectID:    input.SubjectID,
+			ExamType:     input.ExamType,
+			IsActive:     true,
+		}
+		if err := tx.Create(&newdata).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
+}
+
+func (s *majorService) GetMajorExam(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.MajorExam, *model.PaginationMetadata, error) {
+	helper.NormalizePagination(&pf)
+	offset := (pf.Page - 1) * pf.PageSize
+
+	base := s.db.WithContext(ctx).Table("major_exam me").
+		Joins("LEFT JOIN generation g ON g.id = me.generation_id").
+		Joins("LEFT JOIN major m ON m.id = me.major_id").
+		Joins("LEFT JOIN programmes p ON p.id = me.programme_id").
+		Joins("LEFT JOIN subject s ON s.id = me.subject_id")
+
+	filterColumns := map[string]string{
+		"generation_id": "me.generation_id",
+		"programme_id":  "me.programme_id",
+		"major_id":      "me.major_id",
+		"exam_type":     "me.exam_type",
+	}
+
+	for key, col := range filterColumns {
+		if v := strings.TrimSpace(filter[key]); v != "" {
+			base = base.Where(col+" = ?", v)
+		}
+	}
+
+	var totalCount int64
+	if err := base.Session(&gorm.Session{}).Count(&totalCount).Error; err != nil {
+		return nil, nil, err
+	}
+
+	data := make([]response.MajorExam, 0)
+	if totalCount == 0 {
+		return data, helper.BuildPaginationMeta(pf, 0), nil
+	}
+
+	err := base.Session(&gorm.Session{}).
+		Select(`
+			me.id AS id,
+			m.id AS major_id,
+			g.id AS generation_id,
+			g.name_kh AS generation_name,
+			p.id AS programme_id,
+			p.name AS programme_name,
+			s.id AS subject_id,
+			s.code AS subject_code,
+			s.name_kh AS subject_name_kh,
+			s.name_en AS subject_name_en,
+			s.credit_hour,
+			me.exam_type AS exam_type,
+			me.is_active AS is_active
+		`).
+		Offset(offset).
+		Limit(pf.PageSize).
+		Scan(&data).Error
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return data, helper.BuildPaginationMeta(pf, totalCount), nil
+
+}
+
+func (s *majorService) UpdateMajorExam(ctx context.Context, majorExamID int, input model.MajorExam) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var olddata model.MajorExam
+		if err := tx.
+			Clauses(clause.Locking{Strength: "UPDATE"}).
+			First(&olddata, majorExamID).Error; err != nil {
+			return err
+		}
+
+		result := tx.Model(&olddata).Updates(map[string]any{
+			"generation_id": input.GenerationID,
+			"programme_id":  input.ProgrammeID,
+			"subject_id":    input.SubjectID,
+			"exam_type":     input.ExamType,
+		})
+
+		if result.Error != nil {
+			return result.Error
+		}
+
+		if result.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+
+		return nil
+	})
+}
+
+func (s *majorService) ToggleMajorExam(ctx context.Context, majorExamID int) error {
+	return utils.ToggleStatus[model.MajorExam](ctx, s.db, majorExamID)
+}
+
+func (s *majorService) RemoveMajorExam(ctx context.Context, majorExamID int) error {
+	ctx, cancel := context.WithTimeout(ctx, utils.DefaultQueryTimeout)
+	defer cancel()
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		res := tx.Where("id = ?", majorExamID).Delete(&model.MajorExam{})
+		if res.Error != nil {
+			return apperror.New(apperror.CodeInternal, "failed to remove subject from major", nil)
+		}
+		if res.RowsAffected == 0 {
+			return apperror.New(apperror.CodeNotFound, "major subject not found", nil)
+		}
+		return nil
+	})
 }

@@ -177,10 +177,18 @@ func SetupRoutes(r *gin.Engine) {
 		auth.PUT(route.ToggleMajorSubject, middleware.PermissionMiddleware(permission.Editsubject), majorcontroller.ToggleSubject)
 		auth.DELETE(route.RemoveMajorSubject, middleware.PermissionMiddleware(permission.RemoveMajorSubject), majorcontroller.RemoveSubject)
 
+		// Major Exam
+		auth.POST(route.AddMajorExam, middleware.PermissionMiddleware(permission.AddMajorExam), majorcontroller.AddMajorExam)
+		auth.GET(route.GetMajorExam, middleware.PermissionMiddleware(permission.GetMajorExam), majorcontroller.GetMajorExam)
+		auth.PUT(route.UpdateMajorExam, middleware.PermissionMiddleware(permission.UpdateMajorExam), majorcontroller.UpdateMajorExam)
+		auth.PUT(route.ToggleMajorExam, middleware.PermissionMiddleware(permission.ToggleMajorExam), majorcontroller.ToggleMajorExam)
+		auth.DELETE(route.RemoveMajorExam, middleware.PermissionMiddleware(permission.RemoveMajorExam), majorcontroller.RemoveMajorExam)
+
 		// Class Schedule
 		auth.GET(route.GetClassSchedule, middleware.PermissionMiddleware(permission.GetClassSchedule), classschedulecontroller.GetByClass)
 		auth.POST(route.CreateClassSchedule, middleware.PermissionMiddleware(permission.CreateClassSchedule), classschedulecontroller.Create)
 		auth.PATCH(route.ToggleClassSchedule, middleware.PermissionMiddleware(permission.ToggleClassSchedule), classschedulecontroller.Toggle)
+		auth.GET(route.GetMajorExamForMajorExam, middleware.PermissionMiddleware(permission.GetClassSchedule), classschedulecontroller.GetMajorExam)
 
 		// grade component
 		auth.GET(route.ViewGradeComponent, middleware.PermissionMiddleware(permission.ViewGradeComponent), scorecontroller.GetGradeComponent)

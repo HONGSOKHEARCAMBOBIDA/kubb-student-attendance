@@ -203,4 +203,11 @@ const (
 	ViewReportWeekSchedule         = "view.report.weed.schedule"
 	ViewReportAcademicConfirmation = "view.report.academic.confirmation/:id"
 	ViewReportTemporaryCertificate = "view.report.temporary.certificate/:id"
+
+	AddMajorExam             = "add.major.exam"
+	GetMajorExam             = "view.major.exam"
+	UpdateMajorExam          = "update.major.exam/:id"
+	ToggleMajorExam          = "toggle.major.exam/:id"
+	RemoveMajorExam          = "delete.major.exam/:id"
+	GetMajorExamForMajorExam = "view.major.exam.for.major.exam/:id"
 )

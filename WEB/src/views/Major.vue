@@ -19,10 +19,15 @@ import {
   getGeneration,
   getProgramme,
   getFaculty,
+  getMajorExam,
+  addMajorExam,
+  toggleMajorExam,
+  removeMajorExam,
 } from "../api/services.js";
 import { useUserDataStore } from "../stores/user_data.js";
 import AppSelect from "../../components/AppSelect.vue";
 import MajorPrice from "../../components/MajorPrice.vue";
+import { ElMessage } from "element-plus";
 let searchTimer = null;
 const notify = useNotification();
 const userDataStore = useUserDataStore();
@@ -44,6 +49,99 @@ const facultys = ref([]);
 const priceDialogVisible = ref(false);
 const priceMajorId = ref(null);
 const priceMajor = ref(null);
+
+// Major exam dialog
+const examDialogVisible = ref(false);
+const majorExams = ref([]);
+const examLoading = ref(false);
+const addingExam = ref(false);
+const examTogglingId = ref(null);
+const examRemovingId = ref(null);
+const examPagination = reactive({ page: 1, page_size: 20, total: 0 });
+const examTypeOptions = [
+  { label: "ប្រឡងចូល", value: "ENTRANCE" },
+  { label: "ប្រឡងចេញ", value: "EXIT" },
+];
+const examFormRef = ref();
+const defaultExamForm = () => ({
+  subject_id: null,
+  generation_id: null,
+  programme_id: null,
+  exam_type: null,
+});
+const examForm = reactive(defaultExamForm());
+const examRules = {
+  subject_id: [{ required: true, message: "សូមជ្រើសរើសមុខវិជ្ជា", trigger: "change" }],
+  generation_id: [{ required: true, message: "សូមជ្រើសរើសជំនាន់", trigger: "change" }],
+  programme_id: [{ required: true, message: "សូមជ្រើសរើសកម្មវិធីសិក្សា", trigger: "change" }],
+  exam_type: [{ required: true, message: "សូមជ្រើសរើសប្រភេទប្រឡង", trigger: "change" }],
+};
+async function openExamDialog(row) {
+  activeMajor.value = row; // reuse the same activeMajor
+  Object.assign(examForm, defaultExamForm());
+  examPagination.page = 1;
+  examDialogVisible.value = true;
+  await Promise.all([fetchMajorExams(), searchSubjects()]);
+}
+async function fetchMajorExams() {
+  examLoading.value = true;
+  try {
+    const res = await getMajorExam({
+      major_id: activeMajor.value.id,
+      page: examPagination.page,
+      page_size: examPagination.page_size,
+    });
+    majorExams.value = res.data.data || [];
+    examPagination.total = res.data.pagination?.totalCount || 0;
+  } catch {
+    ElMessage.error("Failed to load exams");
+  } finally {
+    examLoading.value = false;
+  }
+}
+async function handleAddExam() {
+  const valid = await examFormRef.value.validate().catch(() => false);
+  if (!valid) return;
+
+  addingExam.value = true;
+  try {
+    await addMajorExam({ ...examForm, major_id: activeMajor.value.id });
+    ElMessage.success("បន្ថែមជោគជ័យ");
+    examPagination.page = 1;
+    await fetchMajorExams();
+  } catch (e) {
+    ElMessage.error(e.response?.data?.error || "មិនអាចបន្ថែមបានទេ");
+  } finally {
+    addingExam.value = false;
+  }
+}
+
+async function handleToggleExam(row) {
+  examTogglingId.value = row.id;
+  try {
+    await toggleMajorExam(row.id);
+    ElMessage.success("ប្តូរស្ថានភាពជោគជ័យ");
+    await fetchMajorExams();
+  } catch (e) {
+    ElMessage.error(e.response?.data?.error || "មិនអាចប្តូរស្ថានភាពបានទេ");
+  } finally {
+    examTogglingId.value = null;
+  }
+}
+
+async function handleRemoveExam(row) {
+  examRemovingId.value = row.id;
+  try {
+    await removeMajorExam(row.id);
+    ElMessage.success("លុបជោគជ័យ");
+    await fetchMajorExams();
+  } catch (e) {
+    ElMessage.error(e.response?.data?.error || "មិនអាចលុបបានទេ");
+  } finally {
+    examRemovingId.value = null;
+  }
+}
+
 function openPriceDialog(row) {
   priceMajor.value = row;
   priceMajorId.value = row.id;
@@ -127,7 +225,6 @@ async function fetchMajor() {
     });
     majors.value = res.data.data || [];
     pagination.total = res.data.pagination?.totalCount || 0;
-    console.log(majors.value);
   } catch {
     notify.error("Failed to load majors");
   } finally {
@@ -449,15 +546,15 @@ onUnmounted(() => clearTimeout(searchTimer));
               @click="openPriceDialog(row)"
             />
           </el-tooltip>
-          <el-tooltip content="ប្រឡងចូល/ប្រឡងចេញ" placement="top">
-            <AppButton
-              :disabled="row.is_active === false"      
-              size="small"
-              icon="FolderOpened"
-              circle
-              @click="openPriceDialog(row)"
-            />
-          </el-tooltip>
+<el-tooltip content="ប្រឡងចូល/ប្រឡងចេញ" placement="top">
+  <AppButton
+    :disabled="row.is_active === false"
+    size="small"
+    icon="FolderOpened"
+    circle
+    @click="openExamDialog(row)"
+  />
+</el-tooltip>
         </template>
       </AppTable>
     </el-card>
@@ -647,6 +744,104 @@ onUnmounted(() => clearTimeout(searchTimer));
       :generations="generations"
       :programmes="programmes"
     />
+    <!-- Exams of the selected major -->
+<AppDialog
+  v-model="examDialogVisible"
+  :title="activeMajor ? `ប្រឡងសម្រាប់ ${activeMajor.name_kh}` : 'ប្រឡង'"
+  width="80%"
+>
+  <el-form ref="examFormRef" :model="examForm" :rules="examRules" label-position="top">
+    <div class="form-row">
+      <AppSelect
+        label="មុខវិជ្ជា"
+        prop="subject_id"
+        v-model="examForm.subject_id"
+        :options="subjectOptions"
+        size="large"
+        filterable
+        remote
+        :remote-method="searchSubjects"
+        clearable
+      />
+      <AppSelect
+        label="ជំនាន់"
+        prop="generation_id"
+        v-model="examForm.generation_id"
+        :options="generations"
+        size="large"
+        filterable
+        clearable
+      />
+      <AppSelect
+        label="កម្មវិធីសិក្សា"
+        prop="programme_id"
+        v-model="examForm.programme_id"
+        :options="programmes"
+        size="large"
+        filterable
+        clearable
+      />
+      <AppSelect
+        label="ប្រភេទប្រឡង"
+        prop="exam_type"
+        v-model="examForm.exam_type"
+        :options="examTypeOptions"
+        size="large"
+      />
+      <el-form-item label="បន្ថែម" class="grow">
+        <AppButton type="primary" :loading="addingExam" @click="handleAddExam">
+          បន្ថែម
+        </AppButton>
+      </el-form-item>
+    </div>
+  </el-form>
+
+  <AppTable
+    show-index
+    :data="majorExams"
+    :loading="examLoading"
+    :actions-width="100"
+    v-model:current-page="examPagination.page"
+    v-model:page-size="examPagination.page_size"
+    :total="examPagination.total"
+    @page-change="fetchMajorExams"
+    :columns="[
+      { label: 'លេខកូដ', prop: 'subject_code', minWidth: 100 },
+      { label: 'មុខវិជ្ជា', prop: 'subject_name_kh', minWidth: 160 },
+      { label: 'ជំនាន់', prop: 'generation_name', minWidth: 140 },
+      { label: 'កម្មវិធីសិក្សា', prop: 'programme_name', minWidth: 140 },
+      { label: 'ប្រភេទប្រឡង', slot: 'exam_type', width: 130 },
+      { label: 'ស្ថានភាព', slot: 'status', width: 110 },
+    ]"
+  >
+    <template #exam_type="{ row }">
+      <el-tag :type="row.exam_type === 'ENTRANCE' ? 'success' : 'warning'">
+        {{ row.exam_type === 'ENTRANCE' ? 'ប្រឡងចូល' : 'ប្រឡងចេញ' }}
+      </el-tag>
+    </template>
+    <template #status="{ row }">
+      <el-switch
+        :model-value="row.is_active"
+        :loading="examTogglingId === row.id"
+        @change="handleToggleExam(row)"
+      />
+    </template>
+    <template #actions="{ row }">
+      <AppButton
+        size="small"
+        icon="Delete"
+        type="danger"
+        circle
+        :loading="examRemovingId === row.id"
+        @click="handleRemoveExam(row)"
+      />
+    </template>
+  </AppTable>
+
+  <template #footer>
+    <AppButton @click="examDialogVisible = false">បិទ</AppButton>
+  </template>
+</AppDialog>
   </div>
 </template>
 

@@ -6,6 +6,7 @@ type ExamPlatform struct {
 	ExpireDate         string               `gorm:"type:date;not null" json:"expire_date"`
 	ShowResult         *string              `gorm:"type:date" json:"show_result"`
 	CheckBy            int                  `json:"check_by"`
+	Type               string               `gorm:"type:enum('MIDTERM','FINAL','ENTRANCE','EXIT','MAKEUP');not null" json:"type"`
 	ExamPlatformDetail []ExamPlatformDetail `json:"details"`
 }
 

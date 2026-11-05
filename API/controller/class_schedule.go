@@ -62,6 +62,22 @@ func (ctl *ClassScheduleController) GetAvailableSubjects(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": data})
 }
 
+func (ctl *ClassScheduleController) GetMajorExam(c *gin.Context) {
+	classID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid class id"})
+		return
+	}
+
+	data, err := ctl.service.GetMajorExam(c.Request.Context(), classID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": data})
+}
+
 // POST /class/:id/schedule
 func (ctl *ClassScheduleController) Create(c *gin.Context) {
 	userID, ok := helper.GetUserID(c)

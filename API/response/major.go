@@ -31,7 +31,9 @@ type MajorSubject struct {
 type MajorExam struct {
 	ID             int64  `json:"id"`
 	MajorID        int64  `json:"major_id"`
+	GenerationID   int    `json:"generation_id"`
 	GenerationName string `json:"generation_name"`
+	ProgrammeID    int    `json:"programme_id"`
 	ProgrammeName  string `json:"programme_name"`
 	SubjectID      int64  `json:"subject_id"`
 	SubjectCode    string `json:"subject_code"`

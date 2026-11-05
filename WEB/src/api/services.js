@@ -24,7 +24,6 @@ export const getFaculty = () => api.get("/view.Faculty");
 export const addFaculty = (data) => api.post("/save.faculty", data);
 export const editFaculty = (id, data) => api.put(`/save.faculty/${id}`, data);
 
-
 export const getClass = (params) => api.get("/view.company", { params });
 export const createClass = (data) => api.post("/add.company", data);
 export const updateClass = (id, data) => api.put(`/edit.company/${id}`, data);
@@ -141,7 +140,7 @@ export const deleteLeaveRequest = (id) =>
 export const addNotPermissionLeave = (data) =>
   api.post("/add.leave.not.permission", data);
 export const getcountleave = () => api.get("/count.leave");
-export const rollbackleave = (id) => api.put(`/roll.back.leave/${id}`)
+export const rollbackleave = (id) => api.put(`/roll.back.leave/${id}`);
 
 // RoleHasPermission
 export const getrolehaspermission = (id) =>
@@ -182,6 +181,7 @@ export const createClassSchedule = (classId, data) =>
   api.post(`/class/${classId}/schedule`, data);
 export const toggleClassSchedule = (id) =>
   api.patch(`/class-schedule/${id}/toggle`);
+export const getMaojrSubjectforExam = (id) => api.get(`/view.major.exam.for.major.exam/${id}`)
 
 // score
 export const getGradecomponent = () => api.get("/view.grade.component");
@@ -269,10 +269,20 @@ export const getStudentStudyHistory = (id) =>
   api.get(`/view.student.study.history/${id}`);
 
 export const addClassDetail = (data) => api.post("/add.class.detail", data);
-export const viewClassDetail = (id) => api.get(`/view.class.detail/${id}`)
-export const updateClassDetail = (id,data) => api.put(`/updaste.class.detail/${id}`,data)
+export const viewClassDetail = (id) => api.get(`/view.class.detail/${id}`);
+export const updateClassDetail = (id, data) =>
+  api.put(`/updaste.class.detail/${id}`, data);
 
+export const getWeekSchedule = (params) =>
+  api.get(`/view.report.weed.schedule`, { params });
+export const getAcademicConfirmation = (id) =>
+  api.get(`/view.report.academic.confirmation/${id}`);
+export const getTemporaryCertificate = (id) =>
+  api.get(`/view.report.temporary.certificate/${id}`);
 
-export const getWeekSchedule  = (params) => api.get(`/view.report.weed.schedule`,{params})
-export const getAcademicConfirmation = (id) => api.get(`/view.report.academic.confirmation/${id}`)
-export const getTemporaryCertificate = (id) => api.get(`/view.report.temporary.certificate/${id}`)
+export const addMajorExam = (data) => api.post("/add.major.exam", data);
+export const getMajorExam = (params) => api.get(`/view.major.exam`, {params});
+export const updateMajorExam = (id, data) =>
+  api.put(`/update.major.exam/${id}`, data);
+export const toggleMajorExam = (id) => api.put(`/toggle.major.exam/${id}`);
+export const removeMajorExam = (id) => api.delete(`/delete.major.exam/${id}`);

@@ -123,4 +123,10 @@ const (
 	DeleteIncome       = "delete.income"
 
 	ViewReport = "view.report"
+
+	AddMajorExam    = "add.major.exam"
+	GetMajorExam    = "view.major.exam"
+	UpdateMajorExam = "update.major.exam"
+	ToggleMajorExam = "toggle.major.exam"
+	RemoveMajorExam = "delete.major.exam"
 )
