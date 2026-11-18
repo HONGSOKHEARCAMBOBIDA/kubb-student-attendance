@@ -380,7 +380,7 @@ onMounted(() => {
 }
 
 .action-btn:hover {
-  border-color: #aa0909;
+  border-color: #273b91;
   transform: translateY(-1px);
 }
 
@@ -394,7 +394,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
 
-  color: #aa0909;
+  color: #273b91;
   background: #eff6ff;
   border: 1px solid #dbeafe;
   border-radius: 10px;
@@ -403,9 +403,9 @@ onMounted(() => {
 }
 
 .action-btn:hover .icon-box {
-  color: #aa0909;
+  color: #273b91;
 
-  border-color: #aa0909;
+  border-color: #273b91;
 }
 
 /* Content */

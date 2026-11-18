@@ -12,7 +12,7 @@
     :class="{ 'app-button--block': block, 'app-button--circle': circle }"
     @click="$emit('click')"
   >
-    <el-icon v-if="icon" color="#aa0909"><component :is="icon" /></el-icon>
+    <el-icon v-if="icon" color="#273b91"><component :is="icon" /></el-icon>
     <slot v-if="!circle" />
   </el-button>
 </template>
@@ -44,8 +44,8 @@ defineEmits(['click'])
 }
 
 .app-button:hover {
-  color: #aa0909;
-  border-color: #aa0909;
+  color: #273b91;
+  border-color: #273b91;
   transform: translateY(-1px);
 }
 

@@ -253,7 +253,7 @@ onMounted(() => {
 
 .topbar {
   height: 54px;
-  background: #aa0909;
+  background: #273b91;
   border-bottom: 1px solid #ebeef5;
   display: flex;
   align-items: center;
