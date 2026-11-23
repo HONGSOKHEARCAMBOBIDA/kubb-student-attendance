@@ -36,7 +36,7 @@
           clearable
           @change="fetchData"
           style="width: 100%"
-          size="large"
+          size="small"
         >
         </AppDatePicker>
       </template>

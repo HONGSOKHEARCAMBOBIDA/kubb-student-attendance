@@ -10,7 +10,7 @@
       @update:page-size="$emit('update:pageSize', $event)"
       :total="total"
       @page-change="$emit('page-change')"
-      actions-width="410px"
+      actions-width="330px"
       :columns="[
         { slot: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 200 },
         //{ slot: 'major_name', label: 'ជំនាញ', Width: 100 },
@@ -36,46 +36,44 @@
       <template #exam_final="{ row }">
         <el-checkbox
           border
-          size="large"
+          size="small"
           :model-value="!!row.exam_final"
           :disabled="row.is_active === false || !canEditClass"
           @change="$emit('toggle-exam-final', row)"
         />
       </template>
       <template #name="{ row }">
-        <div style="display: flex; flex-direction: column; text-align: start; gap: 2px;">
-          <div>
-            <el-text tag="b" size="default" style="color: #aa0909;">{{ row.name }}</el-text>
-          </div>
-          <div> 
-             <el-text size="default" style="color: black;"
-        >{{ row.major_name }} | {{ row.programme_name }}</el-text
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            text-align: start;
+            gap: 2px;
+          "
         >
+          <div>
+            ថ្នាក់ៈ {{ row.name }},ជំនាញៈ {{ row.major_name }} |
+            {{ row.programme_name }}
           </div>
-        <div>
-         <el-text size="default" style="color: black;"
-          >ឆ្នាំទី{{
-            row.year
-          }} | ឆមាសទី{{ row.semester }}</el-text
-        > 
+          <div></div>
+          <div>
+            <el-text size="small" style="color: black"
+              >ឆ្នាំទី{{ row.year }} | ឆមាសទី{{ row.semester }}</el-text
+            >
+          </div>
         </div>
-
-        </div>
-       
       </template>
       <template #major_name="{ row }">
-        <el-text tag="b" type="primary">{{ row.major_name }}</el-text>
+        {{ row.major_name }}
       </template>
       <template #faculty="{ row }">
-         <span>{{ row.faculty_name }}</span>
+        {{ row.faculty_name }}
       </template>
       <template #generation_name="{ row }">
-        <el-text tag="b" type="primary"
-          >{{ row.generation_name }} | {{ row.generation_start }}-{{
-            row.generation_end
-          }}
-          ({{ row.shift_name }})</el-text
-        >
+        {{ row.generation_name }} | {{ row.generation_start }}-{{
+          row.generation_end
+        }}
+        ({{ row.shift_name }})
       </template>
       <template #programme_name="{ row }">
         <el-text tag="b" type="primary">{{ row.programme_name }}</el-text>
@@ -89,7 +87,7 @@
         <el-text>{{ row.students?.length ?? 0 }} នាក់</el-text>
       </template>
       <template #type="{ row }">
-        <el-text>{{ row.type === "onclass" ? "ផ្ទាល់" : "អនឡាញ" }}</el-text>
+        {{ row.type === "onclass" ? "ផ្ទាល់" : "អនឡាញ" }}
       </template>
 
       <template #actions="{ row }">
@@ -237,7 +235,7 @@ defineEmits([
   "edit-status",
   "score-student",
   "toggle-exam-final",
-  "exam"
+  "exam",
 ]);
 </script>
 

@@ -532,12 +532,12 @@ onUnmounted(() => clearTimeout(searchTimer));
       </template>
       <template #start_date>
         <AppDatePicker v-model="filter.start_date" type="date" placeholder="ជ្រេីសរេីសថ្ងៃទី" value-format="YYYY-MM-DD"
-          clearable @change="fetchLeaveRequest" style="width: 100%" size="large">
+          clearable @change="fetchLeaveRequest" style="width: 100%" size="small">
         </AppDatePicker>
       </template>
       <template #end_date>
         <AppDatePicker v-model="filter.end_date" type="date" placeholder="ជ្រេីសរេីសថ្ងៃទី" value-format="YYYY-MM-DD"
-          clearable @change="fetchLeaveRequest" style="width: 100%" size="large">
+          clearable @change="fetchLeaveRequest" style="width: 100%" size="small">
         </AppDatePicker>
       </template>
       <template #actions>

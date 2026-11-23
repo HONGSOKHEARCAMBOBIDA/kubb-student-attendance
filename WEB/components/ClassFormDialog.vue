@@ -4,6 +4,7 @@
     @update:model-value="$emit('update:modelValue', $event)"
     :title="isEdit ? 'កែប្រែថ្នាក់' : 'បន្ថែមថ្នាក់'"
     width="640px"
+    
   >
     <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
       <div class="form-row">
@@ -30,7 +31,7 @@
         <AppInput type="number" label="ក្រុម" prop="group" v-model.number="form.group" size="large" placeholder="1"></AppInput>
          <AppInput type="number" label="វគ្គ" prop="term" v-model.number="form.term" size="large" placeholder="1"></AppInput>
         <AppSelect
-          size="large"
+          size="small"
           v-model="form.type"
           :options="classType"
           label="ប្រភេទថ្នាក់"
@@ -41,7 +42,7 @@
       <div class="form-row">
         <AppInput type="number" clearable label="ចម្ងាយអាចស្កែនបាន (ម៉េត្រ)" v-model.number="form.radius" size="large" placeholder="e.g. 100"></AppInput>
         <el-form-item label="អាចស្កែនក្រៅតំបន់" prop="can_scan_outsize">
-          <el-radio-group v-model="form.can_scan_outsize" size="large">
+          <el-radio-group v-model="form.can_scan_outsize" size="small">
             <el-radio-button :value="true">អាចស្កែនបាន</el-radio-button>
             <el-radio-button :value="false">មិនអាចស្កែនបាន</el-radio-button>
           </el-radio-group>
@@ -50,10 +51,10 @@
     </el-form>
 
     <template #footer>
-      <AppButton @click="$emit('update:modelValue', false)" size="large" :block="false" type="warning">
+      <AppButton @click="$emit('update:modelValue', false)" size="small" :block="false" type="warning">
         បោះបង់
       </AppButton>
-      <AppButton @click="handleSave" type="primary" :loading="saving" size="large" :block="false">
+      <AppButton @click="handleSave" type="primary" :loading="saving" size="small" :block="false">
         {{ isEdit ? "កែប្រែ" : "បង្កើត" }}
       </AppButton>
     </template>
@@ -202,9 +203,8 @@ async function handleSave() {
 
 <style scoped>
 .form-row {
-  padding: 10px;
   display: flex;
-  gap: 16px;
+  gap: 10px;
 }
 .form-row .el-form-item {
   flex: 1;

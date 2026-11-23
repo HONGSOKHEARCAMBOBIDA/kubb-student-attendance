@@ -25,7 +25,7 @@ type MajorService interface {
 
 	// Subjects belonging to a major (major_subject junction)
 	AddSubject(ctx context.Context, majorID int, input request.MajorSubjectRequestCreate) error
-	GetSubjects(ctx context.Context, majorID int, pf request.Pagination) ([]response.MajorSubject, *model.PaginationMetadata, error)
+	GetSubjects(ctx context.Context, majorID int, pf request.Pagination, filter map[string]string) ([]response.MajorSubject, *model.PaginationMetadata, error)
 	UpdateSubject(ctx context.Context, majorSubjectID int, input request.MajorSubjectRequestUpdate) error
 	ToggleSubject(ctx context.Context, majorSubjectID int) error
 	RemoveSubject(ctx context.Context, majorSubjectID int) error
@@ -190,18 +190,32 @@ func (s *majorService) AddSubject(ctx context.Context, majorID int, input reques
 
 // GetSubjects lists the subjects attached to a major, joined with
 // subject so the UI can show code/name/credit hour directly.
-func (s *majorService) GetSubjects(ctx context.Context, majorID int, pf request.Pagination) ([]response.MajorSubject, *model.PaginationMetadata, error) {
+func (s *majorService) GetSubjects(ctx context.Context, majorID int, pf request.Pagination, filter map[string]string) ([]response.MajorSubject, *model.PaginationMetadata, error) {
 	helper.NormalizePagination(&pf)
 	var data []response.MajorSubject
 	var total int64
 
 	base := func() *gorm.DB {
-		return s.db.WithContext(ctx).
+		q := s.db.WithContext(ctx).
 			Table("major_subject ms").
 			Joins("LEFT JOIN generation g ON g.id = ms.generation_id").
 			Joins("LEFT JOIN programmes p ON p.id = ms.programme_id").
 			Joins("JOIN subject s ON s.id = ms.subject_id").
 			Where("ms.major_id = ?", majorID)
+
+		if v := filter["programme_id"]; v != "" {
+			q = q.Where("ms.programme_id = ?", v)
+		}
+		if v := filter["generation_id"]; v != "" {
+			q = q.Where("ms.generation_id = ?", v)
+		}
+		if v := filter["year"]; v != "" {
+			q = q.Where("ms.year = ?", v)
+		}
+		if v := filter["semester"]; v != "" {
+			q = q.Where("ms.semester = ?", v)
+		}
+		return q
 	}
 
 	if err := base().Count(&total).Error; err != nil {

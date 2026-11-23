@@ -119,10 +119,16 @@ func (cr *MajorController) GetSubjects(c *gin.Context) {
 		share.ResponseError(c, http.StatusBadRequest, err.Error())
 		return
 	}
+	filter := map[string]string{
+		"programme_id":  c.Query("programme_id"),
+		"generation_id": c.Query("generation_id"),
+		"year":          c.Query("year"),
+		"semester":      c.Query("semester"),
+	}
 	data, meta, err := cr.service.GetSubjects(c.Request.Context(), id, request.Pagination{
 		Page:     page,
 		PageSize: pageSize,
-	})
+	}, filter)
 
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {

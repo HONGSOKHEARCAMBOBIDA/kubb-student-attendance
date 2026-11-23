@@ -8,7 +8,7 @@
       :placeholder="placeholder"
       :prefix-icon="prefixIcon"
       :show-password="type === 'password'"
-      size="large"
+      size="small"
       :disabled="disabled"
       :clearable="clearable"
       :autofocus="autofocus"

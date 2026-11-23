@@ -10,6 +10,7 @@
     >
       <template #name>
         <AppInput
+          label="ស្វែងរក"
           v-model="filters.name"
           placeholder="ស្វែងរក"
           prefix-icon="Search"
@@ -25,7 +26,7 @@
           clearable
           style="width: 100%"
           @change="fetchUsers"
-          size="large"
+          size="small"
           filterable
         >
           <el-option
@@ -73,38 +74,26 @@
           <AppButton
             v-if="isStudent"
             size="small"
-            icon="user"
-            type="primary"
-            circle
             @click="openProfileDialog(row)"
-          />
+          >មើល</AppButton>
         </template>
         <template #student_family="{ row }">
           <AppButton
             size="small"
-            icon="user"
-            type="primary"
-            circle
             @click="openFamilyDialog(row)"
-          />
+          >មើល</AppButton>
         </template>
         <template #student_education="{ row }">
           <AppButton
             size="small"
-            icon="School"
-            type="primary"
-            circle
             @click="openEducationDialog(row)"
-          />
+          >មើល</AppButton>
         </template>
         <template #student_document="{ row }">
           <AppButton
             size="small"
-            icon="document"
-            type="primary"
-            circle
             @click="openDocumentDialog(row)"
-          />
+          >មើល</AppButton>
         </template>
         <template #teacher_profile="{ row }">
           <AppButton

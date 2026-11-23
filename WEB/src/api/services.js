@@ -156,6 +156,13 @@ export const getSubject = (params) => api.get("/view.subject", { params });
 export const addSubject = (data) => api.post("/add.subject", data);
 export const editSubject = (id, data) => api.put(`/edit.subject/${id}`, data);
 export const toggleSubject = (id) => api.put(`/toggle.subject/${id}`);
+export const importsubjectexcell = (file) => {
+  const fd = new FormData();
+  fd.append("file",file);
+  return api.post("/import.subject.excell",fd,{
+    headers: { "Content-Type": "multipart/form-data" },
+  })
+}
 
 // Major
 export const addMajor = (data) => api.post("add.Major", data);

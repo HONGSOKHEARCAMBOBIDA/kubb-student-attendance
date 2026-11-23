@@ -1,66 +1,52 @@
+
 <template>
   <div class="layout">
+    <!-- Sidebar -->
     <aside class="sidebar" :class="{ collapsed }">
       <div class="sidebar-header">
-      <div class="login-logo">
-        <el-image src="/logo.png" alt="University Logo" fit="contain" />
-      </div>
+        <el-image src="/logo.png" fit="contain" class="logo" />
 
-        <span v-if="!collapsed" class="brand" style="color: #08677e;">
-          សាកលវិទ្យាល័យខេរាវិទូ
+        <span v-if="!collapsed" class="brand">
+          សាកលវិទ្យាល័យខេមរាវិទូ
         </span>
       </div>
 
       <el-menu
-        :default-active="$route.path"
-        router
+        :default-active="route.path"
         :collapse="collapsed"
-        background-color="#fcfcfc"
-        text-color="#050000"
-        active-text-color="#050000"
+        router
       >
-        <el-menu-item
-          v-for="n in nav"
-          :key="n.path"
-          :index="n.path"
-        >
+        <el-menu-item v-for="item in nav" :key="item.path" :index="item.path">
           <el-icon>
-            <component :is="n.icon" />
+            <component :is="item.icon" />
           </el-icon>
 
           <template #title>
-            {{ n.label }}
+            {{ item.label }}
           </template>
         </el-menu-item>
       </el-menu>
     </aside>
 
+    <!-- Main -->
     <div class="wrap">
       <header class="topbar">
         <div class="left">
           <el-button
-            class="d-only"
+            class="desktop"
             :icon="collapsed ? 'Expand' : 'Fold'"
             circle
             plain
             @click="collapsed = !collapsed"
           />
 
-          <b style="color: white;">{{ pageTitle }}</b>
+          <b>{{ pageTitle }}</b>
         </div>
 
+        <!-- User menu -->
         <el-dropdown @command="handleCommand">
-          <div class="avatar-row">
-            <!-- <el-avatar
-              
-              :size="32"
-              style="background: #626aef"
-            >
-              {{ userName[0]?.toUpperCase() }}
-            </el-avatar> -->
-
-            
-            <el-text tag="b"  style="font-size: 15px;color:white">{{ userName }}</el-text>
+          <div class="user">
+            <b>{{ userName }}</b>
           </div>
 
           <template #dropdown>
@@ -69,10 +55,7 @@
                 ប្រវត្តរូប
               </el-dropdown-item>
 
-              <el-dropdown-item
-                command="logout"
-                divided
-              >
+              <el-dropdown-item command="logout" divided>
                 ចាកចេញ
               </el-dropdown-item>
             </el-dropdown-menu>
@@ -83,30 +66,22 @@
       <main class="content">
         <router-view />
       </main>
-      <footer class="footer">
-  <span>© 2026 សាកលវិទ្យាល័យខេរាវិទូ</span>
-  <span class="divider">|</span>
-  <span >
-    Powered by
-    <a href="https://go.dev" target="_blank" rel="noopener" class="go-link">Golang</a>
-  </span>
-</footer>
     </div>
 
-    <!-- Mobile bottom nav -->
-    <nav class="bnav">
+    <!-- Mobile navigation -->
+    <nav class="bottom-nav">
       <router-link
-        v-for="n in nav"
-        :key="n.path"
-        :to="n.path"
-        class="bitem"
-        :class="{ active: $route.path === n.path }"
+        v-for="item in nav"
+        :key="item.path"
+        :to="item.path"
+        class="nav-item"
+        :class="{ active: route.path === item.path }"
       >
         <el-icon size="20">
-          <component :is="n.icon" />
+          <component :is="item.icon" />
         </el-icon>
 
-        <span>{{ n.short }}</span>
+        <span>{{ item.short }}</span>
       </router-link>
     </nav>
   </div>
@@ -124,36 +99,38 @@ const router = useRouter()
 const auth = useAuthStore()
 const userdataStore = useUserDataStore()
 
-const userName = computed(() => userdataStore.name || 'User')
 const collapsed = ref(true)
 
-const nav = computed(() => {
-  return router.getRoutes()
-    .filter(r => r.meta?.showInNav)
-    .filter(
-      r =>
-        !r.meta?.permission ||
-        userdataStore.permissions?.some(
-          p => p.name === r.meta.permission
-        )
-    )
-    .map(r => ({
-      path: r.path,
-      icon: r.meta.icon,
-      label: r.meta.title,
-      short: r.meta.short
-    }))
-})
-
+const userName = computed(() => userdataStore.name || 'User')
 const pageTitle = computed(() => route.meta.title || '')
 
-function handleCommand(cmd) {
-  if (cmd === 'logout') {
+// Get menu from router
+const nav = computed(() =>
+  router.getRoutes()
+    .filter(item => item.meta.showInNav)
+    .filter(item =>
+      !item.meta.permission ||
+      userdataStore.permissions?.some(
+        permission => permission.name === item.meta.permission
+      )
+    )
+    .map(item => ({
+      path: item.path,
+      icon: item.meta.icon,
+      label: item.meta.title,
+      short: item.meta.short
+    }))
+)
+
+// Dropdown menu
+function handleCommand(command) {
+  if (command === 'logout') {
     auth.logout()
     router.push('/login')
-  } else {
-    router.push('/profile')
+    return
   }
+
+  router.push('/profile')
 }
 
 onMounted(() => {
@@ -162,178 +139,140 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
-.footer {
-  font-size: 12px;
-  text-align: center;
-  gap: 8px; /* add this to your existing .footer rule */
-}
-
-.footer .divider {
-  color: #dcdfe6;
-}
-
-.go-link {
-  color: #00add8; /* Go brand color */
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.go-link:hover {
-  text-decoration: underline;
-}
-
-.login-logo {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 5px;
-}
-.login-logo .el-image {
-  width: 35px;
-  height: 35px;
-}
-
 .layout {
-  height: 100vh;
   display: flex;
+  height: 100vh;
   overflow: hidden;
+  background: #f1f1f1;
 }
 
 /* Sidebar */
 .sidebar {
-  width: 260px;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  transition: width 0.3s;
-  overflow: hidden;
-  flex-shrink: 0;
+  width: 220px;
+  background: #e5e5e5;
+  border-right: 1px solid #ccc;
 }
 
 .sidebar.collapsed {
-  width: 70px;
+  width: 64px;
 }
 
 .sidebar-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 18px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  height: 48px;
+  padding: 0 12px;
+  background: #d5d5d5;
+}
+
+.logo {
+  width: 30px;
+  height: 30px;
 }
 
 .brand {
-  color: #0e0000;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: bold;
   white-space: nowrap;
 }
 
 :deep(.el-menu) {
   border: none;
+  background: #e5e5e5;
 }
 
 :deep(.el-menu-item) {
-  margin: 2px 8px;
-  border-radius: 6px;
+  height: 36px;
+  border-bottom: 1px solid #ddd;
+  color: #000;
+}
+
+:deep(.el-menu-item:hover) {
+  background: #d5d5d5;
 }
 
 :deep(.el-menu-item.is-active) {
-  background: rgba(25, 136, 247, 0.2) !important;
-  color: #140101 !important;
+  background: #c5d9ed;
+  color: #123d63;
 }
 
 /* Main */
 .wrap {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .topbar {
-  height: 54px;
-  background: #273b91;
-  border-bottom: 1px solid #ebeef5;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  height: 45px;
+  padding: 0 12px;
+  background: #dedede;
 }
 
 .left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.avatar-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.user {
+  padding: 5px 8px;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 8px;
 }
-
 
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
-  background: #f0f2f5;
-}
-
-/* Bottom nav — hidden on desktop */
-.bnav {
-  display: none;
+  padding: 12px;
 }
 
 /* Mobile */
+.bottom-nav {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .sidebar,
-  .d-only {
-    display: none !important;
+  .desktop {
+    display: none;
   }
 
   .content {
-    padding: 12px;
     padding-bottom: 70px;
   }
 
   .topbar {
-    padding: 0 14px;
     height: 50px;
   }
 
-  .bnav {
+  .bottom-nav {
     display: flex;
     position: fixed;
     bottom: 0;
-    left: 0;
-    right: 0;
+    width: 100%;
     height: 58px;
-    background: #fff;
-    border-top: 1px solid #ebeef5;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.07);
-    z-index: 999;
+    background: white;
+    border-top: 1px solid #ddd;
   }
 
-  .bitem {
+  .nav-item {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 2px;
-    font-size: 10px;
-    color: #aaa;
+    color: #999;
+    font-size: 11px;
     text-decoration: none;
   }
 
-  .bitem.active {
+  .nav-item.active {
     color: #409eff;
   }
 }

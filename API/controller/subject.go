@@ -90,3 +90,18 @@ func (cr *SubjectController) Toggle(c *gin.Context) {
 	}
 	share.ResponseSuccess(c, http.StatusOK, "status company changed")
 }
+
+func (cr *SubjectController) ImportExcel(c *gin.Context) {
+	fh, err := c.FormFile("file")
+	if err != nil {
+		share.ResponseError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	file, _ := fh.Open()
+	defer file.Close()
+	if err := cr.service.ImportExcel(c.Request.Context(), file); err != nil {
+		share.ResponseError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	share.ResponseSuccess(c, 200, "Created")
+}

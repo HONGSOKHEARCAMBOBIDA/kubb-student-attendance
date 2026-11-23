@@ -1,21 +1,150 @@
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import type { TableColumnCtx } from "element-plus";
+
+// Row data
+interface RowData {
+  [key: string]: any;
+}
+
+// Table column
+interface Column extends Partial<TableColumnCtx<RowData>> {
+  prop?: string;
+  label?: string;
+  slot?: string;
+}
+
+// Props
+interface Props {
+  data?: RowData[];
+  columns: Column[];
+  loading?: boolean;
+  showIndex?: boolean;
+  indexLabel?: string;
+  actionsLabel?: string;
+  actionsWidth?: string | number;
+  mobileBreakpoint?: number;
+  showPagination?: boolean;
+  currentPage?: number;
+  pageSize?: number;
+  total?: number;
+  tableProps?: Record<string, any>;
+  selectable?: boolean;
+  expandable?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  data: () => [],
+  loading: false,
+  showIndex: false,
+  indexLabel: "ល.រ",
+  actionsLabel: "សកម្មភាព",
+  actionsWidth: 190,
+  mobileBreakpoint: 768,
+  showPagination: true,
+  currentPage: 1,
+  pageSize: 10,
+  total: 0,
+  tableProps: () => ({}),
+  selectable: false,
+  expandable: false,
+});
+
+// Events
+const emit = defineEmits<{
+  "update:currentPage": [page: number];
+  "update:pageSize": [size: number];
+  "page-change": [];
+  "selection-change": [rows: RowData[]];
+}>();
+
+// Pagination
+const currentPageProxy = computed({
+  get: () => props.currentPage,
+  set: (page) => emit("update:currentPage", page),
+});
+
+const pageSizeProxy = computed({
+  get: () => props.pageSize,
+  set: (size) => emit("update:pageSize", size),
+});
+
+// Mobile screen
+const isMobile = ref(window.innerWidth <= props.mobileBreakpoint);
+
+function checkScreen() {
+  isMobile.value = window.innerWidth <= props.mobileBreakpoint;
+}
+
+onMounted(() => {
+  window.addEventListener("resize", checkScreen);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", checkScreen);
+});
+
+// Selected rows
+const selectedRows = ref<RowData[]>([]);
+
+function onSelectionChange(rows: RowData[]) {
+  selectedRows.value = rows;
+  emit("selection-change", rows);
+}
+
+function isSelected(row: RowData) {
+  return selectedRows.value.includes(row);
+}
+
+function toggleSelection(row: RowData, checked: boolean | string | number) {
+  const isChecked = Boolean(checked);
+
+  if (isChecked && !isSelected(row)) {
+    selectedRows.value.push(row);
+  } else if (!isChecked) {
+    selectedRows.value = selectedRows.value.filter((item) => item !== row);
+  }
+
+  emit("selection-change", selectedRows.value);
+}
+
+// Reset selection when data changes
+watch(
+  () => props.data,
+  () => {
+    selectedRows.value = [];
+    emit("selection-change", []);
+  },
+);
+</script>
+
 <template>
-  <div class="app-table" >
-        <div v-if="showPagination" class="app-table-pagination">
+  <div class="app-table">
+    <!-- filter -->
+     <div v-if="$slots.filter" class="filter-container">
+
+      <slot name="filter" />
+     </div>
+    <!-- Pagination -->
+    <div v-if="showPagination" class="pagination">
       <span>សរុប {{ total }}</span>
+
       <el-pagination
         v-model:current-page="currentPageProxy"
         v-model:page-size="pageSizeProxy"
         :total="total"
         :layout="isMobile ? 'prev, next' : 'prev, pager, next'"
-        @change="$emit('page-change')"
+        @change="emit('page-change')"
       />
     </div>
+
+    <!-- Desktop table -->
     <el-table
       v-if="!isMobile"
       :data="data"
-      v-loading="loading"
-      stripe
+      :loading="loading"
       border
+      size="small"
       v-bind="tableProps"
       @selection-change="onSelectionChange"
     >
@@ -28,21 +157,26 @@
         width="50"
         align="center"
       />
-      <el-table-column v-if="expandable" type="expand" width="50" label="*">
+
+      <!-- Expand row -->
+      <el-table-column v-if="expandable" type="expand">
         <template #default="scope">
           <slot name="expand" v-bind="scope" />
         </template>
       </el-table-column>
+
+      <!-- Dynamic columns -->
       <el-table-column
-        v-for="col in columns"
-        :key="col.prop || col.label"
-        v-bind="col"
+        v-for="column in columns"
+        :key="column.prop || column.label"
+        v-bind="column"
       >
-        <template v-if="col.slot" #default="scope">
-          <slot :name="col.slot" v-bind="scope" />
+        <template v-if="column.slot" #default="scope">
+          <slot :name="column.slot" v-bind="scope" />
         </template>
       </el-table-column>
 
+      <!-- Actions -->
       <el-table-column
         v-if="$slots.actions"
         :label="actionsLabel"
@@ -53,194 +187,144 @@
         </template>
       </el-table-column>
     </el-table>
-    <div v-else class="app-table-cards" v-loading="loading">
-      <el-empty v-if="!data.length && !loading" description="គ្មានទិន្នន័យ" />
+
+    <!-- Mobile cards -->
+    <div v-else class="mobile-cards" v-loading="loading">
+      <el-empty
+        v-if="data.length === 0 && !loading"
+        description="គ្មានទិន្នន័យ"
+      />
+
       <div
-        v-for="(row, idx) in data"
-        :key="idx"
-        class="app-table-card"
-        :class="{ 'is-selected': selectable && isSelected(row) }"
+        v-for="(row, index) in data"
+        :key="index"
+        class="mobile-card"
+        :class="{ selected: isSelected(row) }"
       >
-        <div v-if="selectable" class="app-table-card-header">
+        <!-- Checkbox -->
+        <div v-if="selectable" class="card-checkbox">
           <el-checkbox
             :model-value="isSelected(row)"
-            @change="(val) => toggleMobileSelection(row, val)"
+            @change="toggleSelection(row, $event)"
           />
         </div>
 
+        <!-- Card columns -->
         <div
-          v-for="col in columns"
-          :key="col.prop || col.label"
-          class="app-table-card-row"
+          v-for="column in columns"
+          :key="column.prop || column.label"
+          class="card-row"
         >
-          <span class="app-table-card-label">{{ col.label }}</span>
-          <span class="app-table-card-value">
-            <slot v-if="col.slot" :name="col.slot" :row="row" :$index="idx" />
-            <template v-else>{{ row[col.prop] }}</template>
+          <span class="card-label">
+            {{ column.label }}
+          </span>
+
+          <span class="card-value">
+            <slot
+              v-if="column.slot"
+              :name="column.slot"
+              :row="row"
+              :$index="index"
+            />
+
+            <template v-else>
+              {{ column.prop ? row[column.prop] : "" }}
+            </template>
           </span>
         </div>
-        <div v-if="$slots.actions" class="app-table-card-actions">
-          <slot name="actions" :row="row" :$index="idx" />
+
+        <!-- Actions -->
+        <div v-if="$slots.actions" class="card-actions">
+          <slot name="actions" :row="row" :$index="index" />
         </div>
       </div>
     </div>
-
-
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-const props = defineProps({
-  data: { type: Array, default: () => [] },
-  columns: { type: Array, required: true },
-  loading: { type: Boolean, default: false },
-  showIndex: { type: Boolean, default: false },
-  indexLabel: { type: String, default: "ល.រ" },
-  actionsLabel: { type: String, default: "សកម្មភាព" },
-  actionsWidth: { type: [String, Number], default: 190 },
-  mobileBreakpoint: { type: Number, default: 768 },
-  showPagination: { type: Boolean, default: true },
-  currentPage: { type: Number, default: 1 },
-  pageSize: { type: Number, default: 10 },
-  total: { type: Number, default: 0 },
-  tableProps: { type: Object, default: () => ({}) },
-  selectable: { type: Boolean, default: false },
-  expandable: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-const emit = defineEmits([
-  "update:currentPage",
-  "update:pageSize",
-  "page-change",
-  "selection-change",
-]);
-
-const currentPageProxy = computed({
-  get: () => props.currentPage,
-  set: (val) => emit("update:currentPage", val),
-});
-const pageSizeProxy = computed({
-  get: () => props.pageSize,
-  set: (val) => emit("update:pageSize", val),
-});
-
-const windowWidth = ref(window.innerWidth);
-function onResize() {
-  windowWidth.value = window.innerWidth;
-}
-onMounted(() => {
-  window.addEventListener("resize", onResize);
-});
-onUnmounted(() => window.removeEventListener("resize", onResize));
-
-const isMobile = computed(() => windowWidth.value <= props.mobileBreakpoint);
-const selectedRows = ref([]);
-function onSelectionChange(rows) {
-  // fired by el-table on desktop
-  selectedRows.value = rows;
-  emit("selection-change", rows);
-}
-function isSelected(row) {
-  return selectedRows.value.includes(row);
-}
-function toggleMobileSelection(row, checked) {
-  if (checked) {
-    selectedRows.value.push(row);
-  } else {
-    selectedRows.value = selectedRows.value.filter((r) => r !== row);
-  }
-  emit("selection-change", selectedRows.value);
-}
-watch(
-  () => props.data,
-  () => {
-    selectedRows.value = [];
-    emit("selection-change", []);
-  },
-);
-</script>
-
 <style scoped>
-.app-table-cards {
+.filter-container {
+  background: #e5e7e9;
+  width: 100%;
+}
+
+.app-table {
+  width: 100%;
+  font-size: 12px;
+}
+
+/* Table */
+:deep(.el-table) {
+  font-size: 12px;
+  --el-table-border-color: #d1d5d9;
+  --el-table-header-bg-color: #e5e7e9;
+  --el-table-row-hover-bg-color: #e8f1fa;
+}
+
+:deep(.el-table th.el-table__cell) {
+  padding: 0px 0;
+  color: #111;
+  background: #e5e7e9;
+}
+
+:deep(.el-table td.el-table__cell) {
+  padding: 0px 0;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #e5e7e9;
+  border: 1px solid #ccc;
+  font-size: 12px;
+}
+
+/* Mobile cards */
+.mobile-cards {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 6px;
 }
 
-:deep(.el-table__header-wrapper th) {
-  /* background-color: var(--brand-color,#4589ce); */
-  color: #030303 !important;
+.mobile-card {
+  padding: 10px;
+  background: white;
+  border: 1px solid #ccc;
 }
 
-.app-table-card {
-  border: 1px solid var(--el-border-color);
-  border-radius: 8px;
-  padding: 12px 14px;
-  position: relative;
-  background: var(--el-bg-color);
+.mobile-card.selected {
+  background: #e8f1fa;
+  border-color: #7198bc;
 }
 
-.app-table-card-index {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  font-size: 11px;
-  color: var(--el-text-color-secondary);
+.card-checkbox {
+  margin-bottom: 5px;
 }
 
-.app-table-card-row {
+.card-row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 6px 0;
-  border-bottom: 1px dashed var(--el-border-color-lighter);
-  font-size: 13px;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
 }
 
-.app-table-card-row:last-of-type {
-  border-bottom: none;
+.card-label {
+  font-weight: bold;
+  color: #555;
 }
 
-.app-table-card-label {
-  color: var(--el-text-color-secondary);
-  flex-shrink: 0;
-  font-weight: 500;
-}
-
-.app-table-card-value {
+.card-value {
   text-align: right;
   word-break: break-word;
 }
 
-.app-table-card-actions {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--el-border-color-lighter);
+.card-actions {
   display: flex;
   justify-content: flex-end;
-}
-
-.app-table-pagination {
-  margin-bottom: 6px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.app-table-card-header {
-  margin-bottom: 8px;
-}
-.app-table-card.is-selected {
-  border-color: var(--el-color-primary);
-  background: var(--el-color-primary-light-9);
-}
-@media (max-width: 768px) {
-  .app-table-pagination {
-    justify-content: center;
-  }
+  gap: 5px;
+  margin-top: 8px;
 }
 </style>

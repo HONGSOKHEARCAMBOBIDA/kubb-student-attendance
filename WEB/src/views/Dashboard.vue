@@ -1,468 +1,275 @@
+
+<script setup>
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserDataStore } from '../stores/user_data'
+import { getcountleave } from '../api/services'
+
+const router = useRouter()
+const userDataStore = useUserDataStore()
+
+// User level
+const adminLevel = computed(() => userDataStore.level >= 2)
+const staffLevel = computed(() => userDataStore.level === 2)
+const managerLevel = computed(() => userDataStore.level === 3)
+
+// Permission
+const viewIncome = computed(() =>
+  userDataStore.permissions?.some(p => p.name === 'view.income')
+)
+
+const addAttendance = computed(() =>
+  userDataStore.permissions?.some(p => p.name === 'add.attendance')
+)
+
+// Leave count
+const leaves = ref([])
+
+const leaveCount = computed(() =>
+  Array.isArray(leaves.value)
+    ? leaves.value.length
+    : Number(leaves.value || 0)
+)
+
+async function fetchCountLeave() {
+  try {
+    const res = await getcountleave()
+    leaves.value = res.data.data || []
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+// Menu items
+const actions = computed(() => [
+  {
+    label: 'មើលវត្តមានសង្ខេប',
+    description: 'ពិនិត្យវត្តមានសង្ខេប',
+    path: '/attendance',
+    icon: 'Calendar',
+    show: true
+  },
+  {
+    label: 'របាយការណ៍វត្តមាន',
+    description: 'របាយការណ៍វត្តមានសរុប',
+    path: '/AttendanceReport',
+    icon: 'DataAnalysis',
+    show: true
+  },
+  {
+    label: 'សុំច្បាប់',
+    description: 'គ្រប់គ្រងការសុំច្បាប់',
+    path: '/leaverequest',
+    icon: 'DocumentChecked',
+    show: true
+  },
+  {
+    label: 'ឈប់មិនសុំច្បាប់',
+    description: 'កត់ត្រាអវត្តមាន',
+    path: '/Notpermissionleave',
+    icon: 'CircleClose',
+    show: adminLevel.value
+  },
+  {
+    label: 'កត់ត្រាវត្តមាន',
+    description: 'ស្កែន និងកត់ត្រាវត្តមាន',
+    path: '/createattendance',
+    icon: 'Camera',
+    show: addAttendance.value
+  },
+  {
+    label: 'ថ្នាក់រៀន',
+    description: 'គ្រប់គ្រងថ្នាក់រៀន',
+    path: '/company',
+    icon: 'School',
+    show: true
+  },
+  {
+    label: 'មុខវិជ្ជា',
+    description: 'គ្រប់គ្រងមុខវិជ្ជា',
+    path: '/subject',
+    icon: 'Reading',
+    show: adminLevel.value
+  },
+  {
+    label: 'ជំនាញ',
+    description: 'គ្រប់គ្រងជំនាញសិក្សា',
+    path: '/Major',
+    icon: 'Collection',
+    show: adminLevel.value
+  },
+  {
+    label: 'កែវត្តមាន',
+    description: 'កែវត្តមាន',
+    path: '/AttendanceForUpdate',
+    icon: 'Edit',
+    show: adminLevel.value
+  },
+  {
+    label: 'ជំនាន់',
+    description: 'គ្រប់គ្រងជំនាន់',
+    path: '/Generation',
+    icon: 'Collection',
+    show: adminLevel.value
+  },
+  {
+    label: 'ម៉ោងសិក្សា',
+    description: 'គ្រប់គ្រងម៉ោងសិក្សា',
+    path: '/Shift',
+    icon: 'Clock',
+    show: adminLevel.value
+  },
+  {
+    label: 'អ្នកប្រើប្រាស់/និស្សិត/សាស្រ្តាចារ្យ',
+    description: 'គ្រប់គ្រងអ្នកប្រើប្រាស់',
+    path: '/users',
+    icon: 'User',
+    show: adminLevel.value || staffLevel.value
+  },
+  {
+    label: 'ចំណូលផ្សេងៗ',
+    description: 'ចំណូលក្រៅពីថ្លៃសិក្សា',
+    path: '/Income',
+    icon: 'Money',
+    show: viewIncome.value
+  },
+  {
+    label: 'របាយការណ៍ផ្សេងៗ',
+    description: 'របាយការណ៍ផ្សេងៗ',
+    path: '/Report',
+    icon: 'Eleme',
+    show: adminLevel.value || managerLevel.value
+  }
+].filter(item => item.show))
+
+onMounted(() => {
+  fetchCountLeave()
+})
+</script>
+
+
 <template>
   <div class="dashboard">
-    <div class="dash-grid">
-      <el-card class="dash-card" shadow="never">
-        <template #header>
-          <div>
-            <div class="card-title">សកម្មភាពរហ័ស</div>
-            <div class="card-subtitle">ជ្រើសរើសមុខងារដែលអ្នកចង់ប្រើ</div>
-          </div>
-        </template>
-
-        <div class="action-grid">
-          <div class="action-btn" @click="$router.push('/attendance')">
-            <div class="icon-box">
+    <el-card shadow="never" class="dash-card">
+      <div class="action-grid">
+        <div
+          v-for="item in actions"
+          :key="item.path"
+          class="action-btn"
+          @click="router.push(item.path)"
+        >
+          <div class="icon-box">
+            <el-badge
+              v-if="item.path === '/leaverequest' && leaveCount > 0"
+              :value="leaveCount"
+              :max="99"
+            >
               <el-icon :size="23">
-                <Calendar />
+                <component :is="item.icon" />
               </el-icon>
-            </div>
+            </el-badge>
 
-            <div class="action-content">
-              <span class="action-title">មើលវត្តមានសង្ខែប</span>
-              <span class="action-description"> ពិនិត្យវត្តមានសង្ខែប </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
+            <el-icon v-else :size="23">
+              <component :is="item.icon" />
             </el-icon>
           </div>
 
-          <div class="action-btn" @click="$router.push('/AttendanceReport')">
-            <div class="icon-box">
-              <el-icon :size="23">
-                <DataAnalysis />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">របាយការណ៍វត្តមាន</span>
-              <span class="action-description"> របាយការណ៍វត្តមានសរុប </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
+          <div class="action-content">
+            <span class="action-title">{{ item.label }}</span>
+            <span class="action-description">{{ item.description }}</span>
           </div>
 
-          <div class="action-btn" @click="$router.push('/leaverequest')">
-            <div class="icon-box">
-              <el-badge :value="leaves" :hidden="leaveCount === 0" :max="99">
-                <el-icon :size="23">
-                  <DocumentChecked />
-                </el-icon>
-              </el-badge>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">សុំច្បាប់</span>
-              <span class="action-description"> គ្រប់គ្រងការសុំច្បាប់ </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
-
-          <div
-            v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/Notpermissionleave')"
-          >
-            <div class="icon-box">
-              <el-icon :size="23">
-                <CircleClose />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">ឈប់មិនសុំច្បាប់</span>
-              <span class="action-description"> កត់ត្រាអវត្តមាន </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
-
-          <div
-            v-if="addattendance"
-            class="action-btn"
-            @click="$router.push('/createattendance')"
-          >
-            <div class="icon-box">
-              <el-icon :size="23">
-                <Camera />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">កត់ត្រាវត្តមាន</span>
-              <span class="action-description"> ស្កែន និងកត់ត្រាវត្តមាន </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
-
-          <div class="action-btn" @click="$router.push('/company')">
-            <div class="icon-box">
-              <el-icon :size="23">
-                <School />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">ថ្នាក់រៀន</span>
-              <span class="action-description"> គ្រប់គ្រងថ្នាក់រៀន </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
-
-          <div
-            v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/subject')"
-          >
-            <div class="icon-box">
-              <el-icon :size="23">
-                <Reading />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">មុខវិជ្ជា</span>
-              <span class="action-description"> គ្រប់គ្រងមុខវិជ្ជា </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
-
-          <div
-            v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/Major')"
-          >
-            <div class="icon-box">
-              <el-icon :size="23">
-                <Collection />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">ជំនាញ</span>
-              <span class="action-description"> គ្រប់គ្រងជំនាញសិក្សា </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
-
-          <div
-            v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/AttendanceForUpdate')"
-          >
-            <div class="icon-box">
-              <el-icon :size="23">
-                <Edit />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">កែវត្តមាន</span>
-              <span class="action-description"> កែវត្តមាន </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
-
-          <div
-            v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/Generation')"
-          >
-            <div class="icon-box">
-              <el-icon :size="23">
-                <Collection />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">ជំនាន់</span>
-              <span class="action-description"> ជំនាន់ </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
-          <div
-            v-if="adminLevel"
-            class="action-btn"
-            @click="$router.push('/Shift')"
-          >
-            <div class="icon-box">
-              <el-icon :size="23">
-                <Clock />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">ម៉ោងសិក្សា</span>
-              <span class="action-description"> ម៉ោងសិក្សា </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
-          <div
-            v-if="adminLevel || staftLevel"
-            class="action-btn"
-            @click="$router.push('/users')"
-          >
-            <div class="icon-box">
-              <el-icon :size="23">
-                <User />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title"
-                >អ្នកប្រើប្រាស់/និស្សិត/សាស្រ្តាចារ្យ</span
-              >
-              <span class="action-description">
-                អ្នកប្រើប្រាស់/និស្សិត/សាស្រ្តាចារ្យ
-              </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
-          <div
-            v-if="viewincome"
-            class="action-btn"
-            @click="$router.push('/Income')"
-          >
-            <div class="icon-box">
-              <el-icon :size="23">
-                <Money />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">ចំណូលផ្សេងៗ</span>
-              <span class="action-description">
-                ចំណូលផ្សេងៗក្រៅពីបង់ថ្លៃសិក្សា
-              </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
-          <div
-            v-if="adminLevel || managerLevel"
-            class="action-btn"
-            @click="$router.push('/Report')"
-          >
-            <div class="icon-box">
-              <el-icon :size="23">
-                <Eleme />
-              </el-icon>
-            </div>
-
-            <div class="action-content">
-              <span class="action-title">របាយការណ៍ផ្សេងៗ</span>
-              <span class="action-description"> របាយការណ៍ផ្សេងៗ </span>
-            </div>
-
-            <el-icon class="arrow-icon">
-              <ArrowRight />
-            </el-icon>
-          </div>
+          <el-icon class="arrow-icon">
+            <ArrowRight />
+          </el-icon>
         </div>
-      </el-card>
-    </div>
+      </div>
+    </el-card>
   </div>
 </template>
 
-<script setup>
-import { computed, onMounted, ref } from "vue";
-import { useUserDataStore } from "../stores/user_data";
-import { getcountleave } from "../api/services";
-const userDataStore = useUserDataStore();
-const adminLevel = computed(() => userDataStore.level >= 2);
-const staftLevel = computed(() => userDataStore.level === 2);
-const managerLevel = computed(() => userDataStore.level === 3);
-const viewincome = computed(() =>
-  userDataStore.permissions?.some((p) => p.name === "view.income"),
-);
-const addattendance = computed(() =>
-  userDataStore.permissions?.some((p) => p.name === "add.attendance"),
-);
-const leaves = ref([]);
-async function fetchCountLeave() {
-  try {
-    const res = await getcountleave();
-    leaves.value = res.data.data || [];
-  } catch (e) {}
-}
-onMounted(() => {
-  fetchCountLeave();
-});
-</script>
 
 <style scoped>
 .dashboard {
   width: 100%;
 }
 
-.dash-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
 .dash-card {
-  border: 1px solid #e5e9ef;
-  border-radius: 10px;
+  background: #f1f1f1;
 }
 
-/* Header */
-.card-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #122133;
+:deep(.el-card__body) {
+  padding: 10px;
 }
 
-.card-subtitle {
-  margin-top: 3px;
-  font-size: 12px;
-  color: #7b8794;
-}
-
-/* Actions */
 .action-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
-
-  min-height: 72px;
-  padding: 12px 14px;
-
-  background: #fff;
-  border: 1px solid #e5e9ef;
-  border-radius: 9px;
-
+  gap: 9px;
+  min-height: 55px;
+  padding: 7px 9px;
+  background: #f8f8f8;
+  border: 1px solid #ccc;
+  border-radius: 4px;
   cursor: pointer;
-
-  transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    transform 0.18s ease;
 }
 
 .action-btn:hover {
-  border-color: #273b91;
-  transform: translateY(-1px);
+  background: #dce9f5;
 }
 
-/* Icon */
 .icon-box {
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  color: #273b91;
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-  border-radius: 10px;
-
-  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  color: #315f88;
+  background: #e6e6e6;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
-.action-btn:hover .icon-box {
-  color: #273b91;
-
-  border-color: #273b91;
-}
-
-/* Content */
 .action-content {
-  flex: 1;
-  min-width: 0;
-
   display: flex;
+  flex: 1;
   flex-direction: column;
+  min-width: 0;
   gap: 3px;
 }
 
 .action-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #122133;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .action-description {
-  font-size: 11px;
-  color: #7b8794;
-
-  white-space: nowrap;
+  font-size: 10px;
+  color: #666;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-/* Arrow */
 .arrow-icon {
-  color: #a3adb8;
-  transition: transform 0.18s ease;
+  color: #888;
 }
 
-.action-btn:hover .arrow-icon {
-  color: #122133;
-  transform: translateX(3px);
+@media (max-width: 1024px) {
+  .action-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-/* Mobile */
-@media (max-width: 767px) {
+@media (max-width: 600px) {
   .action-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .action-btn {
-    min-height: 68px;
-  }
-}
-
-@media (max-width: 400px) {
-  .action-title {
-    font-size: 12px;
-  }
-
-  .action-description {
-    font-size: 10px;
   }
 }
 </style>

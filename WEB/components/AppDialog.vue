@@ -66,23 +66,19 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Desktop */
-.app-dialog--desktop :deep(.el-dialog__header) {
-  margin-right: 0;
-  padding-bottom: 12px;
-}
+
 
 .app-dialog__body {
   max-height: 70vh;
   overflow-y: auto;
-  padding-right: 4px;
+  background-color: #c4e0f5;
 }
 
 .app-dialog__footer {
   display: flex;
   justify-content: flex-end;
-
 }
+
 
 /* Mobile: full screen, slide up, sticky footer */
 .app-dialog--mobile :deep(.el-dialog) {
@@ -96,7 +92,7 @@ onUnmounted(() => {
 .app-dialog--mobile :deep(.el-dialog__body) {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 6px;
 }
 
 .app-dialog--mobile :deep(.el-dialog__footer) {

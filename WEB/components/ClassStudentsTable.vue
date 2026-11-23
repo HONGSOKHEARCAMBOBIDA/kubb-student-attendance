@@ -31,7 +31,7 @@
       <el-tooltip content="ចុចដើម្បីផ្លាស់ប្តូរស្ថានភាព" placement="top">
         <el-tag
           :type="statusTagType(row.status)"
-          size="large"
+          size="small"
           style="cursor: pointer"
           @click="canEditClass && $emit('edit-status', row)"
         >

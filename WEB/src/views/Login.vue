@@ -32,15 +32,7 @@
           show-password
           @enter="handleLogin"
         />
-
-        <AppButton color="#626aef"  native-type="submit" plain :loading="loading" type="primary" block>
-     <span class="login-button-content">
-    <el-icon>
-      <CircleCheck />
-    </el-icon>
-    <span>ចូលប្រព័ន្ធ</span>
-  </span>
-        </AppButton>
+        <AppButton :loading="loading" type="primary" block @click="handleLogin">ចូលប្រព័ន្ធ</AppButton>
       </el-form>
     </div>
   </div>
@@ -113,32 +105,28 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-.login-button-content {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
+
 .login-logo {
   display: flex;
   justify-content: center;
   margin-bottom: 5px;
 }
 .login-logo .el-image {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
 }
 .login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 10px;
 }
 
 .login-card {
-  width: 400px;
-  padding: 48px 40px;
-  border: 1px solid #8aaff5;
+  width: 300px;
+  padding: 38px 30px;
+  border: 1px solid #b9b9b9;
   border-radius: 2px;
 }
 

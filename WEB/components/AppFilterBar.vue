@@ -1,5 +1,4 @@
 <template>
-  <el-card class="filter-card" >
     <el-row :gutter="12" class="filter-row">
       <el-col
         v-for="(field, i) in normalizedFields"
@@ -7,7 +6,6 @@
         :xs="24"
         :sm="12"
         :md="field.span || 6"
-        class="filter-col"
       >
         <slot :name="field.slot" />
       </el-col>
@@ -15,7 +13,6 @@
         <slot name="actions" />
       </el-col>
     </el-row>
-  </el-card>
 </template>
 
 <script setup>
@@ -31,7 +28,8 @@ const normalizedFields = computed(() => props.fields)
 
 <style scoped>
 .filter-card {
-  margin-bottom: 8px;
+  background-color: #fff;
+  background: #fff;
 }
 
 .filter-row {

@@ -8,10 +8,10 @@
     <el-form label-position="top">
       <div class="form-row">
         <el-form-item label="ថ្នាក់">
-          <el-input :model-value="scoreForm.class_name" disabled size="large" />
+          <el-input :model-value="scoreForm.class_name" disabled size="small" />
         </el-form-item>
         <el-form-item label="សិស្ស">
-          <el-input :model-value="scoreForm.student_name" disabled size="large" />
+          <el-input :model-value="scoreForm.student_name" disabled size="small" />
         </el-form-item>
       </div>
 
@@ -21,19 +21,19 @@
           :options="subjects"
           label="មុខវិជ្ជា"
           placeholder="ជ្រើសរើសមុខវិជ្ជា"
-          size="large"
+          size="small"
         />
         <el-form-item label="ឆ្នាំ" required>
-          <el-input v-model.number="scoreForm.year" type="number" size="large" />
+          <el-input v-model.number="scoreForm.year" type="number" size="small" />
         </el-form-item>
         <el-form-item label="ឆមាស" required>
-          <el-input v-model.number="scoreForm.semester" type="number" size="large" />
+          <el-input v-model.number="scoreForm.semester" type="number" size="small" />
         </el-form-item>
       </div>
 
       <el-divider content-position="left"> ពិន្ទុតាមផ្នែក </el-divider>
 
-      <el-table :data="scoreForm.details" border stripe size="default">
+      <el-table :data="scoreForm.details" border  size="small">
         <el-table-column type="index" label="#" width="60" />
         <el-table-column prop="grade_component_name" label="ផ្នែកពិន្ទុ" min-width="220" />
         <el-table-column prop="max_score" label="ពិន្ទុអតិបរមា" width="130" />
@@ -45,7 +45,7 @@
               :max="row.max_score || 100"
               :precision="2"
               :step="0.5"
-              size="large"
+              size="small"
               style="width: 100%"
             />
           </template>
@@ -54,10 +54,10 @@
     </el-form>
 
     <template #footer>
-      <AppButton @click="$emit('update:modelValue', false)" size="large" :block="false" type="warning">
+      <AppButton @click="$emit('update:modelValue', false)" size="small" :block="false" type="warning">
         បោះបង់
       </AppButton>
-      <AppButton @click="handleCreateScore" type="primary" :loading="saving" size="large" :block="false">
+      <AppButton @click="handleCreateScore" type="primary" :loading="saving" size="small" :block="false">
         រក្សាទុកពិន្ទុ
       </AppButton>
     </template>

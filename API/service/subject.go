@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"mysql/config"
 	"mysql/constant/apperror"
 	"mysql/helper"
@@ -11,7 +12,10 @@ import (
 	"mysql/request"
 	"mysql/response"
 	"mysql/utils"
+	"strconv"
+	"strings"
 
+	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 )
 
@@ -20,6 +24,7 @@ type SubjectService interface {
 	GetWithPagination(ctx context.Context, pf request.Pagination, filter map[string]string) ([]response.Subject, *model.PaginationMetadata, error)
 	Update(ctx context.Context, id int, input request.SubjectRequestUpdate) error
 	Toggle(ctx context.Context, id int) error
+	ImportExcel(ctx context.Context, file io.Reader) error
 }
 
 type subjectService struct {
@@ -122,4 +127,40 @@ func (s *subjectService) Update(ctx context.Context, id int, input request.Subje
 
 func (s *subjectService) Toggle(ctx context.Context, id int) error {
 	return utils.ToggleStatus[model.Subject](ctx, s.db, id)
+}
+
+func (s *subjectService) ImportExcel(ctx context.Context, file io.Reader) error {
+	f, err := excelize.OpenReader(file)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	rows, err := f.GetRows(f.GetSheetName(0))
+	if err != nil {
+		return err
+	}
+
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for i, r := range rows[1:] { // skip header
+			r = append(r, "", "", "", "", "") // avoid index out of range
+			if strings.TrimSpace(r[0]) == "" {
+				continue
+			}
+			sub := model.Subject{Code: strings.TrimSpace(r[0]), IsActive: true}
+			if r[1] != "" {
+				sub.NameKh = &r[1]
+			}
+			if r[2] != "" {
+				sub.NameEn = &r[2]
+			}
+			if v, err := strconv.ParseFloat(r[3], 64); err == nil {
+				sub.CreditHour = &v
+			}
+			if err := tx.Create(&sub).Error; err != nil {
+				return fmt.Errorf("row %d (%s): %w", i+2, sub.Code, err)
+			}
+		}
+		return nil
+	})
 }

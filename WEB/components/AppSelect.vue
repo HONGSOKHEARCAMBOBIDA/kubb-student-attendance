@@ -34,6 +34,7 @@ function normalize(opt) {
       :remote-method="remoteMethod"
       :loading="loading"
       class="w-full"
+      size="small"
       @update:model-value="$emit('update:modelValue', $event)"
       @change="$emit('change', $event)"
     >

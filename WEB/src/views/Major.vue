@@ -71,10 +71,18 @@ const defaultExamForm = () => ({
 });
 const examForm = reactive(defaultExamForm());
 const examRules = {
-  subject_id: [{ required: true, message: "សូមជ្រើសរើសមុខវិជ្ជា", trigger: "change" }],
-  generation_id: [{ required: true, message: "សូមជ្រើសរើសជំនាន់", trigger: "change" }],
-  programme_id: [{ required: true, message: "សូមជ្រើសរើសកម្មវិធីសិក្សា", trigger: "change" }],
-  exam_type: [{ required: true, message: "សូមជ្រើសរើសប្រភេទប្រឡង", trigger: "change" }],
+  subject_id: [
+    { required: true, message: "សូមជ្រើសរើសមុខវិជ្ជា", trigger: "change" },
+  ],
+  generation_id: [
+    { required: true, message: "សូមជ្រើសរើសជំនាន់", trigger: "change" },
+  ],
+  programme_id: [
+    { required: true, message: "សូមជ្រើសរើសកម្មវិធីសិក្សា", trigger: "change" },
+  ],
+  exam_type: [
+    { required: true, message: "សូមជ្រើសរើសប្រភេទប្រឡង", trigger: "change" },
+  ],
 };
 async function openExamDialog(row) {
   activeMajor.value = row; // reuse the same activeMajor
@@ -309,6 +317,14 @@ const subjectsDialogVisible = ref(false);
 const activeMajor = ref(null);
 const majorSubjects = ref([]);
 const majorSubjectsLoading = ref(false);
+
+const majorsubjectfilter = reactive({
+  programme_id: null,
+  generation_id: null,
+  year: null,
+  semester: null
+})
+
 const addingSubject = ref(false);
 const removingId = ref(null);
 const subjectTogglingId = ref(null);
@@ -349,6 +365,7 @@ const subjectRules = {
 async function openSubjectsDialog(row) {
   activeMajor.value = row;
   Object.assign(subjectForm, defaultSubjectForm());
+  Object.assign(majorsubjectfilter, { programme_id: null, generation_id: null, year: null, semester: null });
   subjectPagination.page = 1;
   subjectsDialogVisible.value = true;
   await Promise.all([fetchMajorSubjects(), searchSubjects()]);
@@ -361,6 +378,10 @@ async function fetchMajorSubjects() {
     const res = await getMajorSubjects(activeMajor.value.id, {
       page: subjectPagination.page,
       page_size: subjectPagination.page_size,
+      programme_id: majorsubjectfilter.programme_id || undefined,
+      generation_id: majorsubjectfilter.generation_id || undefined,
+      year: majorsubjectfilter.year || undefined,
+      semester: majorsubjectfilter.semester || undefined
     });
     majorSubjects.value = res.data.data || [];
     subjectPagination.total = res.data.pagination?.totalCount || 0;
@@ -465,7 +486,8 @@ onUnmounted(() => clearTimeout(searchTimer));
     <AppFilterBar :fields="[{ slot: 'name', span: 8 }]" :action-span="4">
       <template #name>
         <AppInput
-          v-model="filter.name"
+          label="ស្វែងរក"
+          v-model.trim="filter.name"
           placeholder="ស្វែងរកតាមឈ្មោះជំនាញ"
           prefix-icon="Search"
           clearable
@@ -483,17 +505,16 @@ onUnmounted(() => clearTimeout(searchTimer));
       </template>
     </AppFilterBar>
 
-    <el-card class="table-card">
+    <el-card>
       <AppTable
         show-index
         :data="majors"
         :loading="loading"
-        :actions-width="200"
+        :actions-width="330"
         v-model:current-page="pagination.page"
         v-model:page-size="pagination.page_size"
         :total="pagination.total"
         @page-change="handlePageChange"
-        
         :columns="[
           { label: 'លេខកូដ', prop: 'code', minWidth: 100 },
           { label: 'ឈ្មោះខ្មែរ', prop: 'name_kh', minWidth: 160 },
@@ -504,57 +525,43 @@ onUnmounted(() => clearTimeout(searchTimer));
       >
         <template #status="{ row }">
           <el-switch
+            size="small"
             :model-value="row.is_active"
             :loading="togglingId === row.id"
             :disabled="!canEditMajor"
             @change="handleToggle(row)"
           />
         </template>
-        <template #faculty_name="{row}">
-          <el-text>{{ row.faculty_name }} - {{ row.faculty_code }}</el-text>
+        <template #faculty_name="{ row }">
+          {{ row.faculty_name }} - {{ row.faculty_code }}
         </template>
 
         <template #actions="{ row }">
-          <el-tooltip content="គ្រប់គ្រងមុខវិជ្ជា" placement="top">
-            <AppButton
-              :disabled="row.is_active === false"
-              size="small"
-              icon="Notebook"
-              type="primary"
-              circle
-              @click="openSubjectsDialog(row)"
-            />
-          </el-tooltip>
-          <el-tooltip content="កែប្រែជំនាញ" placement="top">
-            <AppButton
-              :disabled="row.is_active === false"
-              v-if="canEditMajor"
-              size="small"
-              icon="Edit"
-              type="warning"
-              circle
-              @click="openEditDialog(row)"
-            />
-          </el-tooltip>
-          <el-tooltip content="ថ្លៃសិក្សា" placement="top">
-            <AppButton
-              :disabled="row.is_active === false"
-             
-              size="small"
-              icon="Money"
-              circle
-              @click="openPriceDialog(row)"
-            />
-          </el-tooltip>
-<el-tooltip content="ប្រឡងចូល/ប្រឡងចេញ" placement="top">
-  <AppButton
-    :disabled="row.is_active === false"
-    size="small"
-    icon="FolderOpened"
-    circle
-    @click="openExamDialog(row)"
-  />
-</el-tooltip>
+          <AppButton
+            :disabled="row.is_active === false"
+            size="small"
+            @click="openSubjectsDialog(row)"
+            >មុខវិជ្ជា</AppButton
+          >
+          <AppButton
+            :disabled="row.is_active === false"
+            v-if="canEditMajor"
+            size="small"
+            @click="openEditDialog(row)"
+            >កែប្រែ</AppButton
+          >
+          <AppButton
+            :disabled="row.is_active === false"
+            size="small"
+            @click="openPriceDialog(row)"
+            >ថ្លៃសិក្សា</AppButton
+          >
+          <AppButton
+            :disabled="row.is_active === false"
+            size="small"
+            @click="openExamDialog(row)"
+            >ប្រឡងចូល/ចេញ</AppButton
+          >
         </template>
       </AppTable>
     </el-card>
@@ -672,6 +679,7 @@ onUnmounted(() => clearTimeout(searchTimer));
               type="primary"
               :loading="addingSubject"
               @click="handleAddSubject"
+              block
             >
               បន្ថែមមុខវិជ្ជា
             </AppButton>
@@ -700,6 +708,53 @@ onUnmounted(() => clearTimeout(searchTimer));
           { label: 'ស្ថានភាព', slot: 'status', width: 110 },
         ]"
       >
+
+      <template #filter>
+        <el-row :gutter="8" >
+          <el-col :span="6">
+          <AppSelect
+            v-model="majorsubjectfilter.programme_id"
+            :options="programmes"
+            placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
+            filterable
+            clearable
+            @change="fetchMajorSubjects"
+          />
+          </el-col>
+          <el-col :span="6">
+          <AppSelect
+          v-model="majorsubjectfilter.generation_id"
+            :options="generations"
+            placeholder="ជ្រើសរើសជំនាន់"
+            filterable
+            clearable
+             @change="fetchMajorSubjects"
+          />
+          </el-col>
+          <el-col :span="6">
+          <AppInput
+            placeholder="ឆ្នាំ"
+            prop="year"
+            v-model.number="majorsubjectfilter.year"
+            type="number"
+            size="large"
+            @enter="fetchMajorSubjects"
+          />
+          </el-col>
+          <el-col :span="6">
+          <AppInput
+            placeholder="ឆមាស"
+            prop="semester"
+            v-model.number="majorsubjectfilter.semester"
+            type="number"
+            size="large"
+            @enter="fetchMajorSubjects"
+          />
+          </el-col>
+        </el-row>
+
+      </template>
+
         <template #year="{ row }">
           <el-text :type="getYearType(row.year)">
             ឆ្នាំទី {{ row.year }}
@@ -713,9 +768,7 @@ onUnmounted(() => clearTimeout(searchTimer));
           />
         </template>
         <template #subject_name_kh="{ row }">
-          <el-text
-            >{{ row.subject_name_kh }} | {{ row.subject_name_en }}</el-text
-          >
+          {{ row.subject_name_kh }} | {{ row.subject_name_en }}
         </template>
 
         <template #actions="{ row }">
@@ -745,103 +798,112 @@ onUnmounted(() => clearTimeout(searchTimer));
       :programmes="programmes"
     />
     <!-- Exams of the selected major -->
-<AppDialog
-  v-model="examDialogVisible"
-  :title="activeMajor ? `ប្រឡងសម្រាប់ ${activeMajor.name_kh}` : 'ប្រឡង'"
-  width="80%"
->
-  <el-form ref="examFormRef" :model="examForm" :rules="examRules" label-position="top">
-    <div class="form-row">
-      <AppSelect
-        label="មុខវិជ្ជា"
-        prop="subject_id"
-        v-model="examForm.subject_id"
-        :options="subjectOptions"
-        size="large"
-        filterable
-        remote
-        :remote-method="searchSubjects"
-        clearable
-      />
-      <AppSelect
-        label="ជំនាន់"
-        prop="generation_id"
-        v-model="examForm.generation_id"
-        :options="generations"
-        size="large"
-        filterable
-        clearable
-      />
-      <AppSelect
-        label="កម្មវិធីសិក្សា"
-        prop="programme_id"
-        v-model="examForm.programme_id"
-        :options="programmes"
-        size="large"
-        filterable
-        clearable
-      />
-      <AppSelect
-        label="ប្រភេទប្រឡង"
-        prop="exam_type"
-        v-model="examForm.exam_type"
-        :options="examTypeOptions"
-        size="large"
-      />
-      <el-form-item label="បន្ថែម" class="grow">
-        <AppButton type="primary" :loading="addingExam" @click="handleAddExam">
-          បន្ថែម
-        </AppButton>
-      </el-form-item>
-    </div>
-  </el-form>
+    <AppDialog
+      v-model="examDialogVisible"
+      :title="activeMajor ? `ប្រឡងសម្រាប់ ${activeMajor.name_kh}` : 'ប្រឡង'"
+      width="80%"
+    >
+      <el-form
+        ref="examFormRef"
+        :model="examForm"
+        :rules="examRules"
+        label-position="top"
+      >
+        <div class="form-row">
+          <AppSelect
+            label="មុខវិជ្ជា"
+            prop="subject_id"
+            v-model="examForm.subject_id"
+            :options="subjectOptions"
+            size="large"
+            filterable
+            remote
+            :remote-method="searchSubjects"
+            clearable
+          />
+          <AppSelect
+            label="ជំនាន់"
+            prop="generation_id"
+            v-model="examForm.generation_id"
+            :options="generations"
+            size="large"
+            filterable
+            clearable
+          />
+          <AppSelect
+            label="កម្មវិធីសិក្សា"
+            prop="programme_id"
+            v-model="examForm.programme_id"
+            :options="programmes"
+            size="large"
+            filterable
+            clearable
+          />
+          <AppSelect
+            label="ប្រភេទប្រឡង"
+            prop="exam_type"
+            v-model="examForm.exam_type"
+            :options="examTypeOptions"
+            size="large"
+          />
+          <el-form-item label="បន្ថែម" class="grow">
+            <AppButton
+              type="primary"
+              :loading="addingExam"
+              @click="handleAddExam"
+            >
+              បន្ថែម
+            </AppButton>
+          </el-form-item>
+        </div>
+      </el-form>
 
-  <AppTable
-    show-index
-    :data="majorExams"
-    :loading="examLoading"
-    :actions-width="100"
-    v-model:current-page="examPagination.page"
-    v-model:page-size="examPagination.page_size"
-    :total="examPagination.total"
-    @page-change="fetchMajorExams"
-    :columns="[
-      { label: 'លេខកូដ', prop: 'subject_code', minWidth: 100 },
-      { label: 'មុខវិជ្ជា', prop: 'subject_name_kh', minWidth: 160 },
-      { label: 'ជំនាន់', prop: 'generation_name', minWidth: 140 },
-      { label: 'កម្មវិធីសិក្សា', prop: 'programme_name', minWidth: 140 },
-      { label: 'ប្រភេទប្រឡង', slot: 'exam_type', width: 130 },
-      { label: 'ស្ថានភាព', slot: 'status', width: 110 },
-    ]"
-  >
-    <template #exam_type="{ row }">
-      <el-tag :type="row.exam_type === 'ENTRANCE' ? 'success' : 'warning'">
-        {{ row.exam_type === 'ENTRANCE' ? 'ប្រឡងចូល' : 'ប្រឡងចេញ' }}
-      </el-tag>
-    </template>
-    <template #status="{ row }">
-      <el-switch
-        :model-value="row.is_active"
-        :loading="examTogglingId === row.id"
-        @change="handleToggleExam(row)"
-      />
-    </template>
-    <template #actions="{ row }">
-      <AppButton
-        size="small"
-        icon="Delete"
-        type="danger"
-        circle
-        :loading="examRemovingId === row.id"
-        @click="handleRemoveExam(row)"
-      />
-    </template>
-  </AppTable>
+      <AppTable
+        show-index
+        :data="majorExams"
+        :loading="examLoading"
+        :actions-width="100"
+        v-model:current-page="examPagination.page"
+        v-model:page-size="examPagination.page_size"
+        :total="examPagination.total"
+        @page-change="fetchMajorExams"
+        :columns="[
+          { label: 'លេខកូដ', prop: 'subject_code', minWidth: 100 },
+          { label: 'មុខវិជ្ជា', prop: 'subject_name_kh', minWidth: 160 },
+          { label: 'ជំនាន់', prop: 'generation_name', minWidth: 140 },
+          { label: 'កម្មវិធីសិក្សា', prop: 'programme_name', minWidth: 140 },
+          { label: 'ប្រភេទប្រឡង', slot: 'exam_type', width: 130 },
+          { label: 'ស្ថានភាព', slot: 'status', width: 110 },
+        ]"
+      >
+        <template #exam_type="{ row }">
+          <el-tag :type="row.exam_type === 'ENTRANCE' ? 'success' : 'warning'">
+            {{ row.exam_type === "ENTRANCE" ? "ប្រឡងចូល" : "ប្រឡងចេញ" }}
+          </el-tag>
+        </template>
+        <template #status="{ row }">
+          <el-switch
+            :model-value="row.is_active"
+            :loading="examTogglingId === row.id"
+            @change="handleToggleExam(row)"
+          />
+        </template>
+        <template #actions="{ row }">
+          <AppButton
+            size="small"
+            icon="Delete"
+            type="danger"
+            circle
+            :loading="examRemovingId === row.id"
+            @click="handleRemoveExam(row)"
+          />
+        </template>
+      </AppTable>
 
-  <template #footer>
-    <AppButton @click="examDialogVisible = false">បិទ</AppButton>
-  </template>
-</AppDialog>
+      <template #footer>
+        <AppButton @click="examDialogVisible = false">បិទ</AppButton>
+      </template>
+    </AppDialog>
   </div>
 </template>
 

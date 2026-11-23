@@ -243,7 +243,7 @@ async function handleSave() {
   <AppDialog
     :model-value="modelValue"
     @update:model-value="emit('update:modelValue', $event)"
-    :title="`ពត៍មានលំអិតនិស្សិត${studentRaw ? ' - ' + studentRaw.name_kh : ''}`"
+    :title="`ព័ត៍មានលំអិតនិស្សិត${studentRaw ? ' - ' + studentRaw.name_kh : ''}`"
     width="40%"
   >
     <el-form
@@ -259,7 +259,7 @@ async function handleSave() {
             <el-select
               filterable
               v-model="form.student_category_id"
-              size="large"
+              size="small"
               style="width: 100%"
               clearable
             >
@@ -278,7 +278,7 @@ async function handleSave() {
               v-model="form.date_of_birth"
               type="date"
               value-format="YYYY-MM-DD"
-              size="large"
+              size="small"
               style="width: 100%"
             />
           </el-form-item>
@@ -305,7 +305,7 @@ async function handleSave() {
           <el-form-item label="ខេត្ត/រាជធានី">
             <el-select
               v-model="selectedprovinceid"
-              size="large"
+              size="small"
               style="width: 100%"
               clearable
               filterable
@@ -324,7 +324,7 @@ async function handleSave() {
           <el-form-item label="ស្រុក/ខណ្ឌ">
             <el-select
               v-model="selecteddistrictid"
-              size="large"
+              size="small"
               style="width: 100%"
               clearable
               filterable
@@ -344,7 +344,7 @@ async function handleSave() {
           <el-form-item label="ឃុំ/សង្កាត់">
             <el-select
               v-model="selectedcommunceid"
-              size="large"
+              size="small"
               style="width: 100%"
               clearable
               filterable
@@ -364,7 +364,7 @@ async function handleSave() {
           <el-form-item label="ភូមិ" prop="village_id">
             <el-select
               v-model="form.village_id"
-              size="large"
+              size="small"
               style="width: 100%"
               clearable
               filterable
@@ -392,7 +392,7 @@ async function handleSave() {
           <el-form-item label="ផ្នែកសិក្សា" prop="academic_stream">
             <el-select
               v-model="form.academic_stream"
-              size="large"
+              size="small"
               style="width: 100%"
               clearable
             >
@@ -419,7 +419,7 @@ async function handleSave() {
     <template #footer>
       <AppButton
         @click="emit('update:modelValue', false)"
-        size="large"
+        size="small"
         :block="false"
         type="warning"
       >
@@ -429,7 +429,7 @@ async function handleSave() {
         @click="handleSave"
         type="primary"
         :loading="saving"
-        size="large"
+        size="small"
         :block="false"
       >
         {{ profileId ? "កែប្រែ" : "បង្កេីត" }}

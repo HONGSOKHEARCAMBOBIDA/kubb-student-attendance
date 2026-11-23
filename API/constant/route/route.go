@@ -115,6 +115,7 @@ const (
 	Addsubjec     = "add.subject"
 	Editsubject   = "edit.subject/:id"
 	ToggleSubject = "toggle.subject/:id"
+	ImportExcel   = "import.subject.excell"
 
 	// Major
 

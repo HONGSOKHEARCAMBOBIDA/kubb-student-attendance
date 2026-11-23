@@ -16,6 +16,7 @@ defineEmits(['update:modelValue', 'change'])
 <template>
   <el-form-item :prop="prop" :label="label" class="app-date-picker mb-4">
     <el-date-picker
+      size="small"
       :model-value="modelValue"
       :type="type"
       :placeholder="placeholder"

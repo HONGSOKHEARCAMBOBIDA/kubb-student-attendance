@@ -390,7 +390,7 @@ async function submit() {
       ]"
     >
       <template #class_name="{ row }">
-        <el-text size="large"
+        <el-text size="small"
           >{{ row.class_name }} |
           {{ row.type === "onclass" ? "ផ្ទាល់" : "អនឡាញ" }} |
           <el-text type="danger">{{ row.programme_name }}</el-text></el-text
@@ -534,7 +534,7 @@ async function submit() {
             label="ជំនាញ"
             placeholder="ជំនាញ"
             clearable
-            size="large"
+            size="small"
             :options="majors"
             filterable
           />
@@ -545,7 +545,7 @@ async function submit() {
             label="ជំនាន់"
             placeholder="ជំនាន់"
             clearable
-            size="large"
+            size="small"
             :options="generations"
           />
         </template>
@@ -555,7 +555,7 @@ async function submit() {
             label="កម្មវិធីសិក្សា"
             placeholder="កម្មវិធីសិក្សា"
             clearable
-            size="large"
+            size="small"
             :options="programmes"
           />
         </template>
@@ -565,7 +565,7 @@ async function submit() {
             label="ឆ្នាំ"
             placeholder="ឆ្នាំ"
             clearable
-            size="large"
+            size="small"
             :options="yearOptions"
           />
         </template>
@@ -576,27 +576,27 @@ async function submit() {
       <AppSelect
         v-model="form.class_id"
         placeholder="ថ្នាក់"
-        size="large"
+        size="small"
         :options="classOptions"
       />
       <AppSelect
         v-model="form.major_price_id"
         placeholder="តម្លៃមុខជំនាញ"
-        size="large"
+        size="small"
         :options="majorPriceOptions"
         :disabled="!form.class_id"
       />
       <AppSelect
         v-model="form.fee_schedule_id"
         placeholder="របៀបបង់ប្រាក់"
-        size="large"
+        size="small"
         :options="feeschedules"
       />
       <AppSelect
         v-model="form.scholarship_id"
         placeholder="អាហារូបករណ៍ (បើមាន)"
         clearable
-        size="large"
+        size="small"
         :options="scholarships"
       />
       <el-date-picker
@@ -604,7 +604,7 @@ async function submit() {
         type="date"
         value-format="YYYY-MM-DD"
         placeholder="កាលបរិច្ឆេទ"
-        size="large"
+        size="small"
         style="width: 100%"
       />
     </div>

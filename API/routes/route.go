@@ -165,6 +165,7 @@ func SetupRoutes(r *gin.Engine) {
 		auth.PUT(route.Editsubject, middleware.PermissionMiddleware(permission.Editsubject), subjectcontroller.Update)
 		auth.PUT(route.ToggleSubject, middleware.PermissionMiddleware(permission.Editsubject), subjectcontroller.Toggle)
 		auth.GET(route.GetClassAvailableSubjects, middleware.PermissionMiddleware(permission.Viewsubject), classschedulecontroller.GetAvailableSubjects)
+		auth.POST(route.ImportExcel, middleware.PermissionMiddleware(permission.Addsubject), subjectcontroller.ImportExcel)
 
 		// Majoir
 		auth.GET(route.ViewMajor, middleware.PermissionMiddleware(permission.ViewMajor), classcontroller.GetMajor)
