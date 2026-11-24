@@ -36,13 +36,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { Close } from "@element-plus/icons-vue";
-
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   title: { type: String, default: "" },
   width: { type: String, default: "640px" },
   destroyOnClose: { type: Boolean, default: true },
-  closeOnClickModal: { type: Boolean, default: true },
+  closeOnClickModal: { type: Boolean, default: false },
   customClass: { type: String, default: "" },
   breakpoint: { type: Number, default: 768 },
 });
@@ -71,7 +70,9 @@ onUnmounted(() => {
 .app-dialog__body {
   max-height: 70vh;
   overflow-y: auto;
-  background-color: #c4e0f5;
+  background-color: #e6eff9;
+   /* background-color: #f8a2de; */
+   padding: 10px;
 }
 
 .app-dialog__footer {

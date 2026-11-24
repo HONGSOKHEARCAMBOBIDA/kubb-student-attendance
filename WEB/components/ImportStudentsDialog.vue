@@ -1,43 +1,71 @@
 <template>
-  <AppDialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)"
+  <AppDialog
+    :model-value="modelValue"
+    @update:model-value="$emit('update:modelValue', $event)"
     :title="`បញ្ចូលសិស្សតាម Excel — ${className} ${programmeName} ${generationName} ឆ្នាំ${yearName} ឆមាស${semesterName} ជំនាញ${majorName}`"
-    width="60%" @closed="resetImport">
-    <el-upload drag :auto-upload="false" :show-file-list="false" accept=".xlsx,.xls" :on-change="handleFilePicked">
+    width="80%"
+    @closed="resetImport"
+  >
+    <el-upload
+      drag
+      :auto-upload="false"
+      :show-file-list="true"
+      accept=".xlsx,.xls"
+      :on-change="handleFilePicked"
+    >
       <el-icon class="el-icon--upload"><upload-filled /></el-icon>
       <div class="el-upload__text">
         អូសឯកសារមកទីនេះ ឬ <em>ចុចដើម្បីជ្រើសរើសឯកសារ</em>
       </div>
       <template #tip>
         <div class="el-upload__tip">
-          Column ដែលត្រូវការ (ជួរទី ១): <b>name_kh, name_en, gender, code</b> — gender អាចជា 1/2 ឬ ប្រុស/ស្រី
+          Column ដែលត្រូវការ (ជួរទី ១): <b>name_kh, name_en, gender, code</b> —
+          gender អាចជា 1/2 ឬ ប្រុស/ស្រី
         </div>
       </template>
     </el-upload>
-    <AppTable v-if="previewRows.length" :data="previewRows" show-index :show-pagination="false" :columns="[
-      { prop: 'name_kh', label: 'ឈ្មោះខ្មែរ', minwidth: 80 },
-      { prop: 'name_en', label: 'ឈ្មោះឡាតាំង', minwidth: 80 },
-      { prop: 'code', label: 'អត្តលេខ', minwidth: 80 },
-      { slot: 'gender', label: 'ភេទ', minwidth: 80 },
-      { slot: '_valid', label: 'ស្ថានភាព', minwidth: 80 },
-    ]">
+    <AppTable
+      v-if="previewRows.length"
+      :data="previewRows"
+      show-index
+      :show-pagination="false"
+      :columns="[
+        { prop: 'name_kh', label: 'ឈ្មោះខ្មែរ', minwidth: 80 },
+        { prop: 'name_en', label: 'ឈ្មោះឡាតាំង', minwidth: 80 },
+        { prop: 'code', label: 'អត្តលេខ', minwidth: 80 },
+        { slot: 'gender', label: 'ភេទ', minwidth: 80 },
+        { slot: '_valid', label: 'ស្ថានភាព', minwidth: 80 },
+      ]"
+    >
       <template #gender="{ row }">
-        <el-text>{{ row.gender === 1 ? "ប្រុស" : row.gender === 2 ? "ស្រី" : "?" }}</el-text>
+        <el-text>{{
+          row.gender === 1 ? "ប្រុស" : row.gender === 2 ? "ស្រី" : "?"
+        }}</el-text>
       </template>
-<template #_valid="{ row }">
-  <el-tag :type="row._valid ? 'success' : 'danger'" size="small">
-    {{ row._valid ? "OK" : row._duplicate ? "អត្តលេខស្ទួន" : "ខ្វះទិន្នន័យ" }}
-  </el-tag>
-</template>
+      <template #_valid="{ row }">
+        <el-tag :type="row._valid ? 'success' : 'danger'" size="small">
+          {{
+            row._valid ? "OK" : row._duplicate ? "អត្តលេខស្ទួន" : "ខ្វះទិន្នន័យ"
+          }}
+        </el-tag>
+      </template>
     </AppTable>
 
-
-
     <template #footer>
-      <AppButton @click="$emit('update:modelValue', false)" size="large" :block="false" type="warning">
+      <AppButton
+        @click="$emit('update:modelValue', false)"
+        :block="false"
+        type="warning"
+      >
         បោះបង់
       </AppButton>
-      <AppButton @click="handleImportSubmit" type="primary" :loading="importing" size="large" :block="false"
-        :disabled="!previewRows.length">
+      <AppButton
+        @click="handleImportSubmit"
+        type="primary"
+        :loading="importing"
+        :block="false"
+        :disabled="!previewRows.length"
+      >
         បញ្ចូលសិស្ស ({{ validRowCount }}) នាក់
       </AppButton>
     </template>
@@ -61,7 +89,7 @@ const props = defineProps({
   programmeName: { type: String, default: "" },
   yearName: { type: String, default: "" },
   semesterName: { type: String, default: "" },
-  majorName: { type: String, default: "" }
+  majorName: { type: String, default: "" },
 });
 const emit = defineEmits(["update:modelValue", "saved"]);
 
@@ -70,14 +98,14 @@ const importing = ref(false);
 const previewRows = ref([]);
 const pickedFile = ref(null);
 
-const validRowCount = computed(() => previewRows.value.filter((r) => r._valid).length);
+const validRowCount = computed(
+  () => previewRows.value.filter((r) => r._valid).length,
+);
 
 function resetImport() {
   previewRows.value = [];
   pickedFile.value = null;
 }
-
-
 
 function normalizeGender(val) {
   if (val === 1 || val === 2) return val;
@@ -108,7 +136,9 @@ function handleFilePicked(uploadFile) {
     }));
 
     const codeCounts = {};
-    mapped.forEach((r) => r.code && (codeCounts[r.code] = (codeCounts[r.code] || 0) + 1));
+    mapped.forEach(
+      (r) => r.code && (codeCounts[r.code] = (codeCounts[r.code] || 0) + 1),
+    );
 
     previewRows.value = mapped.map((r) => {
       const _duplicate = r.code && codeCounts[r.code] > 1;
@@ -116,7 +146,8 @@ function handleFilePicked(uploadFile) {
       return { ...r, _duplicate, _valid: _hasRequired && !_duplicate };
     });
 
-    if (!previewRows.value.length) notify.error("រកមិនឃើញទិន្នន័យក្នុងឯកសារនេះទេ");
+    if (!previewRows.value.length)
+      notify.error("រកមិនឃើញទិន្នន័យក្នុងឯកសារនេះទេ");
   };
   reader.readAsArrayBuffer(file);
 }

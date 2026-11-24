@@ -502,14 +502,15 @@ const filteredStudents = computed(() => {
 });
 
 const studentcolumn = [
+  { prop: "code", label: "អត្តលេខ", minwidth: 100 },
   { prop: "name_kh", label: "ឈ្មោះខ្មែរ", minwidth: 100 },
   { prop: "name_en", label: "ឈ្មោះអង់គ្លេស", minwidth: 100 },
-  { slot: "gender", label: "ភេទ", minwidth: 100 },
-  { prop: "code", label: "អត្តលេខ", minwidth: 100 },
-  { slot: "status", label: "ស្ថានភាព", minwidth: 100 },
-  { prop: "fee_status", label: "បង់ប្រាក់", minwidth: 100 },
-  { prop: "exam_in_date", label: "ថ្ងៃ-ខែ-ឆ្នាំ ប្រឡងចូល", minwidth: 100 },
-  { prop: "exam_out_date", label: "ថ្ងៃ-ខែ-ឆ្នាំ ប្រឡងចេញ", minwidth: 100 },
+  { slot: "gender", label: "ភេទ", width: 70,},
+  
+  { slot: "status", label: "ស្ថានភាព", width: 100 },
+  { prop: "fee_status", label: "បង់ប្រាក់", width: 100 },
+  { prop: "exam_in_date", label: "ថ្ងៃ-ខែ-ឆ្នាំ ប្រឡងចូល", width: 130,align:'center'  },
+  { prop: "exam_out_date", label: "ថ្ងៃ-ខែ-ឆ្នាំ ប្រឡងចេញ", width: 130,align:'center'  },
 ];
 
 const userClassStatus = [

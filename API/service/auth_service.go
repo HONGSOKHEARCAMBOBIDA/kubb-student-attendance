@@ -328,9 +328,10 @@ func (s *authservice) Register(ctx context.Context, input request.RegisterReques
 			newUserClass := make([]model.UserClass, 0, len(newdata))
 			for _, u := range newdata {
 				newUserClass = append(newUserClass, model.UserClass{
-					UserID:  int64(u.ID),
-					ClassID: int64(input.ClassID),
-					Status:  model.UserClassStatusSTUDY,
+					UserID:    int64(u.ID),
+					ClassID:   int64(input.ClassID),
+					Status:    model.UserClassStatusSTUDY,
+					FeeStatus: model.FeeStatusUserClassACTIVE,
 				})
 			}
 

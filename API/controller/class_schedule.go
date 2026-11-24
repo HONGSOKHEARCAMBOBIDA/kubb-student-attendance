@@ -36,7 +36,12 @@ func (ctl *ClassScheduleController) GetByClass(c *gin.Context) {
 		return
 	}
 
-	data, err := ctl.service.GetByClass(c.Request.Context(), classID)
+	filter := map[string]string{
+		"schedule_date": c.Query("schedule_date"),
+		"teacher_id":    c.Query("teacher_id"),
+	}
+
+	data, err := ctl.service.GetByClass(c.Request.Context(), classID, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

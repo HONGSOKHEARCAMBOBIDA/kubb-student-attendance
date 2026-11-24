@@ -1,6 +1,7 @@
 <template>
   <div>
     <AppFilterBar
+      :show-back="true"
       :fields="[
         { slot: 'name', span: 3 },
         { slot: 'programm', span: 3 },

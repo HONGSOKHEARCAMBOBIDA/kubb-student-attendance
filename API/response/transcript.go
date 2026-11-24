@@ -30,7 +30,7 @@ type RawResult struct {
 	Code       string  `json:"code"`
 	NameEN     string  `json:"name_en"`
 	NameKH     string  `json:"name_kh"`
-	Credits    int     `json:"credits"`
+	Credits    float64 `json:"credits"`
 	PointsSum  float64 `json:"point_sum"`
 	PercentSum float64 `json:"percent_sum"`
 }

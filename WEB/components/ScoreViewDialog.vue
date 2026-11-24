@@ -36,7 +36,7 @@
             placeholder="ឈ្មោះ ឬ អត្តលេខ"
             clearable
             size="large"
-            @input="debouncedFetch"
+            @enter="fetchScoreView"
           />
         </div>
 
@@ -45,8 +45,11 @@
           v-loading="loading"
           :columns="columns"
           :show-pagination="false"
-          actions-width="150"
+          actions-width="70"
         >
+          <template #name_kh="{ row }">
+            <div>{{ row.name_kh }} | {{ row.name_en }}</div>
+          </template>
           <template #gender="{ row }">
             <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
           </template>
@@ -59,15 +62,7 @@
             <el-text>{{ row.rank }}</el-text>
           </template>
           <template #actions="{ row }">
-            <el-tooltip content="កែប្រែ" placement="top">
-              <AppButton
-                type="warning"
-                circle
-                icon="Edit"
-                size="small"
-                @click="openEdit(row)"
-              ></AppButton>
-            </el-tooltip>
+            <AppButton @click="openEdit(row)">កែប្រែ</AppButton>
           </template>
         </AppTable>
       </template>
@@ -178,35 +173,36 @@ const filters = reactive({ subject_id: null, name: "" });
 const gdocLoading = ref(false);
 
 const columns = [
-  { prop: "name_kh", label: "ឈ្មោះខ្មែរ", minwidth: 100 },
+  { prop: "code", label: "អត្តលេខ", width: 130 },
+  { slot: "name_kh", label: "ឈ្មោះខ្មែរ", minwidth: 100 },
   { slot: "gender", label: "ភេទ", width: 70, align: "center" },
-  { prop: "code", label: "អត្តលេខ", width: 130, align: "center" },
-  { prop: "ProgrammeName", label: "កម្រិត", width: 100, align: "center" },
+
+  { prop: "ProgrammeName", label: "កម្រិត", width: 90, align: "center" },
   { prop: "GenerationName", label: "ជំនាន់", width: 100, align: "center" },
   { prop: "MajorName", label: "ជំនាញ", minwidth: 100, align: "center" },
-  { prop: "SubjectName", label: "មុខវិជ្ជា", minwidth: 100, align: "center" },
-  { prop: "year", label: "ឆ្នាំ", width: 70, align: "center" },
-  { prop: "semester", label: "ឆមាស", width: 80, align: "center" },
+  // { prop: "SubjectName", label: "មុខវិជ្ជា", minwidth: 100, align: "center" },
+  { prop: "year", label: "ឆ្នាំ", width: 50, align: "center" },
+  { prop: "semester", label: "ឆមាស", width: 70, align: "center" },
   {
     prop: "attendance",
     label: "វត្តមាននិស្សិត",
-    width: 150,
+    width: 120,
     align: "center",
   },
   {
     prop: "research",
     label: "កិច្ចការស្រាវជ្រាវ",
-    width: 150,
+    width: 120,
     align: "center",
   },
   {
     prop: "midterm",
     label: "ប្រឡងពាក់កណ្តាលឆមាស",
-    width: 210,
+    width: 170,
     align: "center",
   },
-  { prop: "final", label: "ប្រឡងបញ្ចប់ឆមាស", width: 150, align: "center" },
-  { slot: "total", label: "ពិន្ទុសរុប", width: 100, align: "center" },
+  { prop: "final", label: "ប្រឡងបញ្ចប់ឆមាស", width: 120, align: "center" },
+  { slot: "total", label: "ពិន្ទុសរុប", width: 80, align: "center" },
   { slot: "rank", label: "ចំណាត់ថ្នាក់", width: 100, align: "center" },
 ];
 
@@ -321,7 +317,7 @@ async function exportToGoogleDoc() {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
-    win.location.href = data.url;   // user can then File → Download as PDF/Word
+    win.location.href = data.url; // user can then File → Download as PDF/Word
     notify.success("បង្កើត Google Doc បានជោគជ័យ");
   } catch (e) {
     win?.close();

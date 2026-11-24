@@ -27,7 +27,7 @@ import {
 import { useUserDataStore } from "../stores/user_data.js";
 import AppSelect from "../../components/AppSelect.vue";
 import MajorPrice from "../../components/MajorPrice.vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 let searchTimer = null;
 const notify = useNotification();
 const userDataStore = useUserDataStore();
@@ -462,13 +462,25 @@ const getYearType = (year) => {
 };
 
 async function handleRemoveSubject(row) {
-  removingId.value = row.id;
+  
   try {
+    await ElMessageBox.confirm(
+      `តើអ្នកប្រាកដថាចង់លុបមុខវិជ្ជា "${row.subject_name_en}" មែនទេ?`,
+      "បញ្ជាក់ការលុប",
+      {
+        confirmButtonText: "លុប",
+        cancelButtonText: "បោះបង់",
+        type: "warning",
+      }
+    );
+    removingId.value = row.id;
     await removeMajorSubject(row.id);
     notify.success("លុបមុខវិជ្ជាជោគជ័យ");
     await fetchMajorSubjects();
   } catch (e) {
-    notify.error(e.response?.data?.error || "មិនអាចលុបមុខវិជ្ជាបានទេ");
+        if (e !== "cancel" && e !== "close") {
+      notify.error(e.response?.data?.error || "មិនអាចលុបមុខវិជ្ជាបានទេ");
+    }
   } finally {
     removingId.value = null;
   }
@@ -692,20 +704,20 @@ onUnmounted(() => clearTimeout(searchTimer));
         show-index
         :data="majorSubjects"
         :loading="majorSubjectsLoading"
-        :actions-width="140"
+        :actions-width="80"
         v-model:current-page="subjectPagination.page"
         v-model:page-size="subjectPagination.page_size"
         :total="subjectPagination.total"
         @page-change="handleSubjectsPageChange"
         :columns="[
-          { label: 'លេខកូដ', prop: 'subject_code', minWidth: 100 },
+          { label: 'លេខកូដ', prop: 'subject_code', width: 90 },
           { label: 'ឈ្មោះ', slot: 'subject_name_kh', minWidth: 160 },
-          { label: 'ជំនាន់', prop: 'generation_name', minWidth: 160 },
-          { label: 'កម្មវិធីសិក្សា', prop: 'programme_name', minWidth: 160 },
-          { label: 'ម៉ោងក្រេឌីត', prop: 'credit_hour', width: 100 },
-          { label: 'ឆ្នាំ', slot: 'year', width: 80 },
-          { label: 'ឆមាស', prop: 'semester', width: 80 },
-          { label: 'ស្ថានភាព', slot: 'status', width: 110 },
+          { label: 'ជំនាន់', prop: 'generation_name', width: 90,align:'center' },
+          { label: 'កម្មវិធីសិក្សា', prop: 'programme_name', width: 100,align:'center' },
+          { label: 'ម៉ោងក្រេឌីត', prop: 'credit_hour', width: 100,align:'center' },
+          { label: 'ឆ្នាំ', slot: 'year', width: 80,align:'center' },
+          { label: 'ឆមាស', prop: 'semester', width: 80,align:'center' },
+          { label: 'ស្ថានភាព', slot: 'status', width: 80,align:'center' },
         ]"
       >
 
@@ -762,6 +774,7 @@ onUnmounted(() => clearTimeout(searchTimer));
         </template>
         <template #status="{ row }">
           <el-switch
+            size="small"
             :model-value="row.is_active"
             :loading="subjectTogglingId === row.id"
             @change="handleToggleMajorSubject(row)"

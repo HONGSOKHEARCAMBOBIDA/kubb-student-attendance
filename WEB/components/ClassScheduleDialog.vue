@@ -251,11 +251,19 @@ const rules = {
 };
 const submitting = ref(false);
 
+const classshedulefilter = reactive({
+  schedule_date:null,
+  teacher_id: null
+})
+
 async function fetchSchedules() {
   if (!props.classRow) return;
   loading.value = true;
   try {
-    const res = await getClassSchedule(props.classRow.id);
+    const res = await getClassSchedule(props.classRow.id,{
+      schedule_date: classshedulefilter.schedule_date,
+      teacher_id: classshedulefilter.teacher_id,
+    });
     schedules.value = res.data.data || [];
   } catch (e) {
     notify.error(e.response?.data?.error || "Failed to load schedule");
@@ -523,60 +531,46 @@ watch(
           :data="classDetails"
           :loading="loading"
           :show-pagination="false"
-          actions-width="150px"
+          actions-width="250px"
           :columns="[
             { label: 'មុខវិជ្ជា', prop: 'subject_name', minWidth: 100 },
             { label: 'សាស្រ្តាចារ្យ', prop: 'teacher_name', minWidth: 100 },
-            { label: 'ក្រេឌីតត្រូវបង្រៀន', prop: 'credit', minWidth: 100 },
-            { label: 'ម៉ោងសរុបនៅសល់', slot: 'remaining_hours', minWidth: 100 },
-            { label: 'ប្រឡង Midterm', slot: 'midterm', minWidth: 100 },
-            { label: 'ប្រឡង Final', slot: 'final', minWidth: 100 },
+            { label: 'ក្រេឌីតត្រូវបង្រៀន', prop: 'credit', width: 110,align:'center' },
+            { label: 'ម៉ោងនៅសល់', slot: 'remaining_hours', width: 100,align:'center' },
+            { label: 'Midterm', slot: 'midterm', width: 100,align:'center' },
+            { label: 'Final', slot: 'final', width: 100,align:'center' },
           ]"
         >
           <template #remaining_hours="{ row }">
-            <el-text
-              size="large"
+            <div
               style="color: black"
               :tag="row.remaining_hours === 0 ? 'mark' : 'b'"
             >
               {{ row.remaining_hours }} ម៉ោង
-            </el-text>
+            </div>
           </template>
           <template #midterm="{ row }">
-            <el-text>{{
+            <div>{{
               row.midterm === false ? "មិនទាន់ប្រឡង" : "បានប្រឡង"
-            }}</el-text>
+            }}</div>
           </template>
           <template #final="{ row }">
-            <el-text>{{
+            <div>{{
               row.final === false ? "មិនទាន់ប្រឡង" : "បានប្រឡង"
-            }}</el-text>
+            }}</div>
           </template>
           <template #actions="{ row }">
-            <el-tooltip content="បញ្ចូលកាលវិភាគ" placement="top">
               <AppButton
-                circle
-                size="small"
-                icon="Clock"
                 @click="openScheduleForm(row)"
-              />
-            </el-tooltip>
-            <el-tooltip content="កែប្រែ" placement="top">
+              >បញ្ចូលកាលវិភាគ</AppButton>
               <AppButton
-                circle
-                size="small"
-                icon="Edit"
                 @click="openEditDetail(row)"
-              />
-            </el-tooltip>
-            <el-tooltip content="លុប" placement="top">
+              >កែប្រែ</AppButton>
               <AppButton
-                circle
-                size="small"
-                icon="Delete"
                 @click="openEditDetail(row)"
-              />
-            </el-tooltip>
+                type="danger"
+                plain
+              >លុប</AppButton>
           </template>
         </AppTable>
       </el-card>
@@ -627,7 +621,7 @@ watch(
             <el-select
               v-model="form.day_of_week"
               placeholder="ជ្រើសរើសថ្ងៃ"
-              size="large"
+              size="small"
             >
               <el-option
                 v-for="d in DAYS"
@@ -751,52 +745,70 @@ watch(
         { label: 'ផ្សេងៗ', slot: 'is_mission', width: 110,align: 'center' },
       ]"
     >
+    <template #filter>
+      <el-row :gutter="20">
+        <el-col :span="12">
+      <AppDatePicker
+      v-model="classshedulefilter.schedule_date"
+      @change="fetchSchedules"
+      ></AppDatePicker>
+        </el-col>
+        <el-col :span="12">
+      <AppSelect
+              v-model="classshedulefilter.teacher_id"
+              :options="Teachers"
+              placeholder="ជ្រើសរើសគ្រូបង្រៀន"
+              size="large"
+              filterable
+              clearable
+              @change="fetchSchedules"
+            />
+        </el-col>
+      </el-row>
+
+
+    </template>
       <template #is_mission="{ row }">
         <el-tag v-if="row.is_mission" type="warning">បេសកកម្ម</el-tag>
       </template>
       <template #total_student="{ row }">
-        <el-text tag="b" size="large" style="color: black"
-          >{{ row.total_student }} នាក់</el-text
+        <div 
+          >{{ row.total_student }} នាក់</div
         >
       </template>
       <template #name_kh="{ row }">
-        <el-text>{{ row.name_kh }}</el-text>
+        <div>{{ row.name_kh }}</div>
       </template>
       <template #day="{ row }">
-        <el-text>{{ dayLabel(row.day_of_week) }}</el-text>
+        <div>{{ dayLabel(row.day_of_week) }}</div>
       </template>
       <template #hourly_rate="{ row }">
         <el-statistic
           :value="row.hourly_rate"
           :formatter="(val) => `${Number(val).toFixed(2)}$`"
-          :value-style="{ fontSize: '20px', color: '#FF0000' }"
+          :value-style="{ fontSize: '15px', color: '#FF0000' }"
         />
       </template>
       <template #total_rate="{ row }">
         <el-statistic
           :value="row.total_session * row.hourly_rate"
           :formatter="(val) => `${Number(val).toFixed(2)}$`"
-          :value-style="{ fontSize: '20px', color: '#FF0000' }"
+          :value-style="{ fontSize: '15px', color: '#FF0000' }"
         />
       </template>
       <template #status="{ row }">
         <el-switch
+          size="small"
           :model-value="row.is_active"
           :loading="togglingId === row.id"
           @change="handleToggle(row)"
         />
       </template>
       <template #actions="{ row }">
-        <el-tooltip content="កែប្រែ" placement="top">
           <AppButton
             :disabled="!row.is_active"
-            circle
-            size="small"
-            type="warning"
-            icon="Edit"
             @click="openEdit(row)"
-          />
-        </el-tooltip>
+          >កែប្រែ</AppButton>
       </template>
     </AppTable>
   </AppDialog>
@@ -954,11 +966,11 @@ watch(
   margin-top: 4px;
 }
 .add-schedule-form {
-  margin-bottom: 16px;
+  margin-bottom: 6px;
 }
 .form-row {
   display: flex;
-  gap: 16px;
+  gap: 6px;
 }
 .form-row .el-form-item {
   flex: 1;

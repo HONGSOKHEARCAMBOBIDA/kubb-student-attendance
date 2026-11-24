@@ -18,7 +18,7 @@ import (
 type ClassScheduleService interface {
 	// GetByClass returns every schedule row for a class (active and
 	// inactive), joined with subject for display.
-	GetByClass(ctx context.Context, classID int) ([]response.ClassScheduleResponse, error)
+	GetByClass(ctx context.Context, classID int, filter map[string]string) ([]response.ClassScheduleResponse, error)
 
 	// GetAvailableSubjects returns the subjects that are allowed to be
 	// scheduled for this class: subjects attached (active) to the class's
@@ -40,16 +40,27 @@ func NewClassScheduleService() ClassScheduleService {
 	}
 }
 
-func (s *classScheduleService) GetByClass(ctx context.Context, classID int) ([]response.ClassScheduleResponse, error) {
+func (s *classScheduleService) GetByClass(ctx context.Context, classID int, filter map[string]string) ([]response.ClassScheduleResponse, error) {
 	var data []response.ClassScheduleResponse
 
-	err := s.db.WithContext(ctx).
-		Table("class_schedule cs").
-		Joins("JOIN subject sub ON sub.id = cs.subject_id").
-		Joins("LEFT JOIN teacher_rates tr ON tr.class_schedule_id = cs.id").
-		Joins("LEFT JOIN user t ON t.id = tr.user_id").
-		Joins("LEFT JOIN user cr ON cr.id = tr.created_by").
-		Where("cs.class_id = ?", classID).
+	base := func() *gorm.DB {
+		q := s.db.WithContext(ctx).Table("class_schedule cs").
+			Joins("JOIN subject sub ON sub.id = cs.subject_id").
+			Joins("LEFT JOIN teacher_rates tr ON tr.class_schedule_id = cs.id").
+			Joins("LEFT JOIN user t ON t.id = tr.user_id").
+			Joins("LEFT JOIN user cr ON cr.id = tr.created_by").
+			Where("cs.class_id = ?", classID)
+
+		if v := filter["schedule_date"]; v != "" {
+			q = q.Where("cs.schedule_date = ?", v)
+		}
+		if v := filter["teacher_id"]; v != "" {
+			q = q.Where("tr.user_id = ?", v)
+		}
+		return q
+	}
+
+	err := base().
 		Select(`
 			cs.id AS id,
 			cs.class_id AS class_id,
@@ -74,12 +85,12 @@ func (s *classScheduleService) GetByClass(ctx context.Context, classID int) ([]r
 	if err != nil {
 		return nil, fmt.Errorf("fetch class schedule: %w", err)
 	}
+
 	for i := range data {
 		data[i].ScheduleDate = helper.FormatDate(data[i].ScheduleDate)
 	}
 	return data, nil
 }
-
 func (s *classScheduleService) GetAvailableSubjects(ctx context.Context, classID int) ([]response.SubjectOption, error) {
 	var class model.Class
 	if err := s.db.WithContext(ctx).Where("id = ?", classID).First(&class).Error; err != nil {

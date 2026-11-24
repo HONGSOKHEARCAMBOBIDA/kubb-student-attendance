@@ -180,8 +180,8 @@ export const removeMajorSubject = (id) =>
 
 // class schedule
 
-export const getClassSchedule = (classId) =>
-  api.get(`/class/${classId}/schedule`);
+export const getClassSchedule = (classId,params) =>
+  api.get(`/class/${classId}/schedule`,{params});
 export const getClassAvailableSubjects = (classId) =>
   api.get(`/class/${classId}/schedule/subjects`);
 export const createClassSchedule = (classId, data) =>

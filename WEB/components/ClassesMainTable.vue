@@ -57,9 +57,7 @@
           </div>
           <div></div>
           <div>
-            <el-text size="small" style="color: black"
-              >ឆ្នាំទី{{ row.year }} | ឆមាសទី{{ row.semester }}</el-text
-            >
+              ឆ្នាំទី{{ row.year }} | ឆមាសទី{{ row.semester }}
           </div>
         </div>
       </template>
