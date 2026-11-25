@@ -7,35 +7,33 @@
   >
     <el-form label-position="top">
       <AppSelect
-      v-model="copyTargetClassId"
-      label="ថ្នាក់គោលដៅ"
-      placeholder="ជ្រើសរើសថ្នាក់"
-      filterable
-      :options="targetOptions"
-      size="large"
-      >
-
-      </AppSelect>
+        v-model="copyTargetClassId"
+        label="ថ្នាក់គោលដៅ"
+        placeholder="ជ្រើសរើសថ្នាក់"
+        filterable
+        :options="targetOptions"
+        size="large"
+      />
 
       <el-form-item label="ជ្រើសរើសសិស្ស">
-        <el-checkbox v-model="copySelectAll" @change="handleCopySelectAll" style="margin-bottom: 8px">
-          ជ្រើសរើសទាំងអស់
-        </el-checkbox>
-        <el-table :data="copyStudents" size="small" border max-height="320">
-          <el-table-column width="50">
-            <template #default="{ row }">
-              <el-checkbox v-model="row._checked" />
-            </template>
-          </el-table-column>
-          <el-table-column prop="name_kh" label="ឈ្មោះខ្មែរ" />
-          <el-table-column prop="name_en" label="ឈ្មោះឡាតាំង" />
-          <el-table-column prop="code" label="អត្តលេខ" width="100" />
-        </el-table>
+        <AppTable
+          ref="tableRef"
+          :data="copyStudents"
+          selectable
+          :columns="studentColumns"
+          :show-pagination="false"
+          @selection-change="onSelectionChange"
+        />
       </el-form-item>
     </el-form>
 
     <template #footer>
-      <AppButton @click="$emit('update:modelValue', false)" size="large" :block="false" type="warning">
+      <AppButton
+        @click="$emit('update:modelValue', false)"
+        size="large"
+        :block="false"
+        type="warning"
+      >
         បោះបង់
       </AppButton>
       <AppButton
@@ -53,12 +51,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, nextTick } from "vue";
 import { adduserclass } from "../src/api/services.js";
 import AppButton from "./AppButton.vue";
 import AppDialog from "./AppDialog.vue";
 import { useNotification } from "../composables/useNotification.js";
 import AppSelect from "./AppSelect.vue";
+import AppTable from "./AppTable.vue";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -71,26 +70,36 @@ const notify = useNotification();
 const copying = ref(false);
 const copyTargetClassId = ref(null);
 const copyStudents = ref([]);
-const copySelectAll = ref(true);
+const selectedStudents = ref([]);
+const tableRef = ref(null);
 
-const copySelectedCount = computed(() => copyStudents.value.filter((s) => s._checked).length);
+const studentColumns = [
+  { prop: "name_kh", label: "ឈ្មោះខ្មែរ" },
+  { prop: "name_en", label: "ឈ្មោះឡាតាំង" },
+  { prop: "code", label: "អត្តលេខ" },
+];
+
+const copySelectedCount = computed(() => selectedStudents.value.length);
+
+function onSelectionChange(rows) {
+  selectedStudents.value = rows;
+}
 
 watch(
   () => props.modelValue,
-  (open) => {
+  async (open) => {
     if (!open) return;
-    copyStudents.value = (props.sourceClass?.students || []).map((s) => ({ ...s, _checked: true }));
+    copyStudents.value = [...(props.sourceClass?.students || [])];
+    selectedStudents.value = [];
     copyTargetClassId.value = null;
-    copySelectAll.value = true;
+    await nextTick();
+    await nextTick();
+    tableRef.value?.toggleAllSelection?.();
   },
 );
 
-function handleCopySelectAll(val) {
-  copyStudents.value.forEach((s) => (s._checked = val));
-}
-
 async function handleCopySubmit() {
-  const selected = copyStudents.value.filter((s) => s._checked);
+  const selected = selectedStudents.value;
   if (!selected.length || !copyTargetClassId.value) return;
 
   copying.value = true;

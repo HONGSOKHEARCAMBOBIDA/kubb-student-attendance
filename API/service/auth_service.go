@@ -1390,7 +1390,7 @@ func (s *authservice) GetStudentStudyHistory(ctx context.Context, id int) (respo
 		Joins("LEFT JOIN shift s ON s.id = c.shift_id").
 		Joins("LEFT JOIN generation g ON g.id = c.generation_id").
 		Joins("LEFT JOIN programmes p ON p.id = c.programme_id").
-		Where("uc.user_id = ? AND uc.status = ?", id, model.UserClassStatusSTUDY).
+		Where("uc.user_id = ? ", id).
 		Order("c.year ASC, c.semester ASC").
 		Select(`
 			uc.id AS user_class_id,

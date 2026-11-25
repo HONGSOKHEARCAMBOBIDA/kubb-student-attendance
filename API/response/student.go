@@ -54,10 +54,10 @@ type UserClassRes struct {
 }
 
 type SubjectRes struct {
-	UserClassID   int    `json:"user_class_id"`
-	SubjectID     int64  `json:"subject_id"`
-	SubjectCode   string `json:"subject_code"`
-	SubjectNameKh string `json:"subject_name_kh"`
-	SubjectNameEn string `json:"subject_name_en"`
-	CreditHour    int    `json:"credit_hour"`
+	UserClassID   int     `json:"user_class_id"`
+	SubjectID     int64   `json:"subject_id"`
+	SubjectCode   string  `json:"subject_code"`
+	SubjectNameKh string  `json:"subject_name_kh"`
+	SubjectNameEn string  `json:"subject_name_en"`
+	CreditHour    float64 `json:"credit_hour"`
 }

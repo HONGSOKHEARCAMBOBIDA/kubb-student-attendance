@@ -410,111 +410,95 @@ async function submit() {
       <template #year="{ row }">
         <el-statistic
           :value="row.year"
-          :value-style="{ fontSize: '20px', color: '#000000' }"
+          :value-style="{ fontSize: '15px', color: '#000000' }"
         />
       </template>
       <template #group_name="{ row }">
         <el-statistic
           :value="row.group_name"
-          :value-style="{ fontSize: '20px', color: '#000000' }"
+          :value-style="{ fontSize: '15px', color: '#000000' }"
         />
       </template>
       <template #term="{ row }">
         <el-statistic
           :value="row.term"
-          :value-style="{ fontSize: '20px', color: '#000000' }"
+          :value-style="{ fontSize: '15px', color: '#000000' }"
         />
       </template>
       <template #amount="{ row }">
         <el-statistic
           :value="row.amount"
           :formatter="(val) => `${Number(val).toFixed(2)}$`"
-          :value-style="{ fontSize: '16px', color: '#000000' }"
+          :value-style="{ fontSize: '14px', color: '#000000' }"
         />
       </template>
       <template #discount="{ row }">
         <el-statistic
           :value="row.discount"
           :formatter="(val) => `${Number(val).toFixed(2)}$`"
-          :value-style="{ fontSize: '16px', color: '#000000' }"
+          :value-style="{ fontSize: '14px', color: '#000000' }"
         />
       </template>
       <template #total="{ row }">
         <el-statistic
           :value="row.total"
           :formatter="(val) => `${Number(val).toFixed(2)}$`"
-          :value-style="{ fontSize: '26px', color: '#FF0000' }"
+          :value-style="{ fontSize: '16px', color: '#FF0000' }"
         />
       </template>
       <template #paid_amount="{ row }">
         <el-statistic
           :value="row.paid_amount"
           :formatter="(val) => `${Number(val).toFixed(2)}$`"
-          :value-style="{ fontSize: '26px', color: '#FF0000' }"
+          :value-style="{ fontSize: '16px', color: '#06d128' }"
         />
       </template>
       <template #actions="{row}">
-            <el-tooltip content="លុបថ្លៃសិក្សា" placement="top">
               <AppButton
-                size="small"
-                icon="Delete"
                 type="danger"
-                circle
+                plain
                 @click="handleDeleteFee(row)"
-              />
-            </el-tooltip>        
+                block
+              >លុបថ្លៃសិក្សា</AppButton>
       </template>
       <template #expand="{ row: userClass }">
         <AppTable
           :show-pagination="false"
           :data="userClass.installments ?? []"
           :columns="installmentColumns"
+          actions-width="300"
         >
           <template #amount="{ row: installment }">
             <el-statistic
               :value="installment.amount"
               :formatter="(val) => `${Number(val).toFixed(2)}$`"
-              :value-style="{ fontSize: '20px', color: '#FF0000' }"
+              :value-style="{ fontSize: '15px', color: '#FF0000' }"
             />
           </template>
           <template #fee_transaction_total="{row: installment}">
             <el-statistic
               :value="installment.fee_transaction_total"
               :formatter="(val) => `${Number(val).toFixed(2)}$`"
-              :value-style="{ fontSize: '20px', color: '#FF0000' }"
+              :value-style="{ fontSize: '15px', color: '#06d128' }"
             />
           </template>
           <template #actions="{ row: installment }">
-            <el-tooltip content="បង់ប្រាក់" placement="top">
               <AppButton
-                size="small"
-                icon="Money"
-                type="success"
-                circle
                 :disabled="installment.status === 'paid'"
+                type="success"
+                plain
                 @click="openPay(installment)"
-              />
-            </el-tooltip>
-            <el-tooltip content="ព្រីនវិក័យបត្រ" placement="top">
+              >បង់ប្រាក់</AppButton>
               <AppButton
-                size="small"
-                icon="Printer"
-                type="primary"
-                circle
                 :disabled="installment.status !== 'paid'"
                 @click="onPrint(installment)"
-              />
-            </el-tooltip>
-            <el-tooltip content="លុបការបង់ប្រាក់" placement="top">
+              >ព្រីនវិក័យបត្រ</AppButton>
               <AppButton
-                size="small"
-                icon="Delete"
-                type="danger"
-                circle
                 :disabled="installment.status !== 'paid'"
+                type="danger"
+                plain
                 @click="deleteFeeTransaction(installment)"
-              />
-            </el-tooltip>
+              >លុបការបង់ប្រាក់</AppButton>
           </template>
         </AppTable>
       </template>

@@ -15,7 +15,7 @@
           title="ព័ត៌មាននិស្សិត"
           :column="3"
           border
-          size="default"
+          size="small"
         >
           <el-descriptions-item label="ឈ្មោះខ្មែរ">
             {{ dash(data.name_kh) }}
@@ -90,7 +90,7 @@
           description="មិនទាន់មានប្រវត្តិថ្នាក់សិក្សា"
         />
 
-        <el-collapse v-else v-model="openedClasses">
+        <el-collapse  v-else v-model="openedClasses">
           <el-collapse-item
             v-for="c in classes"
             :key="c.user_class_id"
@@ -115,7 +115,7 @@
               </div>
             </template>
 
-            <el-descriptions :column="3" size="default" border>
+            <el-descriptions :column="3" size="small" border>
               <el-descriptions-item label="ជំនាញ">
                 {{ dash(c.major_name) }}
               </el-descriptions-item>
@@ -135,35 +135,15 @@
                 {{ dash(c.term) }}
               </el-descriptions-item>
             </el-descriptions>
-
-            <el-table
-              :data="c.subject_res || []"
-              size="default"
-              stripe
-              class="subject-table"
-              empty-text="មិនមានមុខវិជ្ជា"
-              show-summary
-              :summary-method="summaryMethod"
+            <AppTable
+            :data="c.subject_res || []"
+            :show-pagination="false"
+            show-index
+            :columns="subjectColumns"
             >
-              <el-table-column type="index" label="ល.រ" width="60" />
-              <el-table-column prop="subject_code" label="កូដ" width="130" />
-              <el-table-column
-                prop="subject_name_kh"
-                label="មុខវិជ្ជា (ខ្មែរ)"
-                min-width="180"
-              />
-              <el-table-column
-                prop="subject_name_en"
-                label="មុខវិជ្ជា (ឡាតាំង)"
-                min-width="180"
-              />
-              <el-table-column
-                prop="credit_hour"
-                label="ក្រេឌីត"
-                width="100"
-                align="center"
-              />
-            </el-table>
+
+            </AppTable>
+            
           </el-collapse-item>
         </el-collapse>
       </template>
@@ -172,7 +152,6 @@
     <template #footer>
       <AppButton
         @click="visible = false"
-        size="large"
         :block="false"
         type="warning"
       >
@@ -188,6 +167,7 @@ import AppDialog from "./AppDialog.vue";
 import AppButton from "./AppButton.vue";
 // adjust this path to wherever your api/services.js lives
 import { getStudentStudyHistory } from "../src/api/services";
+import AppTable from "./AppTable.vue";
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -199,6 +179,13 @@ const visible = computed({
   get: () => props.modelValue,
   set: (v) => emit("update:modelValue", v),
 });
+
+const subjectColumns = [
+  { prop: "subject_code", label: "កូដ" },
+  { prop: "subject_name_kh", label: "មុខវិជ្ជា (ខ្មែរ)" },
+  { prop: "subject_name_en", label: "មុខវិជ្ជា (ឡាតាំង)" },
+   { prop: "credit_hour", label: "ក្រេឌីត" },
+];
 
 const STATUS_MAP = {
   STUDY: { label: "កំពុងសិក្សា", type: "success" },
@@ -294,19 +281,17 @@ watch(
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin: 24px 0 8px;
+  margin: 8px 0 8px;
 }
 .section-head h4 {
   margin: 0;
-  font-size: 16px;
+  font-size: 10px;
 }
 .class-title {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 5px;
 }
-.subject-table {
-  margin-top: 12px;
-}
+
 </style>

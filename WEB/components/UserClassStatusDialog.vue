@@ -6,14 +6,14 @@
     width="420px"
   >
     <el-form label-position="top">
-      <AppSelect v-model="statusForm.status" size="large" :options="userClassStatus" />
+      <AppSelect v-model="statusForm.status" size="small" :options="userClassStatus" />
     </el-form>
 
     <template #footer>
-      <AppButton @click="$emit('update:modelValue', false)" size="large" :block="false" type="warning">
+      <AppButton @click="$emit('update:modelValue', false)" size="small" :block="false" type="warning">
         បោះបង់
       </AppButton>
-      <AppButton @click="handleUpdate" type="primary" :loading="saving" size="large" :block="false">
+      <AppButton @click="handleUpdate" type="primary" :loading="saving" size="small" :block="false">
         កែប្រែ
       </AppButton>
     </template>

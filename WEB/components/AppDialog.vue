@@ -72,7 +72,8 @@ onUnmounted(() => {
   overflow-y: auto;
   background-color: #e6eff9;
    /* background-color: #f8a2de; */
-   padding: 10px;
+  padding: 10px;
+  border-radius: 5px;
 }
 
 .app-dialog__footer {

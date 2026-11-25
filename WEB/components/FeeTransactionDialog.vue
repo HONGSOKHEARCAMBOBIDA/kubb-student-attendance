@@ -112,7 +112,7 @@ async function submit() {
           v-model="form.date"
           type="date"
           value-format="YYYY-MM-DD"
-          size="large"
+          size="small"
           style="width: 100%"
         />
       </el-form-item>
@@ -121,7 +121,7 @@ async function submit() {
         label="វិធីបង់ប្រាក់"
         v-model="form.method"
         placeholder="វិធីបង់ប្រាក់"
-        size="large"
+        size="small"
       >
       </AppInput>
       <AppInput
@@ -130,7 +130,7 @@ async function submit() {
         :min="0"
         :precision="2"
         :controls="false"
-        size="large"
+        size="small"
         style="width: 100%"
         disabled
       >
@@ -141,7 +141,7 @@ async function submit() {
         :min="0"
         :precision="2"
         :controls="false"
-        size="large"
+        size="small"
         style="width: 100%"
       >
       </AppInput>
@@ -151,7 +151,7 @@ async function submit() {
         :min="0"
         :precision="2"
         :controls="false"
-        size="large"
+        size="small"
         class="full"
       >
       </AppInput>

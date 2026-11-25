@@ -14,7 +14,7 @@
       :columns="[
         { slot: 'name', label: 'ឈ្មោះថ្នាក់', minWidth: 200 },
         //{ slot: 'major_name', label: 'ជំនាញ', Width: 100 },
-        { label: 'មហាវិទ្យាល័យ', slot: 'faculty', width: 150 },
+        { label: 'មហាវិទ្យាល័យ', slot: 'faculty', width: 200 },
         { slot: 'generation_name', label: 'ជំនាន់', width: 260 },
         //{ slot: 'programme_name', label: 'កម្មវិធីសិក្សា', Width: 60 },
         //{ prop: 'year', label: 'ឆ្នាំ', width: 60, align: 'center' },
@@ -53,11 +53,7 @@
         >
           <div>
             ថ្នាក់ៈ {{ row.name }},ជំនាញៈ {{ row.major_name }} |
-            {{ row.programme_name }}
-          </div>
-          <div></div>
-          <div>
-              ឆ្នាំទី{{ row.year }} | ឆមាសទី{{ row.semester }}
+            {{ row.programme_name }} |  ឆ្នាំទី{{ row.year }} | ឆមាសទី{{ row.semester }}
           </div>
         </div>
       </template>
@@ -88,7 +84,7 @@
         {{ row.type === "onclass" ? "ផ្ទាល់" : "អនឡាញ" }}
       </template>
 
-      <template #actions="{ row }">
+      <!-- <template #actions="{ row }">
         <el-tooltip content="កែប្រែ" placement="top">
           <AppButton
             :disabled="row.is_active === false"
@@ -185,9 +181,53 @@
             @click="$emit('exam', row)"
           />
         </el-tooltip>
-      </template>
+      </template> -->
 
       <template #expand="{ row }">
+        <el-divider content-position="right">
+ <AppButton
+            :disabled="row.is_active === false"
+            v-if="canEditClass"
+            @click="$emit('edit', row)"
+          >កែប្រែ</AppButton>
+<AppButton
+            v-if="canEditClass"
+            :type="row.is_active ? 'danger' : 'success'"
+            @click="$emit('toggle-status', row)"
+            plain
+          >បិទ/បើក ថ្នាក់</AppButton>
+          <AppButton
+            v-if="adminLevel"
+            :disabled="row.is_active === false"
+            @click="$emit('import', row)"
+          >បញ្ជូលសិស្សតាមExcell</AppButton>
+     <AppButton
+            v-if="adminLevel"
+            :disabled="row.is_active === false"
+            @click="$emit('copy', row)"
+          >Copy ទិន្ន័យសិស្សទៅថ្នាក់ផ្សេង</AppButton>
+ <AppButton
+            v-if="adminLevel"
+            :disabled="row.is_active === false"
+            @click="$emit('schedule', row)"
+          >បញ្ចូលម៉ោងសាស្រ្តាចារ្យ</AppButton>
+   <AppButton
+            v-if="adminLevel"
+            :disabled="row.is_active === false"
+            @click="$emit('score-import', row)"
+          >បញ្ចូលពិន្ទុតាម Excel</AppButton>
+  <AppButton
+            :disabled="row.is_active === false"
+            v-if="adminLevel"
+            @click="$emit('score-view', row)"
+          >មើលពិន្ទុ</AppButton>
+  <AppButton
+            :disabled="row.is_active === false"
+            v-if="adminLevel"
+            @click="$emit('exam', row)"
+          >កម្មវិធីប្រឡង</AppButton>
+        </el-divider>
+
         <ClassStudentsTable
           :class-row="row"
           :can-edit-class="canEditClass"

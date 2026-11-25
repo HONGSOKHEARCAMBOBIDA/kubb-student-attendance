@@ -65,7 +65,7 @@
         :total="total"
         @page-change="fetchUsers"
         :columns="columns"
-        actionsWidth="190"
+        actions-width="450"
       >
         <template #gender="{ row }">
           <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
@@ -106,16 +106,10 @@
           />
         </template>
         <template #actions="{ row }">
-          <el-tooltip content="កែប្រែ" placement="top">
             <AppButton
               v-if="canedit"
-              size="small"
-              icon="Edit"
-              type="warning"
-              circle
               @click="openEdit(row)"
-            />
-          </el-tooltip>
+            >កែប្រែ</AppButton>
           <!-- <el-tooltip content="បិទ" placement="top">
             <AppButton
               size="small"
@@ -126,35 +120,17 @@
             />
           </el-tooltip> -->
           <template v-if="isStudent(row)" >
-            <el-tooltip content="បង់ថ្លៃសិក្សា" placement="top">
               <AppButton
                 v-if="candaddfee"
-                size="small"
-                icon="ArrowRightBold"
-                type="success"
-                circle
                 @click="openFeeDialog(row)"
-              />
-            </el-tooltip>
-            <el-tooltip content="បង់ថ្លៃសេវាផ្សេងៗ" placement="top">
+              >បង់ថ្លៃសិក្សា</AppButton>
               <AppButton
                 v-if="candaddincome"
-                size="small"
-                icon="Money"
-                type="primary"
-                circle
                 @click="openIncomeDialog(row)"
-              />
-            </el-tooltip>
-            <el-tooltip content="មើលលំអិតពីការសិក្សា" placement="top">
+              >បង់ថ្លៃសេវាផ្សេងៗ</AppButton>
               <AppButton
-                size="small"
-                icon="View"
-                type="success"
-                circle
                  @click="openHistoryDialog(row)"
-              />
-            </el-tooltip>
+              >មើលលំអិតពីការសិក្សា</AppButton>
           </template>
         </template>
       </AppTable>
@@ -201,7 +177,7 @@
             <el-form-item label="ភេទ" prop="gender">
               <el-select
                 v-model="createForm.gender"
-                size="large"
+                size="small"
                 style="width: 100%"
               >
                 <el-option label="ប្រុស" :value="1" />
@@ -216,7 +192,7 @@
                 placeholder="ជ្រើសតួនាទី"
                 clearable
                 filterable
-                size="large"
+                size="small"
                 style="width: 100%"
               >
                 <el-option
@@ -234,7 +210,6 @@
       <template #footer>
         <AppButton
           @click="createDialog = false"
-          size="large"
           :block="false"
           type="warning"
         >
@@ -244,7 +219,6 @@
           @click="handleSave"
           type="primary"
           :loading="saving"
-          size="large"
           :block="false"
         >
           {{ isEdit ? "កែប្រែ" : "បង្កេីត" }}
@@ -377,12 +351,12 @@ const showTeacherColumn = computed(
 const columns = computed(() => {
   const base = [
     { prop: "name_kh", label: "ឈ្មោះខ្មែរ", minWidth: 130 },
-    { prop: "name_en", label: "ឈ្មោះឡាតាំង", minWidth: 130 },
+    { prop: "name_en", label: "ឈ្មោះឡាតាំង", width: 130 },
     ...(adminLevel.value
-      ? [{ prop: "code", label: "កូដ", minWidth: 110 }]
+      ? [{ prop: "code", label: "កូដ", width: 110 }]
       : []),
-    { slot: "gender", label: "ភេទ", minWidth: 90 },
-    { prop: "role_name", label: "តួនាទី", minWidth: 110 },
+    { slot: "gender", label: "ភេទ", width: 70 },
+    { prop: "role_name", label: "តួនាទី", width: 100 },
   ];
 
   const studentCols = [

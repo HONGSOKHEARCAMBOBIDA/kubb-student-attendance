@@ -15,31 +15,6 @@
       stretch="true"
     >
       <template #default>
-        <div class="form-row">
-          <AppSelect
-            v-model="filters.subject_id"
-            :options="subjectOptions"
-            label="មុខវិជ្ជា"
-            placeholder="ជ្រើសរើសមុខវិជ្ជា (ទាំងអស់)"
-            clearable
-            size="large"
-            @change="
-              () => {
-                page = 1;
-                fetchScoreView();
-              }
-            "
-          />
-          <AppInput
-            v-model.trim="filters.name"
-            label="ស្វែងរកឈ្មោះ/អត្តលេខ"
-            placeholder="ឈ្មោះ ឬ អត្តលេខ"
-            clearable
-            size="large"
-            @enter="fetchScoreView"
-          />
-        </div>
-
         <AppTable
           :data="scoreData"
           v-loading="loading"
@@ -47,6 +22,36 @@
           :show-pagination="false"
           actions-width="70"
         >
+          <template #filter>
+            <el-row :gutter="20">
+              <el-col :span="12">
+                <AppSelect
+                  v-model="filters.subject_id"
+                  :options="subjectOptions"
+                  label="មុខវិជ្ជា"
+                  placeholder="ជ្រើសរើសមុខវិជ្ជា (ទាំងអស់)"
+                  clearable
+                  size="large"
+                  @change="
+                    () => {
+                      page = 1;
+                      fetchScoreView();
+                    }
+                  "
+                />
+              </el-col>
+              <el-col :span="12">
+                <AppInput
+                  v-model.trim="filters.name"
+                  label="ស្វែងរកឈ្មោះ/អត្តលេខ"
+                  placeholder="ឈ្មោះ ឬ អត្តលេខ"
+                  clearable
+                  size="large"
+                  @enter="fetchScoreView"
+                />
+              </el-col>
+            </el-row>
+          </template>
           <template #name_kh="{ row }">
             <div>{{ row.name_kh }} | {{ row.name_en }}</div>
           </template>
@@ -54,7 +59,7 @@
             <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
           </template>
           <template #total="{ row }">
-            <el-text style="color: red" tab="b" size="large">
+            <el-text  :type="row.total === 0 ? 'danger' : 'primary'">
               {{ row.total }}
             </el-text>
           </template>
@@ -428,6 +433,10 @@ watch(
     filters.subject_id = null;
     filters.name = "";
     page.value = 1;
+    scoreData.value = [];
+    scoreReprotData.value = [];
+    total.value = 0;
+    activeTab.value = "default";
 
     try {
       const res = await getClassAvailableSubjects(props.classRow.id);
