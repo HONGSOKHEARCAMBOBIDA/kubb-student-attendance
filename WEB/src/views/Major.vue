@@ -322,8 +322,8 @@ const majorsubjectfilter = reactive({
   programme_id: null,
   generation_id: null,
   year: null,
-  semester: null
-})
+  semester: null,
+});
 
 const addingSubject = ref(false);
 const removingId = ref(null);
@@ -365,7 +365,12 @@ const subjectRules = {
 async function openSubjectsDialog(row) {
   activeMajor.value = row;
   Object.assign(subjectForm, defaultSubjectForm());
-  Object.assign(majorsubjectfilter, { programme_id: null, generation_id: null, year: null, semester: null });
+  Object.assign(majorsubjectfilter, {
+    programme_id: null,
+    generation_id: null,
+    year: null,
+    semester: null,
+  });
   subjectPagination.page = 1;
   subjectsDialogVisible.value = true;
   await Promise.all([fetchMajorSubjects(), searchSubjects()]);
@@ -381,7 +386,7 @@ async function fetchMajorSubjects() {
       programme_id: majorsubjectfilter.programme_id || undefined,
       generation_id: majorsubjectfilter.generation_id || undefined,
       year: majorsubjectfilter.year || undefined,
-      semester: majorsubjectfilter.semester || undefined
+      semester: majorsubjectfilter.semester || undefined,
     });
     majorSubjects.value = res.data.data || [];
     subjectPagination.total = res.data.pagination?.totalCount || 0;
@@ -462,7 +467,6 @@ const getYearType = (year) => {
 };
 
 async function handleRemoveSubject(row) {
-  
   try {
     await ElMessageBox.confirm(
       `តើអ្នកប្រាកដថាចង់លុបមុខវិជ្ជា "${row.subject_name_en}" មែនទេ?`,
@@ -471,14 +475,14 @@ async function handleRemoveSubject(row) {
         confirmButtonText: "លុប",
         cancelButtonText: "បោះបង់",
         type: "warning",
-      }
+      },
     );
     removingId.value = row.id;
     await removeMajorSubject(row.id);
     notify.success("លុបមុខវិជ្ជាជោគជ័យ");
     await fetchMajorSubjects();
   } catch (e) {
-        if (e !== "cancel" && e !== "close") {
+    if (e !== "cancel" && e !== "close") {
       notify.error(e.response?.data?.error || "មិនអាចលុបមុខវិជ្ជាបានទេ");
     }
   } finally {
@@ -495,7 +499,7 @@ onUnmounted(() => clearTimeout(searchTimer));
 
 <template>
   <div>
-    <AppFilterBar :fields="[{ slot: 'name', span: 8 }]" :action-span="4">
+    <AppFilterBar show-back :fields="[{ slot: 'name', span: 8 }]" :action-span="4">
       <template #name>
         <AppInput
           label="ស្វែងរក"
@@ -509,7 +513,6 @@ onUnmounted(() => clearTimeout(searchTimer));
       <template #actions>
         <AppButton
           v-if="canCreateMajor"
-          type="primary"
           @click="openCreateDialog"
         >
           បន្ថែមជំនាញ
@@ -532,7 +535,7 @@ onUnmounted(() => clearTimeout(searchTimer));
           { label: 'ឈ្មោះខ្មែរ', prop: 'name_kh', minWidth: 160 },
           { label: 'ឈ្មោះអង់គ្លេស', prop: 'name_en', minWidth: 160 },
           { label: 'មហាវិទ្យាល័យ', slot: 'faculty_name', minWidth: 160 },
-          { label: 'ស្ថានភាព', slot: 'status', width: 120 },
+          { label: 'ស្ថានភាព', slot: 'status', width: 70,align:'center' },
         ]"
       >
         <template #status="{ row }">
@@ -712,60 +715,73 @@ onUnmounted(() => clearTimeout(searchTimer));
         :columns="[
           { label: 'លេខកូដ', prop: 'subject_code', width: 90 },
           { label: 'ឈ្មោះ', slot: 'subject_name_kh', minWidth: 160 },
-          { label: 'ជំនាន់', prop: 'generation_name', width: 90,align:'center' },
-          { label: 'កម្មវិធីសិក្សា', prop: 'programme_name', width: 100,align:'center' },
-          { label: 'ម៉ោងក្រេឌីត', prop: 'credit_hour', width: 100,align:'center' },
-          { label: 'ឆ្នាំ', slot: 'year', width: 80,align:'center' },
-          { label: 'ឆមាស', prop: 'semester', width: 80,align:'center' },
-          { label: 'ស្ថានភាព', slot: 'status', width: 80,align:'center' },
+          {
+            label: 'ជំនាន់',
+            prop: 'generation_name',
+            width: 90,
+            align: 'center',
+          },
+          {
+            label: 'កម្មវិធីសិក្សា',
+            prop: 'programme_name',
+            width: 100,
+            align: 'center',
+          },
+          {
+            label: 'ម៉ោងក្រេឌីត',
+            prop: 'credit_hour',
+            width: 100,
+            align: 'center',
+          },
+          { label: 'ឆ្នាំ', slot: 'year', width: 80, align: 'center' },
+          { label: 'ឆមាស', prop: 'semester', width: 80, align: 'center' },
+          { label: 'ស្ថានភាព', slot: 'status', width: 80, align: 'center' },
         ]"
       >
-
-      <template #filter>
-        <el-row :gutter="8" >
-          <el-col :span="6">
-          <AppSelect
-            v-model="majorsubjectfilter.programme_id"
-            :options="programmes"
-            placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
-            filterable
-            clearable
-            @change="fetchMajorSubjects"
-          />
-          </el-col>
-          <el-col :span="6">
-          <AppSelect
-          v-model="majorsubjectfilter.generation_id"
-            :options="generations"
-            placeholder="ជ្រើសរើសជំនាន់"
-            filterable
-            clearable
-             @change="fetchMajorSubjects"
-          />
-          </el-col>
-          <el-col :span="6">
-          <AppInput
-            placeholder="ឆ្នាំ"
-            prop="year"
-            v-model.number="majorsubjectfilter.year"
-            type="number"
-            size="large"
-            @enter="fetchMajorSubjects"
-          />
-          </el-col>
-          <el-col :span="6">
-          <AppInput
-            placeholder="ឆមាស"
-            prop="semester"
-            v-model.number="majorsubjectfilter.semester"
-            type="number"
-            size="large"
-            @enter="fetchMajorSubjects"
-          />
-          </el-col>
-        </el-row>
-
-      </template>
+        <template #filter>
+          <el-row :gutter="8">
+            <el-col :span="6">
+              <AppSelect
+                v-model="majorsubjectfilter.programme_id"
+                :options="programmes"
+                placeholder="ជ្រើសរើសកម្មវិធីសិក្សា"
+                filterable
+                clearable
+                @change="fetchMajorSubjects"
+              />
+            </el-col>
+            <el-col :span="6">
+              <AppSelect
+                v-model="majorsubjectfilter.generation_id"
+                :options="generations"
+                placeholder="ជ្រើសរើសជំនាន់"
+                filterable
+                clearable
+                @change="fetchMajorSubjects"
+              />
+            </el-col>
+            <el-col :span="6">
+              <AppInput
+                placeholder="ឆ្នាំ"
+                prop="year"
+                v-model.number="majorsubjectfilter.year"
+                type="number"
+                size="large"
+                @enter="fetchMajorSubjects"
+              />
+            </el-col>
+            <el-col :span="6">
+              <AppInput
+                placeholder="ឆមាស"
+                prop="semester"
+                v-model.number="majorsubjectfilter.semester"
+                type="number"
+                size="large"
+                @enter="fetchMajorSubjects"
+              />
+            </el-col>
+          </el-row>
+        </template>
 
         <template #year="{ row }">
           <el-text :type="getYearType(row.year)">

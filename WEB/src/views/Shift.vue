@@ -10,6 +10,7 @@ import {
   addShift,
   editShift,
 } from "../api/services.js";
+import AppFilterBar from "../../components/AppFilterBar.vue";
 
 const notify = useNotification();
 
@@ -107,12 +108,13 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="toolbar">
-      <AppButton type="primary" @click="openCreateDialog">
+    <AppFilterBar show-back>
+      <template #actions>
+      <AppButton  @click="openCreateDialog">
         បន្ថែមវេន
-      </AppButton>
-    </div>
-
+      </AppButton>        
+      </template>
+    </AppFilterBar>
     <el-card class="table-card">
       <AppTable
         :show-pagination="false"

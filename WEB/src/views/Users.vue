@@ -1,6 +1,7 @@
 <template>
   <div>
     <AppFilterBar
+      show-back
       :fields="[
         { slot: 'name', span: 8 },
          { slot: 'role', span: 5 },
@@ -49,7 +50,7 @@
       </template> -->
 
       <template #add>
-        <AppButton v-if="candadd" type="primary" @click="openCreate">
+        <AppButton v-if="candadd"  @click="openCreate">
           បន្ថែម
         </AppButton>
       </template>

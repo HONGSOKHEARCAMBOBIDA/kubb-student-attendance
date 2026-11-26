@@ -21,7 +21,7 @@
     :data="filteredStudents"
     :columns="studentcolumn"
     :show-pagination="false"
-    actions-width="250px"
+    actions-width="575px"
   >
     <template #gender="{ row }">
       <el-text>{{ row.gender === 1 ? "ប្រុស" : "ស្រី" }}</el-text>
@@ -41,59 +41,29 @@
     </template>
 
     <template #actions="{ row: student }">
-      <el-tooltip content="បញ្ចូលពិន្ទុ" placement="top">
         <AppButton
           v-if="canAddScore"
-          size="small"
-          icon="EditPen"
-          type="primary"
-          circle
           @click="$emit('score-student', student)"
-        />
-      </el-tooltip>
-      <el-tooltip content="កែប្រែសិស្ស" placement="top">
+        >បញ្ចូលពិន្ទុ</AppButton>
         <AppButton
           v-if="canEditClass"
-          size="small"
-          icon="Edit"
-          type="warning"
-          circle
           @click="$emit('edit-student', student)"
-        />
-      </el-tooltip>
-      <el-tooltip content="Transcript" placement="top">
+        >កែប្រែសិស្ស</AppButton>
         <AppButton
           v-if="canEditClass"
-          size="small"
-          icon="View"
-          type="success"
-          circle
           :loading="loadingTranscript"
           @click="viewTranscript(student)"
-        />
-      </el-tooltip>
-      <el-tooltip content="លិខិតបញ្ជាក់ការសិក្សា" placement="top">
+        >Transcript</AppButton>
         <AppButton
           v-if="canEditClass"
-          size="small"
-          icon="Document"
-          type="success"
-          circle
           :loading="loadingConfirmation"
           @click="viewConfirmation(student)"
-        />
-      </el-tooltip>
-      <el-tooltip content="វិញ្ញាបនបត្របណ្ដោះអាសន្ន" placement="top">
+        >លិខិតបញ្ជាក់ការសិក្សា</AppButton>
         <AppButton
           v-if="canEditClass"
-          size="small"
-          icon="Files"
-          type="success"
-          circle
           :loading="temporaryloading"
           @click="viewTemporary(student)"
-        />
-      </el-tooltip>
+        >វិញ្ញាបនបត្របណ្ដោះអាសន្ន</AppButton>
     </template>
   </AppTable>
   <AppDialog

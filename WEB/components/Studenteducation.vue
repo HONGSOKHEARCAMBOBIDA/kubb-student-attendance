@@ -18,7 +18,7 @@
         <el-text>{{ studentRaw?.name_kh }} ({{ studentRaw?.code }})</el-text>
         <AppButton
           type="primary"
-          size="large"
+          size="small"
           :block="false"
           @click="openCreate"
         >
@@ -26,8 +26,8 @@
         </AppButton>
       </div>
 
-      <el-table :data="list" v-loading="loading" border style="width: 100%">
-        <el-table-column type="index" label="#" width="55" align="center" />
+      <el-table :data="list" size="small" v-loading="loading" border style="width: 100%">
+        <el-table-column type="index" label="ល.រ" width="55" align="center" />
         <el-table-column prop="level" label="កម្រិតសិក្សា" min-width="120" />
         <el-table-column prop="school_name" label="សាលា" min-width="160" />
         <el-table-column prop="start_date" label="ចាប់ផ្តើម" width="120" />
@@ -91,7 +91,7 @@
               type="date"
               value-format="YYYY-MM-DD"
               format="DD/MM/YYYY"
-              size="large"
+              size="small"
               style="width: 100%"
             />
           </el-form-item>
@@ -103,7 +103,7 @@
               type="date"
               value-format="YYYY-MM-DD"
               format="DD/MM/YYYY"
-              size="large"
+              size="small"
               style="width: 100%"
             />
           </el-form-item>
@@ -115,7 +115,7 @@
               type="date"
               value-format="YYYY-MM-DD"
               format="DD/MM/YYYY"
-              size="large"
+              size="small"
               style="width: 100%"
             />
           </el-form-item>
@@ -146,7 +146,7 @@
       <template v-if="!showForm">
         <AppButton
           @click="emit('update:modelValue', false)"
-          size="large"
+          size="small"
           :block="false"
           type="warning"
         >
@@ -156,7 +156,7 @@
       <template v-else>
         <AppButton
           @click="showForm = false"
-          size="large"
+          size="small"
           :block="false"
           type="warning"
         >
@@ -166,7 +166,7 @@
           @click="handleSave"
           type="primary"
           :loading="saving"
-          size="large"
+          size="small"
           :block="false"
         >
           {{ isEdit ? "កែប្រែ" : "បង្កេីត" }}

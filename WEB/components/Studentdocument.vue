@@ -18,7 +18,7 @@
         <el-text>{{ studentRaw?.name_kh }} ({{ studentRaw?.code }})</el-text>
         <AppButton
           type="primary"
-          size="large"
+          size="small"
           :block="false"
           @click="openCreate"
         >
@@ -26,8 +26,8 @@
         </AppButton>
       </div>
 
-      <el-table :data="list" v-loading="loading" border style="width: 100%">
-        <el-table-column type="index" label="#" width="55" align="center" />
+      <el-table size="small" :data="list" v-loading="loading" border style="width: 100%">
+        <el-table-column type="index" label="ល.រ" width="55" align="center" />
         <el-table-column
           prop="document_type_name"
           label="ប្រភេទឯកសារ"
@@ -85,7 +85,7 @@
               v-model="form.document_type_id"
               placeholder="ជ្រើសរើសប្រភេទឯកសារ"
               filterable
-              size="large"
+              size="small"
               style="width: 100%"
             >
               <el-option
@@ -103,7 +103,7 @@
               v-model="form.required_qty"
               :min="0"
               :max="255"
-              size="large"
+              size="small"
               style="width: 100%"
             />
           </el-form-item>
@@ -114,7 +114,7 @@
               v-model="form.received_qty"
               :min="0"
               :max="255"
-              size="large"
+              size="small"
               style="width: 100%"
             />
           </el-form-item>
@@ -136,7 +136,7 @@
       <template v-if="!showForm">
         <AppButton
           @click="emit('update:modelValue', false)"
-          size="large"
+          size="small"
           :block="false"
           type="warning"
         >
@@ -146,7 +146,7 @@
       <template v-else>
         <AppButton
           @click="showForm = false"
-          size="large"
+          size="small"
           :block="false"
           type="warning"
         >
@@ -156,7 +156,7 @@
           @click="handleSave"
           type="primary"
           :loading="saving"
-          size="large"
+          size="small"
           :block="false"
         >
           {{ isEdit ? "កែប្រែ" : "បង្កេីត" }}

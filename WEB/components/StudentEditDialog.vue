@@ -7,27 +7,27 @@
   >
     <el-form :model="studentForm" ref="studentFormRef" label-position="top">
       <el-form-item label="ឈ្មោះខ្មែរ" prop="name_kh">
-        <el-input v-model.trim="studentForm.name_kh" size="large" />
+        <el-input v-model.trim="studentForm.name_kh" size="small" />
       </el-form-item>
       <el-form-item label="ឈ្មោះឡាតាំង" prop="name_en">
-        <el-input v-model.trim="studentForm.name_en" size="large" />
+        <el-input v-model.trim="studentForm.name_en" size="small" />
       </el-form-item>
       <el-form-item label="ភេទ" prop="gender">
-        <el-radio-group v-model="studentForm.gender" size="large">
+        <el-radio-group v-model="studentForm.gender" size="small">
           <el-radio-button :value="1">ប្រុស</el-radio-button>
           <el-radio-button :value="2">ស្រី</el-radio-button>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="អត្តលេខ" prop="code">
-        <el-input v-model.trim="studentForm.code" size="large" />
+        <el-input v-model.trim="studentForm.code" size="small" />
       </el-form-item>
     </el-form>
 
     <template #footer>
-      <AppButton @click="$emit('update:modelValue', false)" size="large" :block="false" type="warning">
+      <AppButton @click="$emit('update:modelValue', false)" size="small" :block="false" type="warning">
         បោះបង់
       </AppButton>
-      <AppButton @click="handleSave" type="primary" :loading="saving" size="large" :block="false">
+      <AppButton @click="handleSave" type="primary" :loading="saving" size="small" :block="false">
         កែប្រែ
       </AppButton>
     </template>

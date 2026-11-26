@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { ref, reactive, computed, onMounted } from "vue";
 
 import { useNotification } from "../../composables/useNotification.js";
@@ -7,89 +7,33 @@ import AppButton from "../../components/AppButton.vue";
 import AppDialog from "../../components/AppDialog.vue";
 import AppInput from "../../components/AppInput.vue";
 import AppFilterBar from "../../components/AppFilterBar.vue";
-import { importsubjectexcell } from "../api/services.js";
 import {
   getSubject,
   addSubject,
   editSubject,
   toggleSubject,
+  importsubjectexcell,
 } from "../api/services.js";
 import { ElMessageBox } from "element-plus";
 import { useUserDataStore } from "../stores/user_data.js";
-import type { FormInstance, FormRules } from "element-plus";
-const importing = ref(false);
-async function handleImport(file: File) {
-  try {
-    await ElMessageBox.confirm(
-      `តើអ្នកចង់នាំចូលឯកសារ "${file.name}" មែនទេ?`,
-      "បញ្ជាក់ការនាំចូល",
-      {
-        confirmButtonText: "នាំចូល",
-        cancelButtonText: "បោះបង់",
-        type: "warning",
-      },
-    );
-  } catch {
-    return; // user clicked cancel
-  }
-
-  importing.value = true;
-  try {
-    await importsubjectexcell(file);
-    notify.success("នាំចូលជោគជ័យ");
-    await fetchSubject();
-  } catch (error) {
-    notify.error((error as ApiError).response?.data?.error || "នាំចូលមិនបានជោគជ័យ");
-  } finally {
-    importing.value = false;
-  }
-}
-interface Subject {
-  id: number;
-  code: string;
-  name_kh: string;
-  name_en: string;
-  credit_hour: number;
-  is_active: boolean;
-}
-
-interface SubjectForm {
-  code: string;
-  name_kh: string;
-  name_en: string;
-  credit_hour: number | null;
-}
-
-interface Pagination {
-  page: number;
-  page_size: number;
-  total: number;
-}
-
-interface ApiError {
-  response?: {
-    data?: {
-      error?: string;
-    };
-  };
-}
 
 const notify = useNotification();
 const userDataStore = useUserDataStore();
 
-const subjects = ref<Subject[]>([]);
+const subjects = ref([]);
 const loading = ref(false);
 const submitting = ref(false);
+const importing = ref(false);
 
-const togglingId = ref<number | null>(null);
-const editingId = ref<number | null>(null);
+const togglingId = ref(null);
+const editingId = ref(null);
 
-const formRef = ref<FormInstance>();
+const formRef = ref();
 
 const dialogVisible = ref(false);
 const isEditMode = ref(false);
 
-const pagination = reactive<Pagination>({
+const pagination = reactive({
   page: 1,
   page_size: 15,
   total: 0,
@@ -101,16 +45,16 @@ const filter = reactive({
   name: "",
 });
 
-const defaultForm = (): SubjectForm => ({
+const defaultForm = () => ({
   code: "",
   name_kh: "",
   name_en: "",
   credit_hour: null,
 });
 
-const form = reactive<SubjectForm>(defaultForm());
+const form = reactive(defaultForm());
 
-const rules: FormRules<SubjectForm> = {
+const rules = {
   code: [
     {
       required: true,
@@ -202,6 +146,42 @@ function handlePageChange() {
   fetchSubject();
 }
 
+// ==================== Import ====================
+
+async function handleImport(file) {
+  try {
+    await ElMessageBox.confirm(
+      `តើអ្នកចង់នាំចូលឯកសារ "${file.name}" មែនទេ?`,
+      "បញ្ជាក់ការនាំចូល",
+      {
+        confirmButtonText: "នាំចូល",
+        cancelButtonText: "បោះបង់",
+        type: "warning",
+      },
+    );
+  } catch {
+    return; // user clicked cancel
+  }
+
+  importing.value = true;
+
+  try {
+    await importsubjectexcell(file);
+
+    notify.success("នាំចូលជោគជ័យ");
+
+    await fetchSubject();
+  } catch (error) {
+    notify.error(error.response?.data?.error || "នាំចូលមិនបានជោគជ័យ");
+  } finally {
+    importing.value = false;
+  }
+}
+
+function handleUploadRequest(options) {
+  return handleImport(options.file);
+}
+
 // ==================== Create ====================
 
 function openCreateDialog() {
@@ -215,7 +195,7 @@ function openCreateDialog() {
 
 // ==================== Edit ====================
 
-function openEditDialog(row: Subject) {
+function openEditDialog(row) {
   isEditMode.value = true;
   editingId.value = row.id;
 
@@ -255,9 +235,7 @@ async function handleSubmit() {
 
     await fetchSubject();
   } catch (error) {
-    const apiError = error as ApiError;
-
-    notify.error(apiError.response?.data?.error || "មានបញ្ហាក្នុងការរក្សាទុក");
+    notify.error(error.response?.data?.error || "មានបញ្ហាក្នុងការរក្សាទុក");
   } finally {
     submitting.value = false;
   }
@@ -265,7 +243,7 @@ async function handleSubmit() {
 
 // ==================== Toggle Status ====================
 
-async function handleToggle(row: Subject) {
+async function handleToggle(row) {
   togglingId.value = row.id;
 
   try {
@@ -275,9 +253,7 @@ async function handleToggle(row: Subject) {
 
     await fetchSubject();
   } catch (error) {
-    const apiError = error as ApiError;
-
-    notify.error(apiError.response?.data?.error || "មិនអាចប្តូរស្ថានភាពបានទេ");
+    notify.error(error.response?.data?.error || "មិនអាចប្តូរស្ថានភាពបានទេ");
   } finally {
     togglingId.value = null;
   }
@@ -294,8 +270,11 @@ onMounted(() => {
   <div>
     <!-- Filter -->
     <AppFilterBar :fields="[
-      { slot: 'name', span: 8 },
-      ]" >
+      { slot: 'name', span: 6 }
+      
+    ]"
+    show-back
+    >
       <template #name>
         <AppInput
           label="ស្វែងរក"
@@ -307,11 +286,11 @@ onMounted(() => {
           @clear="handleClearSearch"
         />
       </template>
-      <template #actions>
-  <AppButton v-if="canCreateSubject" @click="openCreateDialog">
-    បន្ថែមមុខវិជ្ជា
-  </AppButton>
 
+      <template #actions>
+        <AppButton v-if="canCreateSubject" @click="openCreateDialog">
+          បន្ថែមមុខវិជ្ជា
+        </AppButton>
       </template>
     </AppFilterBar>
 
@@ -339,16 +318,17 @@ onMounted(() => {
           },
         ]"
       >
-      <template #filter>
-    <el-upload
-    v-if="canCreateSubject"
-    :show-file-list="false"
-    accept=".xlsx"
-    :http-request="({ file }) => handleImport(file as File)"
-  >
-    <AppButton icon="Bottom" :loading="importing">នាំចូល</AppButton>
-  </el-upload>
-      </template>
+        <template #filter>
+          <el-upload
+            v-if="canCreateSubject"
+            :show-file-list="false"
+            accept=".xlsx"
+            :http-request="handleUploadRequest"
+          >
+            <AppButton icon="Bottom" :loading="importing">នាំចូល</AppButton>
+          </el-upload>
+        </template>
+
         <!-- Status -->
         <template #status="{ row }">
           <el-switch
@@ -422,7 +402,6 @@ onMounted(() => {
         </AppButton>
       </template>
     </AppDialog>
-    
   </div>
 </template>
 

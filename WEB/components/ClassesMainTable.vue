@@ -28,7 +28,7 @@
           width: 110,
           align: 'center',
         },
-        { label: 'ស្ថានភាព', slot: 'status', width: 89 },
+        { label: 'ស្ថានភាព', slot: 'status', width: 110, align: 'center' },
         { label: 'សិស្សសរុប', slot: 'total', width: 100 },
         { label: 'កាន់ដោយ', prop: 'controlled_by_name', minwidth: 100 },
       ]"

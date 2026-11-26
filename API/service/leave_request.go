@@ -663,7 +663,7 @@ func (s *leaveRequestService) GetNotPermissionLeave(ctx context.Context, pf requ
 			Joins("LEFT JOIN (SELECT attendance_id, COUNT(*) AS cnt FROM attendance_record GROUP BY attendance_id) ad ON ad.attendance_id = a.id").
 			Joins("LEFT JOIN class_schedule cs ON cs.class_id = uc.class_id AND cs.schedule_date = ?", checkDate).
 			Where("uc.is_active = ?", 1).
-			Where("uc.fee_status =?", model.FeeStatusUserClassACTIVE).
+			Where("uc.fee_status =? AND uc.status =?", model.FeeStatusUserClassACTIVE, model.UserClassStatusSTUDY).
 			Where("COALESCE(ad.cnt, 0) < cs.total_session")
 	}
 

@@ -1,10 +1,10 @@
 <template>
   <div class="filter-wrapper">
-    <!-- <div v-if="showBack" class="back-wrapper">
+    <div v-if="showBack" class="back-wrapper">
       <slot name="back" :goback="goback">
         <app-button circle icon="ArrowLeft" @click="goback()" />
       </slot>
-    </div> -->
+    </div>
 
     <el-row :gutter="2" class="filter-row">
       <el-col
@@ -59,6 +59,7 @@ const normalizedFields = computed(() => props.fields)
 .filter-actions {
   display: flex;
   justify-content: flex-end;
+  margin-left: auto;
 }
 
 @media (max-width: 768px) {

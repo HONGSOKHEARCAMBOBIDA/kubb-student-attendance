@@ -179,14 +179,14 @@ async function handleSave() {
               v-model="form.due_date"
               type="date"
               value-format="YYYY-MM-DD"
-              size="large"
+              size="small"
               style="width: 100%"
             />
           </el-form-item>
         </el-col>
         <el-col :xs="24" :sm="12">
           <el-form-item label="ពិពណ៌នា">
-            <el-input v-model="form.description" size="large" clearable />
+            <el-input v-model="form.description" size="small" clearable />
           </el-form-item>
         </el-col>
       </el-row>
@@ -200,7 +200,7 @@ async function handleSave() {
               v-model="row.income_category_id"
               placeholder="ជ្រើសប្រភេទ"
               label="ប្រភេទចំណូល"
-              size="large"
+              size="small"
               filterable
               :options="incomecategories"
             >
@@ -311,7 +311,7 @@ async function handleSave() {
 
     <!-- payment -->
     <el-divider />
-    <el-checkbox size="large" border v-model="form.payNow"
+    <el-checkbox size="small" border v-model="form.payNow"
       >បង់ឥឡូវនេះ?</el-checkbox
     >
 
@@ -348,7 +348,7 @@ async function handleSave() {
     <template #footer>
       <AppButton
         @click="visible = false"
-        size="large"
+        size="small"
         :block="true"
         type="warning"
         plain
@@ -358,7 +358,7 @@ async function handleSave() {
         @click="handleSave"
         type="primary"
         :loading="saving"
-        size="large"
+        size="small"
         :block="true"
       >
         រក្សាទុក

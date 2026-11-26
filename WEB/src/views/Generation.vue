@@ -12,6 +12,7 @@ import {
   toggleGeneration,
 } from "../api/services.js";
 import { useUserDataStore } from "../stores/user_data.js";
+import AppFilterBar from "../../components/AppFilterBar.vue";
 
 const notify = useNotification();
 const userDataStore = useUserDataStore();
@@ -123,12 +124,13 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="toolbar">
-      <AppButton  type="primary" @click="openCreateDialog">
+    <AppFilterBar show-back>
+      <template #actions>
+      <AppButton  @click="openCreateDialog">
         បន្ថែមជំនាន់
       </AppButton>
-    </div>
-
+      </template>
+    </AppFilterBar>
     <el-card class="table-card">
       <AppTable
         :show-pagination="false"
@@ -147,6 +149,7 @@ onMounted(() => {
       >
         <template #status="{ row }">
           <el-switch
+            size="small"
             :model-value="row.is_active"
             :loading="togglingId === row.id"
             

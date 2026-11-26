@@ -354,7 +354,8 @@ func (s *attendanceservice) GetAttendanceDraft(ctx context.Context, id int) (res
         user_class.user_id = ?
         AND user_class.is_active = ?
         AND class.is_active = ?
-    `, user.ID, true, true).
+		AND user_class.status =?
+    `, user.ID, true, true, model.UserClassStatusSTUDY).
 		First(&userclass).Error; err != nil {
 		return response.AttendanceResponseDraft{}, fmt.Errorf(
 			"failed to load user class: %w",

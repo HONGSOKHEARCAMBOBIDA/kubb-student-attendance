@@ -131,7 +131,7 @@ async function handleSave() {
     >
       <template v-for="(p, i) in parents" :key="p.key">
         <el-divider v-if="i > 0" />
-        <h4 style="margin: 0 0 12px">{{ p.title }}</h4>
+        <h4 style="margin: 0 0 2px">{{ p.title }}</h4>
 
         <el-row :gutter="16">
           <el-col :xs="24" :sm="12" v-for="f in textFields" :key="f.suffix">
@@ -159,7 +159,7 @@ async function handleSave() {
     <template #footer>
       <AppButton
         @click="emit('update:modelValue', false)"
-        size="large"
+        size="small"
         :block="false"
         type="warning"
       >
@@ -169,7 +169,7 @@ async function handleSave() {
         @click="handleSave"
         type="primary"
         :loading="saving"
-        size="large"
+        size="small"
         :block="false"
       >
         {{ familyId ? "កែប្រែ" : "បង្កេីត" }}

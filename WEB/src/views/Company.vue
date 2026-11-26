@@ -98,7 +98,6 @@
       <template #actions>
         <AppButton
           v-if="canAddClass"
-          type="primary"
           @click="openCreate"
           :block="false"
         >
