@@ -403,11 +403,9 @@ async function searchSubjects(query) {
       page: 1,
       page_size: 10,
     };
-
     if (query.trim()) {
       params.name = query.trim();
     }
-
     const res = await getSubject(params);
 
     subjectOptions.value = (res.data.data || []).map((c) => ({
@@ -691,7 +689,6 @@ onUnmounted(() => clearTimeout(searchTimer));
           />
           <el-form-item label="បន្ថែមមុខវិជ្ជា" prop="" class="grow">
             <AppButton
-              type="primary"
               :loading="addingSubject"
               @click="handleAddSubject"
               block

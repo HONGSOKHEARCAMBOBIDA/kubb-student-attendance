@@ -22,7 +22,7 @@
           prefix-icon="Search"
           clearable
           @change="fetchAttendance"
-          size="large"
+          size="small"
         />
       </template>
       <template #date>
@@ -34,7 +34,7 @@
           clearable
           @change="fetchAttendance"
           style="width: 100%"
-          size="large"
+          size="small"
         />
       </template>
       <template #class>
@@ -45,7 +45,7 @@
           clearable
           filterable
           style="width: 100%"
-          size="large"
+          size="small"
           @change="onclasschange"
         />
       </template>
@@ -55,7 +55,7 @@
           :options="subjectOptions"
           :loading="subjectsLoading"
           placeholder="មុខវិជ្ជា"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="fetchAttendance"
@@ -66,7 +66,7 @@
           v-model="filters.programme_id"
           :options="programmes"
           placeholder="កម្មវិធីសិក្សា"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="onProgrammchange"
@@ -77,7 +77,7 @@
           v-model="filters.generation_id"
           :options="generations"
           placeholder="ជំនាន់"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="onGenerationchange"
@@ -88,7 +88,7 @@
           v-model="filters.major_id"
           :options="majors"
           placeholder="ជំនាញ"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="onMajorchange"
@@ -99,7 +99,7 @@
           v-model="filters.shift_id"
           :options="shifts"
           placeholder="វេនសិក្សា"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="onShiftchange"
@@ -110,7 +110,7 @@
           v-model="filters.year"
           :options="years"
           placeholder="ឆ្នាំសិក្សា"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="onYearchange"
@@ -121,7 +121,7 @@
           v-model="filters.semester"
           :options="semesters"
           placeholder="ឆមាស"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="onSemesterchange"
@@ -139,26 +139,28 @@
         :total="total"
         @page-change="fetchAttendance"
         :columns="[
-          { prop: 'name_kh', label: 'ឈ្មោះ', minWidth: 130 },
-          { prop: 'name_en', label: 'Name', minWidth: 130 },
-          { prop: 'code', label: 'កូដ', minWidth: 90 },
-          { label: 'ភេទ', slot: 'gender', minWidth: 80 },
-          { prop: 'class_name', label: 'ថ្នាក់', minWidth: 110 },
-          { prop: 'subject_name', label: 'មុខវិជ្ជា', minWidth: 110 },
-          { prop: 'check_date', label: 'ថ្ងៃស្កែន', minWidth: 110 },
-          { prop: 'status', label: 'ស្ថានភាពរួម', minWidth: 110 },
+          { slot: 'name_kh', label: 'ឈ្មោះ', width: 200 },
+          { prop: 'class_name', label: 'ថ្នាក់',width: 180 },
+          { prop: 'subject_name', label: 'មុខវិជ្ជា', width: 200 },
+          { prop: 'check_date', label: 'ថ្ងៃស្កែន',width: 110,align:'center' },
+        //  { prop: 'status', label: 'ស្ថានភាពរួម', minWidth: 110 },
           { label: 'កំណត់ត្រា', slot: 'records', minWidth: 260 },
         ]"
       >
-        <template #gender="{ row }">
-          {{ genderLabel(row.gender) }}
-        </template>
+      <template #name_kh="{row}">
+        <div>
+          {{ row.name_kh }} | {{ row.name_en }} | {{ genderLabel(row.gender) }}
+        </div>
+        <!-- <div>
+          {{ row.code }}
+        </div> -->
+      </template>
 
         <!-- render row.record (RecordResponse[]) exactly as it comes from the backend -->
         <template #records="{ row }">
           <div style="display: flex; flex-wrap: wrap; gap: 6px">
             <el-tag
-              size="large"
+              size="small"
               v-for="record in row.record"
               :key="record.id"
               :type="tagType(record.status)"
@@ -193,7 +195,7 @@
           v-model="editingStatus"
           placeholder="ជ្រើសរើសស្ថានភាព"
           style="width: 100%"
-          size="large"
+          size="small"
         >
           <el-option
             v-for="opt in statusOptions"

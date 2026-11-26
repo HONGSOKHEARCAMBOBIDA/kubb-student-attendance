@@ -6,11 +6,10 @@
         { slot: 'programm', span: 2 },
         { slot: 'generation', span: 2 },
         { slot: 'major', span: 2 },
+        { slot: 'class', span: 5 },
         { slot: 'shift', span: 2 },
         { slot: 'year', span: 2 },
         { slot: 'semester', span: 2 },
-        { slot: 'class', span: 5 },
-
         { slot: 'subject', span: 2 },
         { slot: 'date', span: 3 },
       ]"

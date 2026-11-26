@@ -22,7 +22,7 @@
           prefix-icon="Search"
           clearable
           @change="fetchData"
-          size="large"
+          size="small"
         >
         </AppInput>
       </template>
@@ -46,7 +46,7 @@
           :options="subjectOptions"
           :loading="subjectsLoading"
           placeholder="មុខវិជ្ជា"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="fetchData"
@@ -60,7 +60,7 @@
           filterable
           clearable
           style="width: 100%"
-          size="large"
+          size="small"
           @change="onclasschange"
         >
         </AppSelect>
@@ -70,7 +70,7 @@
           v-model="filters.programme_id"
           :options="programmes"
           placeholder="កម្មវិធីសិក្សា"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="onProgrammchange"
@@ -81,7 +81,7 @@
           v-model="filters.generation_id"
           :options="generations"
           placeholder="ជំនាន់"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="onGenerationchange"
@@ -92,7 +92,7 @@
           v-model="filters.major_id"
           :options="majors"
           placeholder="ជំនាញ"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="onMajorchange"
@@ -103,7 +103,7 @@
           v-model="filters.shift_id"
           :options="shifts"
           placeholder="វេនសិក្សា"
-          size="large"
+          size="small"
           filterable
           clearable
           @change="onShiftchange"
@@ -114,7 +114,7 @@
           v-model="filters.year"
           :options="years"
           placeholder="ឆ្នាំសិក្សា"
-          size="large"
+          size="small"
           clearable
           @change="onYearchange"
         />
@@ -124,7 +124,7 @@
           v-model="filters.semester"
           :options="semesters"
           placeholder="ឆមាស"
-          size="large"
+          size="small"
           clearable
           @change="onSemesterchange"
         />
@@ -176,7 +176,7 @@
         @selection-change="(rows) => (selectedRows = rows)"
       >
         <template #name="{ row }">
-          <el-text size="large" tag="b" type="primary"
+          <el-text size="small" tag="b" type="primary"
             >{{ row.user_name_kh }} |
             <el-text>{{ row.user_name_en }}</el-text></el-text
           >
@@ -194,7 +194,7 @@
           >
         </template>
         <template #major="{ row }">
-          <el-text size="large" type="primary" tag="b">{{
+          <el-text size="small" type="primary" tag="b">{{
             row.major_name
           }}</el-text>
         </template>
@@ -516,7 +516,7 @@ onMounted(() => {
   fetchGeneration();
   fetchMajor();
   fetchShift();
-  fetchData();
+//  fetchData();
 });
 </script>
 

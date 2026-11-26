@@ -8,6 +8,7 @@ import AppFilterBar from "../../components/AppFilterBar.vue";
 import AppInput from "../../components/AppInput.vue";
 import { Delete } from "@element-plus/icons-vue";
 import { useUserDataStore } from "../stores/user_data.js";
+import AppDatePicker from "../../components/AppDatePicker.vue";
 const incomes = ref([]);
 const loading = ref(false);
 const page = ref(1);
@@ -92,8 +93,7 @@ onMounted(() => {
       <AppInput v-model="filters.name" placeholder="ស្វែងរកតាមឈ្មោះ" clearable />
     </template>
     <template #invoice_date>
-      <el-date-picker v-model="filters.income_date" type="date" value-format="YYYY-MM-DD" placeholder="ជ្រើសរើសថ្ងៃ"
-        clearable style="width: 100%" size="large" />
+      <AppDatePicker v-model="filters.income_date" placeholder="ជ្រើសរើសថ្ងៃ"></AppDatePicker>
     </template>
   </AppFilterBar>
 

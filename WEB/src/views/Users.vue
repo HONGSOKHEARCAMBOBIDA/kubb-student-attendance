@@ -354,7 +354,7 @@ const columns = computed(() => {
     { prop: "name_kh", label: "ឈ្មោះខ្មែរ", minWidth: 130 },
     { prop: "name_en", label: "ឈ្មោះឡាតាំង", width: 130 },
     ...(adminLevel.value
-      ? [{ prop: "code", label: "កូដ", width: 110 }]
+      ? [{ prop: "code", label: "កូដ", width: 140 }]
       : []),
     { slot: "gender", label: "ភេទ", width: 70 },
     { prop: "role_name", label: "តួនាទី", width: 100 },
