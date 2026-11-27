@@ -121,7 +121,7 @@ onMounted(() => {
         show-index
         :data="shifts"
         :loading="loading"
-        :actions-width="100"
+        :actions-width="70"
         :columns="[
           { label: 'ឈ្មោះវេន', prop: 'name', minWidth: 140 },
           { label: 'វេនទី១', prop: 'session1', minWidth: 120 },
@@ -132,15 +132,9 @@ onMounted(() => {
         ]"
       >
         <template #actions="{ row }">
-          <el-tooltip content="កែប្រែវេន" placement="top">
             <AppButton
-              size="small"
-              icon="Edit"
-              type="warning"
-              circle
               @click="openEditDialog(row)"
-            />
-          </el-tooltip>
+            >កែប្រែ</AppButton>
         </template>
       </AppTable>
     </el-card>
@@ -202,7 +196,7 @@ onMounted(() => {
 
       <template #footer>
         <AppButton @click="dialogVisible = false">បោះបង់</AppButton>
-        <AppButton type="primary" :loading="submitting" @click="handleSubmit">
+        <AppButton  :loading="submitting" @click="handleSubmit">
           រក្សាទុក
         </AppButton>
       </template>

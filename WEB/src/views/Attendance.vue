@@ -2,6 +2,7 @@
   <div>
     <!-- Filters -->
     <AppFilterBar
+      show-back
       :fields="[
         { slot: 'name', span: 2 },
         { slot: 'programm', span: 2 },
@@ -13,7 +14,7 @@
         { slot: 'class', span: 5 },
 
         { slot: 'subject', span: 2 },
-        { slot: 'date', span: 3 },
+        { slot: 'date', span: 2 },
       ]"
       :action-span="3"
     >

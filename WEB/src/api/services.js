@@ -158,11 +158,11 @@ export const editSubject = (id, data) => api.put(`/edit.subject/${id}`, data);
 export const toggleSubject = (id) => api.put(`/toggle.subject/${id}`);
 export const importsubjectexcell = (file) => {
   const fd = new FormData();
-  fd.append("file",file);
-  return api.post("/import.subject.excell",fd,{
+  fd.append("file", file);
+  return api.post("/import.subject.excell", fd, {
     headers: { "Content-Type": "multipart/form-data" },
-  })
-}
+  });
+};
 
 // Major
 export const addMajor = (data) => api.post("add.Major", data);
@@ -180,15 +180,16 @@ export const removeMajorSubject = (id) =>
 
 // class schedule
 
-export const getClassSchedule = (classId,params) =>
-  api.get(`/class/${classId}/schedule`,{params});
+export const getClassSchedule = (classId, params) =>
+  api.get(`/class/${classId}/schedule`, { params });
 export const getClassAvailableSubjects = (classId) =>
   api.get(`/class/${classId}/schedule/subjects`);
 export const createClassSchedule = (classId, data) =>
   api.post(`/class/${classId}/schedule`, data);
 export const toggleClassSchedule = (id) =>
   api.patch(`/class-schedule/${id}/toggle`);
-export const getMaojrSubjectforExam = (id) => api.get(`/view.major.exam.for.major.exam/${id}`)
+export const getMaojrSubjectforExam = (id) =>
+  api.get(`/view.major.exam.for.major.exam/${id}`);
 
 // score
 export const getGradecomponent = () => api.get("/view.grade.component");
@@ -288,8 +289,12 @@ export const getTemporaryCertificate = (id) =>
   api.get(`/view.report.temporary.certificate/${id}`);
 
 export const addMajorExam = (data) => api.post("/add.major.exam", data);
-export const getMajorExam = (params) => api.get(`/view.major.exam`, {params});
+export const getMajorExam = (params) => api.get(`/view.major.exam`, { params });
 export const updateMajorExam = (id, data) =>
   api.put(`/update.major.exam/${id}`, data);
 export const toggleMajorExam = (id) => api.put(`/toggle.major.exam/${id}`);
 export const removeMajorExam = (id) => api.delete(`/delete.major.exam/${id}`);
+
+export const addschoolarship = (data) => api.post("/add.schoolarship", data);
+export const updateschoolarship = (id,data) =>
+  api.put(`/update.schoolarhip/${id}`, data);

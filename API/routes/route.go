@@ -41,6 +41,7 @@ func SetupRoutes(r *gin.Engine) {
 	locationcontroller := controller.NewLocationController(locationservice)
 	feecontroller := controller.NewFeeController(feeservice)
 	incomecontroller := controller.NewIncomeController(incomeservice)
+	schoolarshipcontroller := controller.NewSchoolarshipController()
 	r.Static("/clientimage", "./public/clientimage")
 	r.Static("/uploads", "./uploads")
 	r.GET("/health", func(ctx *gin.Context) {
@@ -256,5 +257,9 @@ func SetupRoutes(r *gin.Engine) {
 		auth.GET(route.ViewReportWeekSchedule, middleware.PermissionMiddleware(permission.ViewReport), reportcontroller.GetWeekSchedule)
 		auth.GET(route.ViewReportAcademicConfirmation, middleware.PermissionMiddleware(permission.ViewReport), reportcontroller.AcademicConfirmation)
 		auth.GET(route.ViewReportTemporaryCertificate, middleware.PermissionMiddleware(permission.ViewReport), reportcontroller.TemporaryCertificate)
+
+		// Schoolarship
+		auth.POST(route.AddSchoolarship, middleware.PermissionMiddleware(permission.AddSchoolarship), schoolarshipcontroller.CreateSchoolarship)
+		auth.PUT(route.UpdateSchoolarship, middleware.PermissionMiddleware(permission.UpdateSchoolarship), schoolarshipcontroller.UpdateSchoolarship)
 	}
 }

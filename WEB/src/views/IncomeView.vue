@@ -85,7 +85,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <AppFilterBar :fields="[
+  <AppFilterBar show-back :fields="[
     { slot: 'name', span: 5 },
     { slot: 'invoice_date', span: 5 },
   ]">

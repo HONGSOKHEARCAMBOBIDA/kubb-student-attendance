@@ -134,6 +134,13 @@ const actions = computed(() => [
     show: viewIncome.value
   },
   {
+    label: 'អាហារូបករណ៍',
+    description: 'ចំណូលប្រភេទអាហារូបករណ៍សំខាន់ៗក្រៅពីថ្លៃសិក្សា',
+    path: '/Schoolarship',
+    icon: 'School',
+    show: true
+  },
+  {
     label: 'របាយការណ៍ផ្សេងៗ',
     description: 'របាយការណ៍ផ្សេងៗ',
     path: '/Report',

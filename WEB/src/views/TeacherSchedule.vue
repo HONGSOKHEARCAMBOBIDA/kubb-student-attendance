@@ -2,6 +2,7 @@
   <div>
     <h1 style="margin-bottom: 16px">កាលវិភាគប្រចាំសប្ដាហ៍</h1>
 <AppFilterBar
+   show-back
   :fields="[
     { slot: 'programm', span: 5 },
     { slot: 'generation', span: 5 },

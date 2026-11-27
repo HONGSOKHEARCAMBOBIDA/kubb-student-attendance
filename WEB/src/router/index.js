@@ -207,6 +207,12 @@ const routes = [
         meta: { title: "បញ្ជីចំណូល", showInNav: false }, // no showInNav -> hidden from sidebar
       },
       {
+        path: "Schoolarship",
+        name: "Schoolarship",
+        component: () => import("../views/Schoolarship.vue"),
+        meta: { title: "អាហារូបករណ៍", showInNav: false }, // no showInNav -> hidden from sidebar
+      },
+      {
         path: "Report",
         name: "Report",
         component: () => import("../views/Report.vue"),

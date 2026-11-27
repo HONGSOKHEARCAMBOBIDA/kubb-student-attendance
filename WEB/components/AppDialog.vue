@@ -70,8 +70,9 @@ onUnmounted(() => {
 .app-dialog__body {
   max-height: 70vh;
   overflow-y: auto;
-  background-color: #e6eff9;
+  /* background-color: #e6eff9; */
    /* background-color: #f8a2de; */
+  background-color: #ffcc99;
   padding: 10px;
   border-radius: 5px;
 }

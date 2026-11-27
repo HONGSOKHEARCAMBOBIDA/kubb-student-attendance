@@ -470,7 +470,7 @@ onUnmounted(() => clearTimeout(searchTimer));
 
 <template>
   <div>
-    <AppFilterBar :fields="[
+    <AppFilterBar show-back :fields="[
       { slot: 'name', span: 2 },
       { slot: 'programm', span: 2 },
       { slot: 'generation', span: 2 },

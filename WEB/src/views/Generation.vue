@@ -137,37 +137,29 @@ onMounted(() => {
         show-index
         :data="generations"
         :loading="loading"
-        :actions-width="140"
+        actions-width="70"
         :columns="[
           { label: 'លេខកូដ', prop: 'code', minWidth: 100 },
           { label: 'ឈ្មោះខ្មែរ', prop: 'name_kh', minWidth: 160 },
           { label: 'ឈ្មោះអង់គ្លេស', prop: 'name_en', minWidth: 160 },
-          { label: 'ឆ្នាំចាប់ផ្តើម', prop: 'start_year', width: 120 },
-          { label: 'ឆ្នាំបញ្ចប់', prop: 'end_year', width: 120 },
-          { label: 'ស្ថានភាព', slot: 'status', width: 120 },
+          { label: 'ឆ្នាំចាប់ផ្តើម', prop: 'start_year', width: 120,align:'center' },
+          { label: 'ឆ្នាំបញ្ចប់', prop: 'end_year', width: 120,align:'center' },
+          { label: 'ស្ថានភាព', slot: 'status', width: 70,align:'center' },
         ]"
       >
         <template #status="{ row }">
           <el-switch
             size="small"
             :model-value="row.is_active"
-            :loading="togglingId === row.id"
-            
+            :loading="togglingId === row.id"            
             @change="handleToggle(row)"
           />
         </template>
 
         <template #actions="{ row }">
-          <el-tooltip content="កែប្រែជំនាន់" placement="top">
-            <AppButton
-             
-              size="small"
-              icon="Edit"
-              type="warning"
-              circle
+            <AppButton 
               @click="openEditDialog(row)"
-            />
-          </el-tooltip>
+            >កែប្រែ</AppButton>
         </template>
       </AppTable>
     </el-card>
@@ -222,7 +214,7 @@ onMounted(() => {
 
       <template #footer>
         <AppButton @click="dialogVisible = false">បោះបង់</AppButton>
-        <AppButton type="primary" :loading="submitting" @click="handleSubmit">
+        <AppButton  :loading="submitting" @click="handleSubmit">
           រក្សាទុក
         </AppButton>
       </template>

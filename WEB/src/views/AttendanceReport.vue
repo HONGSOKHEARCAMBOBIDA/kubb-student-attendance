@@ -1,6 +1,7 @@
 <template>
   <div>
     <AppFilterBar
+      show-back
       :fields="[
         { slot: 'name', span: 2 },
         { slot: 'programm', span: 2 },
@@ -11,7 +12,7 @@
         { slot: 'year', span: 2 },
         { slot: 'semester', span: 2 },
         { slot: 'subject', span: 2 },
-        { slot: 'date', span: 3 },
+        { slot: 'date', span: 2 },
       ]"
       :action-span="3"
     >

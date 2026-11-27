@@ -129,4 +129,7 @@ const (
 	UpdateMajorExam = "update.major.exam"
 	ToggleMajorExam = "toggle.major.exam"
 	RemoveMajorExam = "delete.major.exam"
+
+	AddSchoolarship    = "add.schoolarship"
+	UpdateSchoolarship = "update.schoolarhip"
 )

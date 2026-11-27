@@ -53,7 +53,9 @@
         >
           <div>
             ថ្នាក់ៈ {{ row.name }},ជំនាញៈ {{ row.major_name }} |
-            {{ row.programme_name }} |  ឆ្នាំទី{{ row.year }} | ឆមាសទី{{ row.semester }}
+            {{ row.programme_name }} | ឆ្នាំទី{{ row.year }} | ឆមាសទី{{
+              row.semester
+            }}
           </div>
         </div>
       </template>
@@ -185,47 +187,55 @@
 
       <template #expand="{ row }">
         <el-divider content-position="right">
- <AppButton
+          <AppButton
             :disabled="row.is_active === false"
             v-if="canEditClass"
             @click="$emit('edit', row)"
-          >កែប្រែ</AppButton>
-<AppButton
+            >កែប្រែ</AppButton
+          >
+          <AppButton
             v-if="canEditClass"
             :type="row.is_active ? 'danger' : 'success'"
             @click="$emit('toggle-status', row)"
             plain
-          >បិទ/បើក ថ្នាក់</AppButton>
+            >បិទ/បើក ថ្នាក់</AppButton
+          >
           <AppButton
             v-if="adminLevel"
             :disabled="row.is_active === false"
             @click="$emit('import', row)"
-          >បញ្ជូលសិស្សតាមExcell</AppButton>
-     <AppButton
+            >បញ្ជូលសិស្សតាមExcell</AppButton
+          >
+          <AppButton
             v-if="adminLevel"
             :disabled="row.is_active === false"
             @click="$emit('copy', row)"
-          >Copy ទិន្ន័យសិស្សទៅថ្នាក់ផ្សេង</AppButton>
- <AppButton
+            >Copy ទិន្ន័យសិស្សទៅថ្នាក់ផ្សេង</AppButton
+          >
+          <AppButton
             v-if="adminLevel"
             :disabled="row.is_active === false"
             @click="$emit('schedule', row)"
-          >បញ្ចូលម៉ោងសាស្រ្តាចារ្យ</AppButton>
-   <AppButton
+            >បញ្ចូលម៉ោងសាស្រ្តាចារ្យ</AppButton
+          >
+          <AppButton
             v-if="adminLevel"
             :disabled="row.is_active === false"
             @click="$emit('score-import', row)"
-          >បញ្ចូលពិន្ទុតាម Excel</AppButton>
-  <AppButton
+            >បញ្ចូលពិន្ទុតាម Excel</AppButton
+          >
+          <AppButton
             :disabled="row.is_active === false"
             v-if="adminLevel"
             @click="$emit('score-view', row)"
-          >មើលពិន្ទុ</AppButton>
-  <AppButton
+            >មើលពិន្ទុ</AppButton
+          >
+          <AppButton
             :disabled="row.is_active === false"
             v-if="adminLevel"
             @click="$emit('exam', row)"
-          >កម្មវិធីប្រឡង</AppButton>
+            >កម្មវិធីប្រឡង</AppButton
+          >
         </el-divider>
 
         <ClassStudentsTable

@@ -211,4 +211,7 @@ const (
 	ToggleMajorExam          = "toggle.major.exam/:id"
 	RemoveMajorExam          = "delete.major.exam/:id"
 	GetMajorExamForMajorExam = "view.major.exam.for.major.exam/:id"
+
+	AddSchoolarship    = "add.schoolarship"
+	UpdateSchoolarship = "update.schoolarhip/:id"
 )
