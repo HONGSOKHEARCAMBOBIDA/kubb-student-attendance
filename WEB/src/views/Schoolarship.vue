@@ -16,6 +16,7 @@ import type {
   SchoolarshipRequestCreate,
   SchoolarshipRequestUpdate,
 } from "../types/schoolarship";
+import AppInput from "../../components/AppInput.vue";
 
 const schoolarships = ref<Schoolarhisp[]>([]);
 const loading = ref<boolean>(false);
@@ -83,21 +84,31 @@ const rules = computed<FormRules>(() => ({
   ],
 }));
 
-
-watch(
-  () => currentForm.value.discount_type,
-  (type) => {
-    if (type === "percentage") currentForm.value.discount_amount = null;
-    else if (type === "amount") currentForm.value.discount_percentage = null;
-  },
-);
+// watch(
+//   () => currentForm.value.discount_type,
+//   (type) => {
+//     if (type === "percentage") currentForm.value.discount_amount = null;
+//     else if (type === "amount") currentForm.value.discount_percentage = null;
+//   },
+// );
 
 const columns = [
-  { prop: "code", label: "លេខកូដ" },
+  { prop: "code", label: "លេខកូដ", width: "120" },
   { prop: "name", label: "ឈ្មោះ" },
-  { prop: "discount_type", label: "ប្រភេទ" },
-  { prop: "discount_percentage", label: "បញ្ចុះភាគរយ" },
-  { prop: "discount_amount", label: "បញ្ចុះចំនួន" },
+  { slot: "discount_type", label: "ប្រភេទ", width: "90", align: "center" },
+  {
+    slot: "discount_percentage",
+    label: "បញ្ចុះភាគរយ",
+    width: "100",
+    align: "center",
+  },
+  {
+    slot: "discount_amount",
+    label: "បញ្ចុះចំនួន",
+    width: "100",
+    align: "center",
+  },
+   { slot: "active", label: "ស្ថានភាព", width: "90", align: "center" },
   { prop: "description", label: "ផ្សេងៗ" },
 ];
 
@@ -206,7 +217,7 @@ onMounted(() => {
 <template>
   <AppFilterBar show-back :fields="[]">
     <template #actions>
-        <AppButton @click="createschoolarshipdialog">បង្កើតថ្មី</AppButton>
+      <AppButton @click="createschoolarshipdialog">បង្កើតថ្មី</AppButton>
     </template>
   </AppFilterBar>
 
@@ -218,9 +229,25 @@ onMounted(() => {
     show-index
     actions-width="70"
   >
-
+    <template #discount_type="{ row }">
+      <div>
+        {{ row.discount_type === "percentage" ? "ភាគរយ" : "ចំនួនទឹកប្រាក់" }}
+      </div>
+    </template>
+    <template #discount_percentage="{ row }">
+      <div>{{ row.discount_percentage }}%</div>
+    </template>
+    <template #discount_amount="{ row }">
+      <div>{{ row.discount_amount }}$</div>
+    </template>
+    <template #active="{row}">
+      <el-text size="small" :type="row.active === true ? 'success' : 'danger'">{{ row.active === true ? 'កំពុងប្រើ' : 'ឈប់ប្រើ' }}</el-text>
+      <div></div>
+    </template>
     <template #actions="{ row }">
-      <AppButton @click="updateschoolarshipdialog(row as Schoolarhisp)">កែប្រែ</AppButton>
+      <AppButton @click="updateschoolarshipdialog(row as Schoolarhisp)"
+        >កែប្រែ</AppButton
+      >
     </template>
   </AppTable>
 
@@ -233,8 +260,6 @@ onMounted(() => {
     @cancel="dialogvisible = false"
     width="500px"
   >
-    <!-- FIX: `res` -> `ref` -->
-     
     <el-form
       ref="schoolarshipRef"
       label-position="top"
@@ -242,15 +267,16 @@ onMounted(() => {
       :rules="rules"
     >
       <el-form-item label="លេខកូដ" prop="code">
-        <el-input v-model="currentForm.code" placeholder="បញ្ចូលលេខកូដ" />
+        <el-input size="small" v-model="currentForm.code" placeholder="បញ្ចូលលេខកូដ" />
       </el-form-item>
 
       <el-form-item label="ឈ្មោះ" prop="name">
-        <el-input v-model="currentForm.name" placeholder="បញ្ចូលឈ្មោះ" />
+        <el-input size="small" v-model="currentForm.name" placeholder="បញ្ចូលឈ្មោះ" />
       </el-form-item>
 
       <el-form-item label="ប្រភេទ" prop="discount_type">
         <el-select
+          size="small"
           v-model="currentForm.discount_type"
           placeholder="ជ្រើសរើសប្រភេទ"
           style="width: 100%"
@@ -264,12 +290,9 @@ onMounted(() => {
         </el-select>
       </el-form-item>
 
-      <el-form-item
-        v-if="currentForm.discount_type === 'percentage'"
-        label="បញ្ចុះភាគរយ (%)"
-        prop="discount_percentage"
-      >
+      <el-form-item label="បញ្ចុះភាគរយ (%)" prop="discount_percentage">
         <el-input-number
+          size="small"
           v-model="currentForm.discount_percentage"
           :min="0"
           :max="100"
@@ -277,12 +300,9 @@ onMounted(() => {
         />
       </el-form-item>
 
-      <el-form-item
-        v-if="currentForm.discount_type === 'amount'"
-        label="បញ្ចុះចំនួន"
-        prop="discount_amount"
-      >
+      <el-form-item label="បញ្ចុះចំនួន" prop="discount_amount">
         <el-input-number
+          size="small"
           v-model="currentForm.discount_amount"
           :min="0"
           style="width: 100%"
@@ -291,6 +311,7 @@ onMounted(() => {
 
       <el-form-item label="ផ្សេងៗ" prop="description">
         <el-input
+          size="small"
           v-model="currentForm.description"
           type="textarea"
           :rows="3"
@@ -299,21 +320,20 @@ onMounted(() => {
       </el-form-item>
 
       <el-form-item v-if="isEdit" label="សកម្ម" prop="active">
-        <el-switch v-model="updateschoolarshipform.active" />
+        <el-switch size="small" v-model="updateschoolarshipform.active" />
       </el-form-item>
 
-    <el-row :gutter="20">
-      <el-col :span="12">
-        <AppButton block @click="dialogvisible = false">ចាកចេញ</AppButton>
-      </el-col>
-      <el-col :span="12">
-        <AppButton block :loading="submitting" @click="handleSubmit">
-          បញ្ជូន
-        </AppButton>
-      </el-col>
-    </el-row>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <AppButton block @click="dialogvisible = false">ចាកចេញ</AppButton>
+        </el-col>
+        <el-col :span="12">
+          <AppButton block :loading="submitting" @click="handleSubmit">
+            បញ្ជូន
+          </AppButton>
+        </el-col>
+      </el-row>
     </el-form>
   </AppDialog>
 </template>
 
-<style scoped></style>

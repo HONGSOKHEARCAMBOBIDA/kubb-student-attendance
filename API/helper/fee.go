@@ -8,9 +8,9 @@ func CalculateDiscountBySchoolarship(amount float64, group *model.Schoolarship) 
 	}
 	switch group.DiscountType {
 	case model.DiscountPercentage:
-		return amount * (group.DiscountPercentage / 100)
+		return amount * (*group.DiscountPercentage / 100)
 	case model.DiscountAmount:
-		return group.DiscountAmount
+		return *group.DiscountAmount
 	default:
 		return 0
 	}

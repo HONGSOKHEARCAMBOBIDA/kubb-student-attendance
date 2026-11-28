@@ -19,6 +19,7 @@ import {
 } from "../src/api/services.js";
 import AppInput from "./AppInput.vue";
 import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
+import { CopyDocument } from "@element-plus/icons-vue"
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   classRow: { type: Object, default: null },
@@ -41,8 +42,26 @@ const DAYS = [
   { value: 6, label: "សៅរ៍" },
   { value: 7, label: "អាទិត្យ" },
 ];
+
 function dayLabel(v) {
   return DAYS.find((d) => d.value === v)?.label || v;
+}
+
+const MeetingType = [
+  { value: "GOOGLE_MEET", label: "GOOGLE_MEET" },
+  { value: "ZOOM", label: "ZOOM" },
+  { value: "MICROSOFT_TEAMS", label: "MICROSOFT_TEAMS" },
+  { value: "OTHER", label: "OTHER" },
+];
+
+const copyMeetingLink = async (link) => {
+  if (!link) return
+  try {
+    await navigator.clipboard.writeText(link)
+    ElMessage.success("បាន Copy Meeting Link ជោគជ័យ")
+  } catch (error) {
+    ElMessage.error("មិនអាច Copy Link បានទេ")
+  }
 }
 
 const schedules = ref([]);
@@ -93,7 +112,7 @@ function closeScheduleForm() {
 // class detail
 const detailFormRef = ref();
 const detailSubmitting = ref(false);
-const newDetailRow = () => ({ subject_id: null, credit: 0, teacher_id: null });
+const newDetailRow = () => ({ subject_id: null, credit: 0, teacher_id: null,meeting_type:null,meeting_link:"" });
 const detailForm = reactive({ rows: [newDetailRow()] });
 function addDetailRow() {
   detailForm.rows.push(newDetailRow());
@@ -181,6 +200,8 @@ const editDetail = reactive({
   teacher_id: null,
   midterm: null,
   final: null,
+  meeting_type: null,
+  meeting_link:""
 });
 
 function openEditDetail(row) {
@@ -191,6 +212,8 @@ function openEditDetail(row) {
     teacher_id: row.teacher_id,
     midterm: row.midterm,
     final: row.final,
+    meeting_type: row.meeting_type,
+    meeting_link: row.meeting_link
   });
   // available list excludes the current subject, so add it back
   editSubjects.value = [
@@ -252,15 +275,15 @@ const rules = {
 const submitting = ref(false);
 
 const classshedulefilter = reactive({
-  schedule_date:null,
-  teacher_id: null
-})
+  schedule_date: null,
+  teacher_id: null,
+});
 
 async function fetchSchedules() {
   if (!props.classRow) return;
   loading.value = true;
   try {
-    const res = await getClassSchedule(props.classRow.id,{
+    const res = await getClassSchedule(props.classRow.id, {
       schedule_date: classshedulefilter.schedule_date,
       teacher_id: classshedulefilter.teacher_id,
     });
@@ -505,6 +528,29 @@ watch(
               clearable
             />
           </el-form-item>
+          <el-form-item
+          label="ប្រភេទ Link"
+
+          >
+            <AppSelect
+              v-model="row.meeting_type"
+              :options="MeetingType"
+              placeholder="ជ្រើសរើសប្រភេទ Link"
+              size="large"
+              filterable
+              clearable
+            />
+          </el-form-item>
+
+          <el-form-item
+            label="Link"
+          >
+            <AppInput
+              v-model="row.meeting_link"
+              placeholder="Link"
+              size="large"
+            />
+          </el-form-item>
 
           <el-form-item label=" " class="remove-col">
             <AppButton
@@ -533,14 +579,43 @@ watch(
           :show-pagination="false"
           actions-width="250px"
           :columns="[
-            { label: 'មុខវិជ្ជា', prop: 'subject_name', minWidth: 100 },
-            { label: 'សាស្រ្តាចារ្យ', prop: 'teacher_name', minWidth: 100 },
-            { label: 'ក្រេឌីតត្រូវបង្រៀន', prop: 'credit', width: 110,align:'center' },
-            { label: 'ម៉ោងនៅសល់', slot: 'remaining_hours', width: 100,align:'center' },
-            { label: 'Midterm', slot: 'midterm', width: 100,align:'center' },
-            { label: 'Final', slot: 'final', width: 100,align:'center' },
+            { label: 'មុខវិជ្ជា', prop: 'subject_name', minWidth: 200 },
+            { label: 'សាស្រ្តាចារ្យ', prop: 'teacher_name', minWidth: 150 },
+            { label: 'ប្រភេទ Link បង្រៀន', prop: 'meeting_type', width: 150, align: 'center' },
+             { label: 'Link បង្រៀន', slot: 'meeting_link', minWidth: 150, align: 'center' },
+            {
+              label: 'ក្រេឌីតត្រូវបង្រៀន',
+              prop: 'credit',
+              width: 110,
+              align: 'center',
+            },
+            {
+              label: 'ម៉ោងនៅសល់',
+              slot: 'remaining_hours',
+              width: 100,
+              align: 'center',
+            },
+            { label: 'Midterm', slot: 'midterm', width: 100, align: 'center' },
+            { label: 'Final', slot: 'final', width: 100, align: 'center' },
           ]"
         >
+
+<template #meeting_link="{ row }">
+  <el-tooltip
+    :content="row.meeting_link ? 'ចុចដើម្បី Copy Link' : 'មិនទាន់មាន Link'"
+    placement="top"
+  >
+
+  <AppButton
+  type="primary"
+  link
+  block
+  :disabled="!row.meeting_link"
+  @click="copyMeetingLink(row.meeting_link)"
+  >{{ row.meeting_link }}</AppButton>
+  </el-tooltip>
+</template>
+
           <template #remaining_hours="{ row }">
             <div
               style="color: black"
@@ -550,27 +625,17 @@ watch(
             </div>
           </template>
           <template #midterm="{ row }">
-            <div>{{
-              row.midterm === false ? "មិនទាន់ប្រឡង" : "បានប្រឡង"
-            }}</div>
+            <div>{{ row.midterm === false ? "មិនទាន់ប្រឡង" : "បានប្រឡង" }}</div>
           </template>
           <template #final="{ row }">
-            <div>{{
-              row.final === false ? "មិនទាន់ប្រឡង" : "បានប្រឡង"
-            }}</div>
+            <div>{{ row.final === false ? "មិនទាន់ប្រឡង" : "បានប្រឡង" }}</div>
           </template>
           <template #actions="{ row }">
-              <AppButton
-                @click="openScheduleForm(row)"
-              >បញ្ចូលកាលវិភាគ</AppButton>
-              <AppButton
-                @click="openEditDetail(row)"
-              >កែប្រែ</AppButton>
-              <AppButton
-                @click="openEditDetail(row)"
-                type="danger"
-                plain
-              >លុប</AppButton>
+            <AppButton @click="openScheduleForm(row)">បញ្ចូលកាលវិភាគ</AppButton>
+            <AppButton @click="openEditDetail(row)">កែប្រែ</AppButton>
+            <AppButton @click="openEditDetail(row)" type="danger" plain
+              >លុប</AppButton
+            >
           </template>
         </AppTable>
       </el-card>
@@ -724,37 +789,81 @@ watch(
 
     <AppTable
       class="schedule-table"
-     
       :data="schedules"
       :loading="loading"
       :show-pagination="false"
       actions-width="90px"
       :columns="[
-        { label: 'លេខកូដ', prop: 'subject_code', minWidth: 100,align: 'center' },
-        { label: 'មុខវិជ្ជា', prop: 'subject_name_kh', minWidth: 160,align: 'center' },
-        { label: 'ថ្ងៃ', slot: 'day', width: 60,align: 'center' },
-        { label: 'កាលបរិច្ឆេទ', prop: 'schedule_date', width: 120,align: 'center' },
-        { label: 'Session សរុប', prop: 'total_session', width: 120,align: 'center' },
-        { label: 'និស្សិតសរុប', slot: 'total_student', width: 120,align: 'center' },
-        { label: 'បន្ទប់', prop: 'room', width: 70,align: 'center' },
-        { label: 'សាស្រ្តាចារ្យ', slot: 'name_kh', minWidth: 120,align: 'center' },
-        { label: 'តម្លៃម៉ោង', slot: 'hourly_rate', width: 120,align: 'center' },
-        { label: 'ប្រាក់ម៉ោងគ្រូសរុប', slot: 'total_rate', width: 150,align: 'center' },
-        { label: 'បង្កើតដោយ', prop: 'created_by', minWidth: 120,align: 'center' },
-        { label: 'ស្ថានភាព', slot: 'status', width: 80,align: 'center' },
-        { label: 'ផ្សេងៗ', slot: 'is_mission', width: 110,align: 'center' },
+        {
+          label: 'លេខកូដ',
+          prop: 'subject_code',
+          minWidth: 70,
+          align: 'center',
+        },
+        {
+          label: 'មុខវិជ្ជា',
+          prop: 'subject_name_kh',
+          minWidth: 160,
+          align: 'center',
+        },
+        { label: 'ថ្ងៃ', slot: 'day', minWidth: 60, align: 'center' },
+        {
+          label: 'កាលបរិច្ឆេទ',
+          prop: 'schedule_date',
+          width: 120,
+          align: 'center',
+        },
+        {
+          label: 'Session សរុប',
+          prop: 'total_session',
+          width: 120,
+          align: 'center',
+        },
+        {
+          label: 'និស្សិតសរុប',
+          slot: 'total_student',
+          width: 120,
+          align: 'center',
+        },
+        { label: 'បន្ទប់', prop: 'room', width: 70, align: 'center' },
+        {
+          label: 'សាស្រ្តាចារ្យ',
+          slot: 'name_kh',
+          minWidth: 120,
+          align: 'center',
+        },
+        {
+          label: 'តម្លៃម៉ោង',
+          slot: 'hourly_rate',
+          width: 120,
+          align: 'center',
+        },
+        {
+          label: 'ប្រាក់ម៉ោងគ្រូសរុប',
+          slot: 'total_rate',
+          width: 150,
+          align: 'center',
+        },
+        {
+          label: 'បង្កើតដោយ',
+          prop: 'created_by',
+          minWidth: 120,
+          align: 'center',
+        },
+        { label: 'ស្ថានភាព', slot: 'status', width: 80, align: 'center' },
+        { label: 'ផ្សេងៗ', slot: 'is_mission', width: 110, align: 'center' },
       ]"
     >
-    <template #filter>
-      <el-row :gutter="20">
-        <el-col :span="12">
-      <AppDatePicker
-      v-model="classshedulefilter.schedule_date"
-      @change="fetchSchedules"
-      ></AppDatePicker>
-        </el-col>
-        <el-col :span="12">
-      <AppSelect
+      <template #filter>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <AppDatePicker
+              v-model="classshedulefilter.schedule_date"
+              @change="fetchSchedules"
+            ></AppDatePicker>
+          </el-col>
+          <el-col :span="12">
+            <AppSelect
               v-model="classshedulefilter.teacher_id"
               :options="Teachers"
               placeholder="ជ្រើសរើសគ្រូបង្រៀន"
@@ -763,18 +872,14 @@ watch(
               clearable
               @change="fetchSchedules"
             />
-        </el-col>
-      </el-row>
-
-
-    </template>
+          </el-col>
+        </el-row>
+      </template>
       <template #is_mission="{ row }">
         <el-tag v-if="row.is_mission" type="warning">បេសកកម្ម</el-tag>
       </template>
       <template #total_student="{ row }">
-        <div 
-          >{{ row.total_student }} នាក់</div
-        >
+        <div>{{ row.total_student }} នាក់</div>
       </template>
       <template #name_kh="{ row }">
         <div>{{ row.name_kh }}</div>
@@ -805,10 +910,9 @@ watch(
         />
       </template>
       <template #actions="{ row }">
-          <AppButton
-            :disabled="!row.is_active"
-            @click="openEdit(row)"
-          >កែប្រែ</AppButton>
+        <AppButton :disabled="!row.is_active" @click="openEdit(row)"
+          >កែប្រែ</AppButton
+        >
       </template>
     </AppTable>
   </AppDialog>
@@ -951,6 +1055,18 @@ watch(
       :options="examstatus"
       size="large"
       filterable
+    />
+    <AppSelect
+      label="ប្រភេទ Link"
+      v-model="editDetail.meeting_type"
+      :options="MeetingType"
+      size="large"
+      filterable
+    />
+    <AppInput
+      label="Link"
+      v-model="editDetail.meeting_link"
+      size="large"
     />
     <div style="display: flex; justify-content: flex-end; gap: 8px">
       <AppButton @click="editDetailVisible = false">បោះបង់</AppButton>

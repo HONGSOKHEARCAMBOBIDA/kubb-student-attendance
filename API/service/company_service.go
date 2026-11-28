@@ -756,10 +756,12 @@ func (s *companyservice) CreateClassDetail(ctx context.Context, input []request.
 		datas := make([]model.ClassDetail, 0, len(input))
 		for _, d := range input {
 			data := model.ClassDetail{
-				ClassID:   d.ClassID,
-				SubjectID: d.SubjectID,
-				Credit:    d.Credit,
-				TeacherID: d.TeacherID,
+				ClassID:     d.ClassID,
+				SubjectID:   d.SubjectID,
+				Credit:      d.Credit,
+				TeacherID:   d.TeacherID,
+				MeetingType: d.MeetingType,
+				MeetingLink: d.MeetingLink,
 			}
 			datas = append(datas, data)
 		}
@@ -793,6 +795,8 @@ func (s *companyservice) GetClassDetail(ctx context.Context, classID int) ([]res
 			u.name_kh AS teacher_name,
 			cd.midterm AS midterm,
 			cd.final AS final,
+			cd.meeting_type AS meeting_type,
+			cd.meeting_link AS meeting_link,
 			COALESCE(cs.total_session, 0) AS total_session,
 			(cd.credit * 9) - (COALESCE(cs.total_session, 0) * 1.5) AS remaining_hours
 		`).
@@ -819,6 +823,8 @@ func (s *companyservice) UpdateClassDetail(ctx context.Context, id int, input re
 		data.TeacherID = input.TeacherID
 		data.Midterm = input.Midterm
 		data.Final = input.Final
+		data.MeetingType = input.MeetingType
+		data.MeetingLink = input.MeetingLink
 		if err := tx.Save(&data).Error; err != nil {
 			return err
 		}

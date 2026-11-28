@@ -33,9 +33,9 @@ func (s *schoolarshipservice) CreateSchoolarship(ctx context.Context, input requ
 			Code:               input.Code,
 			Name:               input.Name,
 			DiscountType:       input.DiscountType,
-			DiscountPercentage: *input.DiscountPercentage,
-			DiscountAmount:     *input.DiscountAmount,
-			Description:        *input.Description,
+			DiscountPercentage: input.DiscountPercentage,
+			DiscountAmount:     input.DiscountAmount,
+			Description:        input.Description,
 			Active:             true,
 		}
 		if err := tx.Create(&newdata).Error; err != nil {
