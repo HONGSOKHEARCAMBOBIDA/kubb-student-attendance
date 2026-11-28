@@ -723,23 +723,23 @@ watch(
     >
       <div class="form-row">
         <el-form-item label="ប្រភេទ" prop="type">
-          <AppSelect v-model="form.type" :options="typeOptions" size="large" />
+          <AppSelect v-model="form.type" :options="typeOptions" size="small" />
         </el-form-item>
         <el-form-item label="ថ្ងៃចាប់ផ្តើមអនុវត្ត" prop="start_use">
-          <AppDatePicker v-model="form.start_use" size="large" clearable />
+          <AppDatePicker v-model="form.start_use" size="small" clearable />
         </el-form-item>
         <el-form-item label="ថ្ងៃបញ្ចប់កម្មវិធី" prop="expire_date">
-          <AppDatePicker v-model="form.expire_date" size="large" clearable />
+          <AppDatePicker v-model="form.expire_date" size="small" clearable />
         </el-form-item>
         <el-form-item label="ថ្ងៃបង្ហាញលទ្ធផល" prop="show_result">
-          <AppDatePicker v-model="form.show_result" size="large" clearable />
+          <AppDatePicker v-model="form.show_result" size="small" clearable />
         </el-form-item>
         <el-form-item label="អ្នកត្រួតពិនិត្យ" prop="check_by">
           <AppSelect
             v-model="form.check_by"
             :options="staftOptions"
             placeholder="ជ្រើសរើសអ្នកត្រួតពិនិត្យ"
-            size="large"
+            size="small"
             filterable
             clearable
           />
@@ -750,9 +750,6 @@ watch(
         <strong>កាលវិភាគប្រឡងតាមមុខវិជ្ជា</strong>
         <AppButton
           size="small"
-          type="primary"
-          plain
-          icon="Plus"
           @click="addDetail"
         >
           បន្ថែមមុខវិជ្ជា
@@ -768,7 +765,7 @@ watch(
           :prop="`details.${i}.subject_id`"
           :rules="detailRules.subject_id"
           :options="availableSubjects(d._key)"
-          size="large"
+          size="small"
           filterable
         />
         <AppDatePicker
@@ -776,7 +773,7 @@ watch(
           label="ថ្ងៃប្រឡង"
           :prop="`details.${i}.exam_date`"
           :rules="detailRules.exam_date"
-          size="large"
+          size="small"
         />
         <el-form-item
           label="ម៉ោងចាប់ផ្តើម"
@@ -787,7 +784,7 @@ watch(
             v-model="d.start_time"
             value-format="HH:mm:ss"
             format="HH:mm"
-            size="large"
+            size="small"
             placeholder="ចាប់ផ្តើម"
           />
         </el-form-item>
@@ -800,7 +797,7 @@ watch(
             v-model="d.end_time"
             value-format="HH:mm:ss"
             format="HH:mm"
-            size="large"
+            size="small"
             placeholder="បញ្ចប់"
           />
         </el-form-item>
@@ -811,7 +808,7 @@ watch(
           :prop="`details.${i}.teacher_id`"
           :rules="detailRules.teacher_id"
           :options="staftOptions"
-          size="large"
+          size="small"
           filterable
         />
         <AppButton
@@ -838,7 +835,7 @@ watch(
       :loading="loading"
       :columns="examColumns"
       :show-pagination="false"
-      actions-width="150px"
+      actions-width="200px"
     >
       <!-- Subjects inside one exam -->
       <template #expand="{ row }">
@@ -847,60 +844,30 @@ watch(
           :show-pagination="false"
           :data="row.details || []"
           :columns="detailColumns"
-          actions-width="120px"
+          actions-width="160px"
         >
           <template #actions="{ row: detail }">
-            <el-tooltip content="កែប្រែ" placement="top">
               <AppButton
-                type="warning"
-                icon="Edit"
-                size="small"
-                circle
                 @click="openEditDetail(row, detail)"
-              />
-            </el-tooltip>
-            <el-tooltip content="ដាក់លេខតុ" placement="top">
+              >កែប្រែ</AppButton>
               <AppButton
-                type="primary"
-                icon="Pointer"
-                size="small"
-                circle
                 @click="openTableNumber(detail)"
-              />
-            </el-tooltip>
+              >ដាក់លេខតុ</AppButton>
           </template>
         </AppTable>
       </template>
 
       <!-- Buttons for one exam -->
       <template #actions="{ row }">
-        <el-tooltip content="កែប្រែ" placement="top">
           <AppButton
-            type="warning"
-            icon="Edit"
-            size="small"
-            circle
             @click="openEdit(row)"
-          />
-        </el-tooltip>
-        <el-tooltip content="លុប" placement="top">
+          >កែប្រែ</AppButton>
           <AppButton
-            type="danger"
-            icon="Delete"
-            size="small"
-            circle
             @click="handleDelete(row)"
-          />
-        </el-tooltip>
-        <el-tooltip content="បោះពុម្ព" placement="top">
+          >លុប</AppButton>
           <AppButton
-            type="primary"
-            icon="Printer"
-            size="small"
-            circle
             @click="printExamList(row)"
-          />
-        </el-tooltip>
+          >បោះពុម្ព</AppButton>
       </template>
     </AppTable>
 
@@ -913,15 +880,15 @@ watch(
         label-position="top"
       >
         <el-form-item label="ថ្ងៃចាប់ផ្តើមអនុវត្ត" prop="start_use">
-          <AppDatePicker v-model="editForm.start_use" size="large" />
+          <AppDatePicker v-model="editForm.start_use" size="small" />
         </el-form-item>
         <el-form-item label="ថ្ងៃបញ្ចប់កម្មវិធី" prop="expire_date">
-          <AppDatePicker v-model="editForm.expire_date" size="large" />
+          <AppDatePicker v-model="editForm.expire_date" size="small" />
         </el-form-item>
         <el-form-item label="ថ្ងៃបង្ហាញលទ្ធផល" prop="show_result">
           <AppDatePicker
             v-model="editForm.show_result"
-            size="large"
+            size="small"
             clearable
           />
         </el-form-item>
@@ -929,7 +896,7 @@ watch(
           v-model="editForm.check_by"
           label="អ្នកត្រួតពិនិត្យ"
           :options="staftOptions"
-          size="large"
+          size="small"
           filterable
         />
       </el-form>
@@ -961,7 +928,7 @@ watch(
           prop="subject_id"
           :rules="detailRules.subject_id"
           :options="subjectOptions"
-          size="large"
+          size="small"
           filterable
         />
         <AppDatePicker
@@ -969,7 +936,7 @@ watch(
           label="ថ្ងៃប្រឡង"
           prop="exam_date"
           :rules="detailRules.exam_date"
-          size="large"
+          size="small"
         />
         <el-form-item
           label="ម៉ោងចាប់ផ្តើម"
@@ -980,7 +947,7 @@ watch(
             v-model="detailEditForm.start_time"
             value-format="HH:mm:ss"
             format="HH:mm"
-            size="large"
+            size="small"
           />
         </el-form-item>
         <el-form-item
@@ -992,7 +959,7 @@ watch(
             v-model="detailEditForm.end_time"
             value-format="HH:mm:ss"
             format="HH:mm"
-            size="large"
+            size="small"
           />
         </el-form-item>
         <AppSelect
@@ -1001,7 +968,7 @@ watch(
           prop="teacher_id"
           :rules="detailRules.teacher_id"
           :options="staftOptions"
-          size="large"
+          size="small"
           filterable
         />
       </el-form>
@@ -1022,7 +989,7 @@ watch(
         <el-input
           v-model.trim="tableRoom"
           placeholder="បន្ទប់ (Room)"
-          size="large"
+          size="small"
           style="max-width: 220px"
         />
         <AppButton size="small" plain type="primary" @click="autoFillTables">
@@ -1041,6 +1008,7 @@ watch(
         :data="tableStudents"
         max-height="450"
         border
+        size="small"
       >
         <el-table-column type="index" label="ល.រ" width="60" />
         <el-table-column prop="name" label="គោត្តនាម-នាម" min-width="200" />

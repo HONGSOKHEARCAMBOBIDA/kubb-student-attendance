@@ -14,6 +14,7 @@ import {
   editrole,
   createrole
 } from "../api/services.js";
+import AppFilterBar from "../../components/AppFilterBar.vue";
 
 const role = ref([]);
 const rolehaspermission = ref([]);
@@ -201,20 +202,27 @@ onMounted(() => {
 
 <template>
   <div class="role-page">
-    <!-- ក្បាលទំព័រ + កម្មវិធីស្វែងរក -->
-    <div class="page-header">
-      <h2 class="page-title">គ្រប់គ្រងតួនាទី</h2>
+    <AppFilterBar show-back
+    :fields="[
+      {slot: 'search',span:8}
+    ]"
+    >
+    <template #search>
       <AppInput
+        label="ស្វែងរក"
         v-model="searchKeyword"
         placeholder="ស្វែងរកតួនាទី..."
         clearable
         prefix-icon="Search"
         style="width: 260px"
       />
-          <AppButton type="primary" icon="Plus" @click="openAddRoleDialog">
+    </template>
+    <template #actions>
+<AppButton icon="Plus" @click="openAddRoleDialog">
       បន្ថែមតួនាទី
     </AppButton>
-    </div>
+    </template>
+    </AppFilterBar>
 
     <AppTable
       :show-pagination="false"
@@ -225,26 +233,15 @@ onMounted(() => {
         { prop: 'name', label: 'ឈ្មោះ', minWidth: 110 },
         { prop: 'display_name', label: 'ឈ្មោះបង្ហាញ', minWidth: 120 },
       ]"
+      actions-width="200"
     >
       <template #actions="{ row }">
-        <el-tooltip content="កែប្រែតួនាទី" placement="top">
           <AppButton
-            size="small"
-            type="warning"
-            icon="Edit"
-            circle
             @click="openRoleDialog(row)"
-          />
-        </el-tooltip>
-        <el-tooltip content="គ្រប់គ្រងសិទ្ធិ" placement="top">
+          >កែប្រែតួនាទី</AppButton>
           <AppButton
-            size="small"
-            type="info"
-            icon="Key"
-            circle
             @click="openPermissionDialog(row)"
-          />
-        </el-tooltip>
+          >គ្រប់គ្រងសិទ្ធិ</AppButton>
       </template>
     </AppTable>
 
@@ -336,7 +333,7 @@ onMounted(() => {
       <AppButton @click="closeRoleDialog" :disabled="submitting" plain>
         បោះបង់
       </AppButton>
-      <AppButton @click="saveRole" :loading="submitting" type="primary">
+      <AppButton @click="saveRole" :loading="submitting" >
         រក្សាទុក
       </AppButton>
     </div>

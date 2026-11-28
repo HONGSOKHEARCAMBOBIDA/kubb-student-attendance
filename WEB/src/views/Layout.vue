@@ -33,25 +33,25 @@
       <header class="topbar">
         <div class="left">
           <el-button
+            size="small"
             class="desktop"
             :icon="collapsed ? 'Expand' : 'Fold'"
             circle
             plain
             @click="collapsed = !collapsed"
           />
-
-          <b>{{ pageTitle }}</b>
+          <el-text size="small" style="color: black;">{{ pageTitle }}</el-text>
         </div>
 
         <!-- User menu -->
         <el-dropdown @command="handleCommand">
           <div class="user">
-            <b>{{ userName }}</b>
+            <el-text size="small" style="color: black;"><el-icon><UserFilled /></el-icon> {{ userName }}</el-text>
           </div>
 
           <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="profile">
+            <el-dropdown-menu >
+              <el-dropdown-item  command="profile">
                 ប្រវត្តរូប
               </el-dropdown-item>
 
@@ -211,7 +211,7 @@ onMounted(() => {
   justify-content: space-between;
   height: 45px;
   padding: 0 12px;
-  background: #dedede;
+  background: #c4e0f5;
 }
 
 .left {

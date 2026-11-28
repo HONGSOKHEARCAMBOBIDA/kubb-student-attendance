@@ -131,7 +131,7 @@ async function handleSave() {
               v-model="form.date_of_birth"
               type="date"
               value-format="YYYY-MM-DD"
-              size="large"
+              size="small"
               style="width: 100%"
             />
           </el-form-item>
@@ -174,17 +174,15 @@ async function handleSave() {
     <template #footer>
       <AppButton
         @click="emit('update:modelValue', false)"
-        size="large"
+        size="small"
         :block="false"
-        type="warning"
       >
         បោះបង់
       </AppButton>
       <AppButton
         @click="handleSave"
-        type="primary"
         :loading="saving"
-        size="large"
+        size="small"
         :block="false"
       >
         {{ exists ? "កែប្រែ" : "បង្កេីត" }}

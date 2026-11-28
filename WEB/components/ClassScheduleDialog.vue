@@ -471,8 +471,6 @@ watch(
             <span>បន្ថែមមុខវិជ្ជាក្នុងថ្នាក់</span>
             <AppButton
               size="small"
-              type="primary"
-              icon="Plus"
               @click="addDetailRow"
             >
               បន្ថែមជួរ
@@ -564,7 +562,6 @@ watch(
         </div>
 
         <AppButton
-          type="primary"
           :loading="detailSubmitting"
           @click="handleAddClassDetail"
         >

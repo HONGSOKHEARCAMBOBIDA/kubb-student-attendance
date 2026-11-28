@@ -347,7 +347,8 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 		uc.exam_in AS exam_in,
 		uc.exam_out AS exam_out,
 		uc.exam_in_date AS exam_in_date,
-		uc.exam_out_date
+		uc.exam_out_date,
+		uc.status_changed_at
 	`).Scan(&students).Error; err != nil {
 		return nil, nil, err
 	}
@@ -355,6 +356,7 @@ func (s *companyservice) GetClass(id int, ctx context.Context, pf request.Pagina
 	for i := range students {
 		students[i].ExamInDate = helper.FormatDate(students[i].ExamInDate)
 		students[i].ExamOutDate = helper.FormatDate(students[i].ExamOutDate)
+		students[i].StatusChangedAt = helper.FormatDate(students[i].StatusChangedAt)
 	}
 
 	studentByClass := make(map[int][]response.UserResponse, len(data))

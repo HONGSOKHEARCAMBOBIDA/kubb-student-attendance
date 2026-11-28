@@ -17,6 +17,7 @@ type UserResponse struct {
 	ExamOut            bool   `gorm:"type:tinyint;default:null" json:"exam_out"`
 	ExamInDate         string `gorm:"type:tinyint;default:null" json:"exam_in_date"`
 	ExamOutDate        string `gorm:"type:tinyint;default:null" json:"exam_out_date"`
+	StatusChangedAt    string `json:"status_changed_at" gorm:"column:status_changed_at"`
 }
 
 type UserCount struct {

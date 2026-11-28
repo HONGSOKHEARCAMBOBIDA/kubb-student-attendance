@@ -687,8 +687,10 @@ func (s *authservice) UpdateUserClass(ctx context.Context, id int, input request
 
 	result := s.db.WithContext(ctx).
 		Model(&model.UserClass{}).
-		Where("id = ?", id).
-		Update("status", input.Status)
+		Where("id = ?", id).Updates(map[string]interface{}{
+		"status":            input.Status,
+		"status_changed_at": time.Now(),
+	})
 
 	if result.Error != nil {
 		return apperror.New(apperror.CodeInternal, "failed to update student", nil)
